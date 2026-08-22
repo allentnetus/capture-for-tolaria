@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm.cmd install --frozen-lockfile
+
+      - name: Run release gate
+        run: pnpm.cmd run check
+
+      - name: Build single-file Helper
+        shell: pwsh
+        run: powershell -NoProfile -File installer/windows/build-helper.ps1
+
+      - name: Run Windows release acceptance
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path installer/windows/tests
+
+      - name: Assemble Release ZIPs
+        shell: pwsh
+        run: |
+          powershell -NoProfile -File installer/windows/assemble-release.ps1 -ReleaseTag $env:GITHUB_REF_NAME
+
+      - name: Validate release contents
+        shell: pwsh
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ($env:GITHUB_REF_NAME -ne "v$version") {
+            throw "Release tag $env:GITHUB_REF_NAME does not match VERSION $version"
+          }
+          $helperPath = "release\capture-for-tolaria-helper-$version-windows-x64.exe"
+          if (-not (Test-Path $helperPath)) {
+            throw "Release Helper is missing: $helperPath"
+          }
+          $hostTemplate = Get-Content installer\windows\native-host-manifest.json.in -Raw | ConvertFrom-Json
+          if (@($hostTemplate.allowed_origins) -notcontains "chrome-extension://ncjeeembmcgkfjipkfhganbdnadbhdcl/") {
+            throw "Native Host allowed_origins does not contain the fixed Extension ID"
+          }
+          $extensionZip = "release\capture-for-tolaria-extension-$env:GITHUB_REF_NAME.zip"
+          $extensionUnpack = Join-Path $env:TEMP "capture-for-tolaria-extension-release-check-$PID"
+          $installerZip = "release\capture-for-tolaria-installer-$env:GITHUB_REF_NAME.zip"
+          $unpack = Join-Path $env:TEMP "capture-for-tolaria-release-check-$PID"
+          try {
+            Expand-Archive -LiteralPath $extensionZip -DestinationPath $extensionUnpack -Force
+            $extensionManifest = Get-Content (Join-Path $extensionUnpack "manifest.json") -Raw | ConvertFrom-Json
+            $permissions = @($extensionManifest.permissions | Sort-Object) -join ","
+            if ($permissions -ne "activeTab,nativeMessaging,scripting" -or $null -ne $extensionManifest.host_permissions) {
+              throw "Extension manifest permissions are outside the V0.1 contract"
+            }
+            if ($extensionManifest.version -ne "0.1.0" -or $extensionManifest.version_name -ne "0.1.0 Alpha 1") {
+              throw "Extension manifest version contract is invalid"
+            }
+
+            Expand-Archive -LiteralPath $installerZip -DestinationPath $unpack -Force
+            $requiredFiles = @(
+              "capture-for-tolaria-helper-$version-windows-x64.exe",
+              "VERSION",
+              "installer\windows\install.ps1",
+              "installer\windows\repair.ps1",
+              "installer\windows\configure-vault.ps1",
+              "installer\windows\uninstall.ps1",
+              "installer\windows\native-host-manifest.json.in",
+              "installer\windows\install-extension.md",
+              "INSTALL-WINDOWS.md"
+            )
+            foreach ($requiredFile in $requiredFiles) {
+              if (-not (Test-Path (Join-Path $unpack $requiredFile))) {
+                throw "Installer archive is missing $requiredFile"
+              }
+            }
+          }
+          finally {
+            Remove-Item $extensionUnpack -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item $unpack -Recurse -Force -ErrorAction SilentlyContinue
+          }
+
+      - name: Generate checksums and SBOM
+        shell: pwsh
+        run: |
+          powershell -NoProfile -File installer/windows/generate-sbom.ps1
+          powershell -NoProfile -File installer/windows/generate-checksums.ps1
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: capture-for-tolaria-${{ github.ref_name }}
+          path: release
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/capture-for-tolaria-extension-${{ github.ref_name }}.zip
+            release/capture-for-tolaria-installer-${{ github.ref_name }}.zip
+            release/capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe
+            release/SHA256SUMS.txt
+            release/SBOM.spdx.json
+          generate_release_notes: true

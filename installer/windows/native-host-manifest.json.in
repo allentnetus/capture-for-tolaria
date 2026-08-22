@@ -1,0 +1,9 @@
+{
+  "name": "com.capture_for_tolaria.helper",
+  "description": "Capture for Tolaria Native Messaging Helper",
+  "path": "__HELPER_PATH__",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://ncjeeembmcgkfjipkfhganbdnadbhdcl/"
+  ]
+}

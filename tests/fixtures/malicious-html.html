@@ -1,0 +1,10 @@
+<!doctype html>
+<html><body><article>
+<h1>Unsafe markup</h1>
+<p>This article includes executable markup that must not survive the sanitized output.</p>
+<script>alert('xss')</script>
+<iframe src="https://evil.example/frame"></iframe>
+<p onclick="steal()">Visible content</p>
+<a href="javascript:alert(1)">Unsafe link</a>
+<img src="javascript:alert(1)" onerror="steal()" alt="bad">
+</article></body></html>

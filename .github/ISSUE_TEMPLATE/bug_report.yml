@@ -1,0 +1,43 @@
+name: Bug report
+description: 报告可复现的缺陷
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先确认问题发生在当前 Alpha 支持范围：Windows + Chrome + Article Capture + Direct File Channel。
+  - type: input
+    id: version
+    attributes:
+      label: 版本
+      description: 例如 v0.1.0-alpha.1
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 请提供最小、可重复的步骤。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境
+      description: Windows、Chrome、PowerShell 版本；不要粘贴 Vault 绝对路径、文章正文、凭据或私钥。
+    validations:
+      required: true

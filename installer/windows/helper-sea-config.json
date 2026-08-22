@@ -1,0 +1,7 @@
+{
+  "main": "apps/helper/dist/sea-entry.cjs",
+  "output": "installer/windows/helper-sea-output.blob",
+  "disableExperimentalSEAWarning": true,
+  "useCodeCache": true,
+  "useSnapshot": false
+}

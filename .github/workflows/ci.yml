@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-quality:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm.cmd install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm.cmd run lint
+
+      - name: Typecheck
+        run: pnpm.cmd run typecheck
+
+      - name: Unit and integration tests
+        run: pnpm.cmd run test
+
+      - name: Golden tests
+        run: pnpm.cmd run test:golden
+
+      - name: Build workspace
+        run: pnpm.cmd run build
+
+      - name: Build single-file Helper
+        shell: pwsh
+        run: powershell -NoProfile -File installer/windows/build-helper.ps1
+
+      - name: Assemble Alpha release bundle
+        shell: pwsh
+        run: powershell -NoProfile -File installer/windows/assemble-release.ps1 -ReleaseTag v0.1.0-alpha.1
+
+      - name: Run installer tests
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path installer/windows/tests

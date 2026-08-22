@@ -1,0 +1,24 @@
+{
+  "name": "capture-for-tolaria-workspace",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "test:golden": "pnpm --filter @capture-for-tolaria/markdown test -- --run test/golden.test.ts",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "eslint .",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "eslint": "^9.31.0",
+    "globals": "^16.3.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^3.2.4",
+    "postject": "^1.0.0-alpha.6"
+  }
+}

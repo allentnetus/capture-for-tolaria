@@ -19,7 +19,9 @@ Describe "Capture for Tolaria per-user install" {
         $manifestPath = Join-Path $env:LOCALAPPDATA "CaptureForTolaria\native-host\com.capture_for_tolaria.helper.json"
         Test-Path -LiteralPath $manifestPath | Should -Be $true
         ([IO.File]::ReadAllBytes($manifestPath))[0] | Should -Be ([byte][char]'{')
-        (Get-ItemProperty -Path "HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.capture_for_tolaria.helper").'(default)' | Should -Be $manifestPath
+        $registeredManifestPath = (Get-ItemProperty -Path "HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.capture_for_tolaria.helper").'(default)'
+        Test-Path -LiteralPath $registeredManifestPath | Should -Be $true
+        (Get-FileHash -LiteralPath $registeredManifestPath).Hash | Should -Be (Get-FileHash -LiteralPath $manifestPath).Hash
     }
 
     It "repairs a missing manifest and keeps install idempotent" {

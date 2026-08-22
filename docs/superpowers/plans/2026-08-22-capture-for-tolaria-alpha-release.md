@@ -10,6 +10,10 @@
 
 **依据：** 当前会话中用户已确认的 Alpha Release 计划；项目目录边界规则见 AGENTS.md。
 
+> **当前状态（2026-08-22）：** 版本、源码卫生、打包、Installer 自包含、当前文档基线和发布副本审计已完成；开发目录针对性门禁与发布副本完整门禁均有通过证据，最终 Alpha 资产已生成并校验。GitHub remote、push、tag、Private Pre-release 及真实 Chrome、Tolaria、Vault 验收仍未完成；`CODEOWNERS` 需要仓库所有者信息。
+>
+> **说明：** 下方复选框保留原始执行清单；当前进度以本状态块、`AGENTS.md` 和最终验收记录为准。
+
 ## 全局约束
 
 - 开发目录：G:\Capture for Tolaria。
@@ -102,8 +106,8 @@ rg -n -i --hidden 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|[A-Z0-9_]*(TOKEN|SECRET
 验证：
 
 ~~~powershell
-powershell -NoProfile -File installer/windows/build-helper.ps1
-powershell -NoProfile -File installer/windows/assemble-release.ps1 -OutputDirectory .\release -ReleaseTag v0.1.0-alpha.1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -OutputDirectory .\release -ReleaseTag v0.1.0-alpha.1
 Expand-Archive -LiteralPath .\release\capture-for-tolaria-extension-v0.1.0-alpha.1.zip -DestinationPath .\release\extension-check -Force
 Get-Content .\release\extension-check\manifest.json -Raw | ConvertFrom-Json
 ~~~
@@ -185,8 +189,8 @@ pnpm.cmd install --frozen-lockfile
 pnpm.cmd run check
 pnpm.cmd run test:golden
 Invoke-Pester -Path installer/windows/tests
-powershell -NoProfile -File installer/windows/build-helper.ps1
-powershell -NoProfile -File installer/windows/assemble-release.ps1 -OutputDirectory .\release -ReleaseTag v0.1.0-alpha.1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -OutputDirectory .\release -ReleaseTag v0.1.0-alpha.1
 ~~~
 
 预期结果：每条命令都成功退出；发布输出只生成在被忽略的 release/ 中，不复制到源码仓库。
@@ -260,8 +264,8 @@ pnpm.cmd install --frozen-lockfile
 pnpm.cmd run check
 pnpm.cmd run test:golden
 Invoke-Pester -Path installer/windows/tests
-powershell -NoProfile -File installer/windows/build-helper.ps1
-powershell -NoProfile -File installer/windows/assemble-release.ps1 -OutputDirectory .\release -ReleaseTag v0.1.0-alpha.1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -OutputDirectory .\release -ReleaseTag v0.1.0-alpha.1
 ~~~
 
 预期结果：发布目录可以独立生成相同且已验证的 Alpha 资产。

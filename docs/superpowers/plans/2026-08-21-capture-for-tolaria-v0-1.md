@@ -1,5 +1,7 @@
 # Capture for Tolaria V0.1 本期实施计划
 
+> **状态：历史实施计划（2026-08-21）。** 本文件已由 `2026-08-22-capture-for-tolaria-alpha-release.md` 替代，仅保留过程证据，不作为当前执行状态。
+
 > **给执行代理：** 必须按任务逐项执行本计划。每个步骤使用复选框跟踪；每个任务完成后都要先运行对应的验证命令，再进入下一任务。
 
 **目标：** 交付可验收的 V0.1 Product Alpha，使 Windows Chrome 用户能够剪藏一篇公开文章，并在不要求安装 Node.js、不需要管理员权限、也不依赖 Tolaria MCP Bridge 运行的前提下，将经过安全清理的 Markdown 写入用户授权的 Tolaria Vault。

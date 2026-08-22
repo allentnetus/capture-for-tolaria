@@ -45,11 +45,11 @@ jobs:
 
       - name: Build single-file Helper
         shell: pwsh
-        run: powershell -NoProfile -File installer/windows/build-helper.ps1
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
 
       - name: Assemble Alpha release bundle
         shell: pwsh
-        run: powershell -NoProfile -File installer/windows/assemble-release.ps1 -ReleaseTag v0.1.0-alpha.1
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ReleaseTag v0.1.0-alpha.1
 
       - name: Run installer tests
         shell: pwsh

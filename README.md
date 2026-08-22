@@ -2,7 +2,7 @@
 
 `Capture for Tolaria` 是一个非官方的 Tolaria 网页剪藏与知识摄取工具。
 
-> This project is not affiliated with or endorsed by the Tolaria project.
+> 本项目与 Tolaria 项目无隶属关系，也未获得 Tolaria 项目的背书。
 
 当前交付目标是 V0.1 Product Alpha：Windows + Chrome + Article Capture + Direct File Channel。用户在公开文章页面点击 Capture，Extension 提取并清理正文，Native Messaging Helper 将普通 Markdown 原子地写入用户授权的 Tolaria Vault。
 
@@ -87,7 +87,7 @@ pnpm.cmd run test:golden
 构建单文件 Helper：
 
 ```powershell
-powershell -NoProfile -File installer/windows/build-helper.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
 ```
 
 如果本机 Chrome 正在加载 `apps/extension/dist`，Windows 可能暂时锁定其中的 `manifest.json`。此时可把 Extension 构建到隔离目录，再将该目录传给打包脚本：
@@ -96,7 +96,7 @@ powershell -NoProfile -File installer/windows/build-helper.ps1
 $env:CAPTURE_FOR_TOLARIA_EXTENSION_DIST = "$PWD\.alpha-extension-dist"
 node apps/extension/build.mjs
 Remove-Item Env:CAPTURE_FOR_TOLARIA_EXTENSION_DIST
-powershell -NoProfile -File installer/windows/assemble-release.ps1 -ExtensionDirectory .\.alpha-extension-dist -ReleaseTag v0.1.0-alpha.1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ExtensionDirectory .\.alpha-extension-dist -ReleaseTag v0.1.0-alpha.1
 ```
 
 安装器 Pester 测试：

@@ -1,4 +1,4 @@
-# Changelog
+# 变更日志
 
 本文件记录面向用户的可见变化。
 
@@ -14,7 +14,7 @@
 
 本版本作为 Private GitHub Pre-release 分发，Release 身份为 `v0.1.0-alpha.1`。Installer ZIP 自包含同版本 Helper；同时提供 Extension ZIP、独立 Helper、SHA256 校验文件和 SPDX SBOM。
 
-### Added
+### 新增
 
 - Chrome MV3 Article Capture Extension。
 - Native Messaging Helper 和版本化 `hello` / `clip.article` 协议。
@@ -23,6 +23,6 @@
 - per-user Vault 配置、Native Host Install、Repair、Uninstall 脚本。
 - 单文件 Helper SEA 构建、CI 门禁、Golden Test 和安装器测试。
 
-### Scope
+### 范围
 
 V0.1 只支持 Windows + Chrome + Article + Direct File Channel。MCP 9710、AI、Selection、Bookmark、Screenshot、图片本地化、多 Vault 和跨平台支持延后。

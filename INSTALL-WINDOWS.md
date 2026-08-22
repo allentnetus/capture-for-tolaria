@@ -35,11 +35,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/install.ps
 HKCU\Software\Google\Chrome\NativeMessagingHosts\com.capture_for_tolaria.helper
 ```
 
-## Extension
+## 扩展加载（Extension）
 
 解压 Extension ZIP，打开 `chrome://extensions`，启用开发者模式，选择“加载已解压的扩展程序”。固定 Extension ID 和 `allowed_origins` 见 [`installer/windows/install-extension.md`](installer/windows/install-extension.md)。
 
-## Repair
+## 修复（Repair）
 
 Helper 或 Native Host manifest 缺失时运行：
 

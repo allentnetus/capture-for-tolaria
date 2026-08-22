@@ -1,12 +1,12 @@
 # Capture for Tolaria —— 最终产品与技术方案
 
-> 文档状态：V0.1 Product Alpha 方案
+> 文档状态：V0.1 Product Alpha 当前方案基线（实现已完成，真实 Chrome/Tolaria 验收待完成）
 >
 > 项目名称：Capture for Tolaria
 >
 > 项目定位：Unofficial Web Clipper & Knowledge Intake Tool for Tolaria
 
-本文记录当前讨论已经收敛的产品边界、技术架构、安全约束、发布策略和验收标准。它是实现前需要冻结的方案基线；Tolaria 当前 API、许可证、商标政策以及浏览器商店政策，在正式发布前仍需独立核验。
+本文记录当前已经实现并收敛的产品边界、技术架构、安全约束、发布策略和验收标准。代码、测试和发布脚本是实现事实来源；本文是当前方案基线，不替代真实 Chrome、Tolaria 和 Vault 验收，也不把未验证状态写成已完成。Tolaria 当前 API、许可证、商标政策以及浏览器商店政策，在正式发布前仍需独立核验。
 
 ## 1. 产品定位
 
@@ -24,7 +24,7 @@
 README 和商店页面应明确声明：
 
 ```text
-This project is not affiliated with or endorsed by the Tolaria project.
+本项目与 Tolaria 项目无隶属关系，也未获得 Tolaria 项目的背书。
 ```
 
 ### 1.2 长期定位

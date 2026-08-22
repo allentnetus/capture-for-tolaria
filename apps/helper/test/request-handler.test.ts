@@ -8,7 +8,11 @@ import {
   handleRequest,
   type WriteInput
 } from "../src/index.js";
-import { PROTOCOL_VERSION, type ClipRequest } from "@capture-for-tolaria/protocol";
+import {
+  MAX_MARKDOWN_CHARACTERS,
+  PROTOCOL_VERSION,
+  type ClipRequest
+} from "@capture-for-tolaria/protocol";
 
 const request: ClipRequest = {
   protocolVersion: PROTOCOL_VERSION,
@@ -97,7 +101,84 @@ it("拒绝未经校验的 raw request", async () => {
     action: "writeFile",
     path: "C:\\outside"
   });
-  expect(response).toMatchObject({ ok: false, error: { code: "INVALID_REQUEST" } });
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-bad",
+    error: { code: "INVALID_REQUEST" }
+  });
+});
+
+it("协议版本不匹配时保留 requestId 并返回 UNSUPPORTED_PROTOCOL", async () => {
+  const response = await handleRawRequest({
+    ...request,
+    requestId: "req-unsupported",
+    protocolVersion: 2
+  });
+
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-unsupported",
+    error: { code: "UNSUPPORTED_PROTOCOL" }
+  });
+});
+
+it("协议版本类型无效时返回 INVALID_REQUEST", async () => {
+  const response = await handleRawRequest({
+    ...request,
+    requestId: "req-invalid-version-type",
+    protocolVersion: "1"
+  });
+
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-invalid-version-type",
+    error: { code: "INVALID_REQUEST" }
+  });
+});
+
+it("非法 relativeFolder 映射为 INVALID_PATH", async () => {
+  const response = await handleRawRequest({
+    ...request,
+    requestId: "req-path",
+    payload: { ...request.payload, relativeFolder: "../outside" }
+  });
+
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-path",
+    error: { code: "INVALID_PATH" }
+  });
+});
+
+it("非法 sourceUrl 映射为 INVALID_URL", async () => {
+  const response = await handleRawRequest({
+    ...request,
+    requestId: "req-url",
+    payload: { ...request.payload, sourceUrl: "file:///outside" }
+  });
+
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-url",
+    error: { code: "INVALID_URL" }
+  });
+});
+
+it("超限 markdown 映射为 PAYLOAD_TOO_LARGE", async () => {
+  const response = await handleRawRequest({
+    ...request,
+    requestId: "req-large",
+    payload: {
+      ...request.payload,
+      markdown: "x".repeat(MAX_MARKDOWN_CHARACTERS + 1)
+    }
+  });
+
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-large",
+    error: { code: "PAYLOAD_TOO_LARGE" }
+  });
 });
 
 it("真实 Writer 集成创建 Inbox/Web 文件", async () => {

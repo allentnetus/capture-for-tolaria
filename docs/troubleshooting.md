@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 故障排查
 
-> 当前文档记录 V0.1 的用户可见错误边界。安装器自动化、Helper 和本地发布资产门禁已完成；真实 Chrome、Tolaria 和 Vault 用户链路仍待验收。
+> 当前文档记录 V0.1 的用户可见错误边界。开发目录和发布目录的 `pnpm.cmd run check`、Golden Test、Alpha Installer 资产组装和 Windows Pester 均已完成；真实 Chrome、Tolaria、Vault 用户链路仍待验收，不能用代码级门禁替代这些证据。
 
 ## 1. Capture 按钮不可用
 
@@ -48,9 +48,11 @@ Inbox/../private
 
 不要让用户通过修改 Folder 字段写入 Vault 之外的位置。Helper 必须重复校验并检查 Windows reparse point。
 
-## 5. `TARGET_EXISTS`
+## 5. 文件冲突与 `TARGET_EXISTS`
 
-V0.1 是 create-only。目标文件已存在时返回冲突，不覆盖原文件。用户可以修改标题或在后续版本使用明确的更新能力；当前版本不提供覆盖、删除或任意重命名接口。
+V0.1 是 create-only。目标文件已存在时 Helper 会依次尝试确定性的 `(2)`、`(3)` 等后缀，不覆盖原文件；达到后缀上限时返回 `NAME_EXHAUSTED`。如果底层直接返回 `TARGET_EXISTS`，同样表示原文件未被覆盖。当前版本不提供覆盖、删除或任意重命名接口。
+
+如果连续出现 `ATOMIC_COMMIT_UNAVAILABLE`，检查目标 Vault 文件系统是否支持同一卷 hard link；不要把它改成普通覆盖写入。
 
 ## 6. Markdown 内容不完整
 

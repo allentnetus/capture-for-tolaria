@@ -12,7 +12,7 @@
 - [x] Extension manifest 只申请 `activeTab`、`scripting`、`nativeMessaging`。
 - [x] Mock Host 完成 Extension → Helper → File Channel 垂直链路。
 - [x] SEA 单文件 Helper 在没有调用 Node.js runtime 的 Pester 测试中完成 `hello`。
-- [x] per-user Install、Repair 基础路径、Uninstall 和 Vault 数据保留测试通过。
+- [x] per-user Install、Repair 基础路径、Uninstall 和 Vault 数据保留测试通过（Windows PowerShell/Pester 自动化证据）。
 - [x] Windows PowerShell 5.1 `configure-vault.ps1` 无 BOM 写入并驱动真实 SEA Helper `clip.article`。
 - [x] 无参数执行 build、install、repair、SBOM 脚本通过。
 - [x] 安装器 ZIP 包含用户安装所需脚本、manifest 模板和说明文件。

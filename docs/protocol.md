@@ -31,7 +31,7 @@ N bytes UTF-8 JSON
 约束：
 
 - `protocolVersion` 当前只能为 `1`。
-- `requestId` 是非空、最长 128 个字符的字符串，响应必须原样返回。
+- `requestId` 是非空、最长 128 个字符的字符串；`clip.article` 的成功或错误响应必须返回校验后的规范化值。`hello` 响应是只声明协议和 capabilities 的握手响应，不携带请求级 `requestId`。
 - `extensionVersion` 是非空、最长 64 个字符的版本字符串。
 - `action` 只能是已注册的业务 action。
 - V0.1 schema 对 action 对象使用严格字段集合；扩展字段必须通过新的协议版本引入。
@@ -59,7 +59,7 @@ N bytes UTF-8 JSON
 }
 ```
 
-`hello` 不得携带文章 payload，也不含请求级 `requestId`。Helper 返回的 capabilities 只声明真实实现并可安全使用的能力；Extension 仍须在后续业务响应中校验对应的 `requestId`。
+`hello` 请求仍必须携带通用请求字段中的 `requestId`，但不得携带文章 payload。当前 `hello` 响应只返回协议版本、Helper 版本和 capabilities，不返回请求级 `requestId`；Extension 只在后续 `clip.article` 响应中校验对应的 `requestId`。Helper 返回的 capabilities 只声明真实实现并可安全使用的能力。
 
 ## 4. `clip.article`
 
@@ -113,16 +113,17 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
+  "helperVersion": "0.1.0-alpha.1",
   "ok": false,
   "error": {
-    "code": "TARGET_EXISTS",
-    "message": "目标文件已存在，未覆盖原文件"
+    "code": "INVALID_PATH",
+    "message": "relativeFolder 必须是安全的相对目录"
   }
 }
 ```
 
-错误码必须稳定且可供 UI 展示。至少包括：`INVALID_REQUEST`、`UNSUPPORTED_PROTOCOL`、`INVALID_PATH`、`INVALID_URL`、`PAYLOAD_TOO_LARGE`、`VAULT_NOT_CONFIGURED`、`VAULT_ACCESS_DENIED`、`TARGET_EXISTS` 和 `WRITE_FAILED`。错误消息不能泄露绝对 Vault 路径之外的敏感信息。
+错误码必须稳定且可供 UI 展示。请求 schema 失败至少区分：`INVALID_REQUEST`、`UNSUPPORTED_PROTOCOL`、`INVALID_PATH`、`INVALID_URL` 和 `PAYLOAD_TOO_LARGE`；文件通道还包括 `VAULT_NOT_CONFIGURED`、`VAULT_ACCESS_DENIED`、`TARGET_EXISTS`、`NAME_EXHAUSTED`、`ATOMIC_COMMIT_UNAVAILABLE` 和 `WRITE_FAILED`。如果 raw request 中带有合法的 `requestId`，错误响应保留校验后的规范化关联值；缺失或不合法时使用 `unknown`。错误消息不能泄露绝对 Vault 路径之外的敏感信息。
 
 ## 6. 版本协商
 
-Helper 启动后先处理 `hello`。协议版本不匹配时返回 `UNSUPPORTED_PROTOCOL`，不得执行文件写入。capabilities 只用于声明能力，不改变路径安全、create-only 或请求校验规则。
+Helper 启动后先处理 `hello`。协议版本不匹配时返回带原始关联 `requestId` 的 `UNSUPPORTED_PROTOCOL` 错误，且不得执行文件写入。capabilities 只用于声明能力，不改变路径安全、create-only 或请求校验规则。

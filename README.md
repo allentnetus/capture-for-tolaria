@@ -102,7 +102,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-r
 安装器 Pester 测试：
 
 ```powershell
-Invoke-Pester -Path installer/windows/tests
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& {
+  $result = Invoke-Pester -Path "installer/windows/tests" -PassThru
+  if ($result.FailedCount -ne 0) { exit 1 }
+}'
 ```
 
 ## 文档

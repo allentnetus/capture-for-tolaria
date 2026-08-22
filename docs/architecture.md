@@ -37,12 +37,12 @@ V0.1 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。MCP C
 
 1. 用户点击 Popup 的 Article Capture。
 2. Extension 通过 `activeTab` 和 `scripting` 在当前页面执行采集，不申请宽泛 `host_permissions`。
-3. Content Script 克隆当前 `document`，不修改用户页面。
+3. Content Script 克隆当前 `document`，不修改文章正文和业务页面结构；错误反馈时只注入独立的 toast UI。
 4. Extractor 在克隆 DOM 上依次执行 Readability、结果质量检查、Sanitization 和 DOM Cleanup。
 5. Markdown 管线生成带 `title`、`source_url`、`clipped`、`type` 的 Markdown 文档；`site`、`author` 和 `published` 为可选元数据，图片在 V0.1 保留经过检查的远程 URL。
 6. Extension 发送 `clip.article` 请求。请求只包含相对目录、标题、Markdown、HTTPS/HTTP 来源和有限元数据。
 7. Helper 校验协议、请求大小、来源 URL、相对目录和标题，读取 per-user Vault 配置，逐级准备目录后执行 atomic create-only 写入。
-8. Helper 返回带原始 `requestId` 的成功或稳定错误响应。
+8. Helper 返回带校验后规范化 `requestId` 的成功或稳定错误响应。
 
 ## 4. File Channel 与 MCP Channel
 
@@ -68,6 +68,7 @@ Extension 和 Helper 共用 `protocolVersion`、`requestId`、组件版本和 ca
 - Extension 不传入最终绝对输出路径。
 - `relativeFolder` 不能包含绝对路径、盘符、UNC 前缀或 `..`。
 - 目录每一级创建或发现后立即检查真实路径和 Windows reparse 状态。
-- 目标文件已存在时返回冲突，原文件内容不变。
+- 目标文件已存在时使用确定性的 `(2)`、`(3)` 等冲突后缀，原文件内容不变；达到后缀上限时返回 `NAME_EXHAUSTED`。
+- atomic create-only 使用同一卷 hard link；目标文件系统不支持该语义时返回 `ATOMIC_COMMIT_UNAVAILABLE`。
 - Native Messaging 的 stdout 只输出协议帧；日志走 stderr。
 - 默认不收集遥测、浏览历史、cookies、页面凭据或账号信息。

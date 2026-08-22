@@ -1,5 +1,8 @@
 import {
   createHelloResponse,
+  classifyRequestValidationError,
+  MAX_REQUEST_ID_LENGTH,
+  PROTOCOL_VERSION,
   validateRequest,
   type ClipErrorResponse,
   type ClipRequest,
@@ -29,7 +32,7 @@ function errorResponse(
   message: string
 ): ClipErrorResponse {
   return {
-    protocolVersion: 1,
+    protocolVersion: PROTOCOL_VERSION,
     requestId,
     helperVersion,
     ok: false,
@@ -42,6 +45,22 @@ function mapError(error: unknown): { code: string; message: string } {
     return { code: error.code, message: error.userMessage };
   }
   return { code: "WRITE_FAILED", message: "无法保存剪藏内容" };
+}
+
+function getCorrelationRequestId(value: unknown): string {
+  if (typeof value !== "object" || value === null || !("requestId" in value)) {
+    return "unknown";
+  }
+
+  const requestId = value.requestId;
+  if (typeof requestId !== "string") {
+    return "unknown";
+  }
+
+  const normalized = requestId.trim();
+  return normalized.length > 0 && normalized.length <= MAX_REQUEST_ID_LENGTH
+    ? normalized
+    : "unknown";
 }
 
 export async function handleRequest(
@@ -76,7 +95,7 @@ export async function handleRequest(
       markdown: request.payload.markdown
     });
     return {
-      protocolVersion: 1,
+      protocolVersion: PROTOCOL_VERSION,
       requestId: request.requestId,
       helperVersion,
       ok: true,
@@ -92,11 +111,19 @@ export async function handleRawRequest(
   value: unknown,
   options: RequestHandlerOptions = {}
 ): Promise<HelperResponse> {
+  let request: ClipRequest;
   try {
-    const request = validateRequest(value);
-    return await handleRequest(request, options);
-  } catch {
+    request = validateRequest(value);
+  } catch (error) {
     const helperVersion = options.helperVersion ?? DEFAULT_HELPER_VERSION;
-    return errorResponse("unknown", helperVersion, "INVALID_REQUEST", "请求格式无效");
+    const validationError = classifyRequestValidationError(value, error);
+    return errorResponse(
+      getCorrelationRequestId(value),
+      helperVersion,
+      validationError.code,
+      validationError.message
+    );
   }
+
+  return handleRequest(request, options);
 }

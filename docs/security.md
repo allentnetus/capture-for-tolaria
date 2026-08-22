@@ -54,7 +54,8 @@ Helper 只能处理业务级 `clip.article`，不能提供 `writeFile(anyPath)`�
 - canonical path 必须仍位于 Vault 根目录内。
 - 拒绝 symlink、junction 和其他 Windows reparse point 逃逸。
 - 文件名使用确定性 `YYYYMMDD - Title.md` 规则，并清理 Windows 非法字符、保留名称、尾部空格和尾部句点。
-- 使用同一卷临时文件和 create-only 提交语义；目标已存在时返回 `TARGET_EXISTS`，不得覆盖原文件。
+- 使用同一卷临时文件和 create-only 提交语义；目标已存在时按确定性规则尝试 `(2)`、`(3)` 等冲突后缀，不覆盖原文件；达到后缀上限时返回 `NAME_EXHAUSTED`。底层明确报告目标冲突时仍可使用 `TARGET_EXISTS`，但它不是当前正常冲突分配路径。
+- atomic 提交依赖同一卷 hard link；文件系统不支持该能力时返回 `ATOMIC_COMMIT_UNAVAILABLE`，不得降级为覆盖写入。
 - 临时文件提交失败时清理临时文件，并返回稳定错误。
 
 ## 5. 协议安全

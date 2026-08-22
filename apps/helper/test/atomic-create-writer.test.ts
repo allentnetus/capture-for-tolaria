@@ -38,7 +38,7 @@ it("不会覆盖已有 Markdown 并使用冲突后缀", async () => {
   } finally {
     await rm(vault, { recursive: true, force: true });
   }
-});
+}, 15_000);
 
 it("并发创建不会选择同一个最终路径且清理临时文件", async () => {
   const vault = await temporaryVault();
@@ -61,7 +61,7 @@ it("并发创建不会选择同一个最终路径且清理临时文件", async (
   } finally {
     await rm(vault, { recursive: true, force: true });
   }
-});
+}, 30_000);
 
 it("路径逃逸在 Writer 前被拒绝", async () => {
   const vault = await temporaryVault();

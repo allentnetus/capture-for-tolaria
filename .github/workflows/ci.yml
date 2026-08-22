@@ -54,4 +54,5 @@ jobs:
       - name: Run installer tests
         shell: pwsh
         run: |
-          Invoke-Pester -Path installer/windows/tests
+          $result = Invoke-Pester -Path installer/windows/tests -PassThru
+          if ($result.FailedCount -ne 0) { exit 1 }

@@ -35,6 +35,11 @@ export {
   responseSchema,
   successResponseSchema
 } from "./schema.js";
+export {
+  classifyRequestValidationError,
+  type RequestValidationError,
+  type RequestValidationErrorCode
+} from "./validation-errors.js";
 
 import {
   helloResponseSchema,

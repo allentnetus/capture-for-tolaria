@@ -56,3 +56,30 @@ it("does not show a page toast after a saved result but keeps error feedback", (
     dom.window.close();
   }
 });
+
+it("只为同一个 message event 注册一次 listener", () => {
+  const addListener = vi.fn();
+  Object.defineProperty(globalThis, "chrome", {
+    configurable: true,
+    value: { runtime: { onMessage: { addListener } } }
+  });
+
+  installContentCaptureListener();
+  installContentCaptureListener();
+
+  expect(addListener).toHaveBeenCalledTimes(1);
+});
+
+it("重复加载 Content Script 时仍只注册一次 listener", async () => {
+  const addListener = vi.fn();
+  Object.defineProperty(globalThis, "chrome", {
+    configurable: true,
+    value: { runtime: { onMessage: { addListener } } }
+  });
+
+  vi.resetModules();
+  await import("../src/content/main.js?injection-one");
+  await import("../src/content/main.js?injection-two");
+
+  expect(addListener).toHaveBeenCalledTimes(1);
+});

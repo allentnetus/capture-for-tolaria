@@ -7,6 +7,7 @@ V0.1 Alpha 安装到当前用户目录，不需要管理员权限，不写入 `P
 - Windows 10/11 x64
 - Chrome MV3
 - 一个用户有写权限的 Tolaria Vault
+- Vault 所在文件系统支持同一卷 hard link；V0.1 的 atomic create-only 写入不在不支持该能力的文件系统上降级为覆盖写入
 - `v0.1.0-alpha.1` 的 Installer ZIP、Extension ZIP、Helper 单文件、`SHA256SUMS.txt` 和 `SBOM.spdx.json`
 - 解压后的 Installer ZIP 根目录应同时存在 `VERSION` 和 `capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe`
 

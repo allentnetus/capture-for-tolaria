@@ -130,19 +130,17 @@ V0.1 的 Article Capture 由用户点击触发，Extension 使用 `activeTab`、
 
 ### 3.1 架构结论
 
-最终采用：
+V0.1 当前实现采用：
 
 ```text
-Chrome / Edge Extension
+Chrome Extension
         +
 Native Messaging Helper
         +
 File Channel
-        +
-MCP Channel
 ```
 
-其中两个 Channel 的职责必须分离：
+V0.2+ 的路线图再评估 Edge Extension 和 MCP Channel；它们不是当前 Alpha 的已实现能力。两个 Channel 的职责必须分离：
 
 ```text
 基础 Capture
@@ -156,7 +154,7 @@ MCP Channel
 
 不要把所有操作都强制串成“浏览器 → Helper → MCP → Vault”。基础剪藏必须拥有不依赖 Tolaria 进程和 MCP Bridge 的可靠保存路径。
 
-### 3.2 组件关系
+### 3.2 长期组件关系（V0.2+ 路线图，不代表 V0.1 已实现）
 
 ```text
 ┌────────────────────────────────────────┐
@@ -236,7 +234,19 @@ Native Helper 不只是通信转发层，还承担以下职责：
 - 在需要时适配 Tolaria MCP
 - 在 Vault 暂时不可用时保存重试状态
 
-当前方案中，Tolaria 的 9710 Tool Bridge 与浏览器之间不能直接作为正式通道使用，因此正式路径为：
+V0.1 的正式路径是 Direct File Channel：
+
+```text
+Chrome
+    ↓
+Native Messaging
+    ↓
+Native Helper
+    ↓
+Tolaria Vault / Inbox/Web/*.md
+```
+
+V0.2+ 如果启用 MCP，才评估以下可选路径；它不属于当前 Alpha 验收链路：
 
 ```text
 Chrome / Edge
@@ -245,7 +255,7 @@ Native Messaging
     ↓
 Native Helper
     ↓
-Tolaria 9710
+Tolaria 9710 MCP Bridge
 ```
 
 ## 4. 用户体验
@@ -792,9 +802,10 @@ Request：
   "extensionVersion": "0.1.0-alpha.1",
   "action": "clip.article",
   "payload": {
+    "relativeFolder": "Inbox/Web",
     "title": "Article title",
+    "markdown": "# Article title\n\nClean Markdown",
     "sourceUrl": "https://example.com/article",
-    "content": "# Article title\n\nClean Markdown",
     "metadata": {
       "site": "Example",
       "author": "Author"
@@ -1154,12 +1165,16 @@ V0.1 优先使用用户目录：
 
 ```text
 %LOCALAPPDATA%\Programs\CaptureForTolaria\
-├─ helper.exe
-├─ native-host.json
-└─ uninstall.exe
+└─ capture-for-tolaria-helper.exe
+
+%LOCALAPPDATA%\CaptureForTolaria\
+└─ native-host\
+   └─ com.capture_for_tolaria.helper.json
+
+HKCU\Software\Google\Chrome\NativeMessagingHosts\com.capture_for_tolaria.helper
 ```
 
-Native Messaging 注册使用 `HKCU`，尽量避免管理员权限、UAC 和系统级安装。
+Native Messaging 注册使用 `HKCU`，尽量避免管理员权限、UAC 和系统级安装。当前 V0.1 不会把 `uninstall.ps1` 安装成 `uninstall.exe`；卸载从 Installer ZIP 中的 `installer/windows/uninstall.ps1` 运行。
 
 V0.1 Alpha 的 Extension 交付采用 Release ZIP + Chrome 开发者模式加载，并在安装说明中明确 Extension ID 与 Native Host Manifest 的对应关系；Chrome Web Store 发布放到后续公开 Beta 计划。
 

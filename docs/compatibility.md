@@ -12,15 +12,17 @@
 | pnpm | `11.19.0` |
 | PowerShell | `7.6.5`；Windows PowerShell `5.1.26100.9168` 脚本兼容性已验证 |
 | Extension | `0.1.0`，`version_name` 为 `0.1.0 Alpha 1`，MV3，协议 `1` |
-| Helper | `0.1.0-alpha.1`，发布副本已完成 SEA x64 EXE 构建与 no-Node Pester 验收；陌生用户的真实安装链路仍待验证 |
+| Helper | `0.1.0-alpha.1`，当前开发目录已完成 SEA x64 EXE 构建；no-Node Helper 与完整 Installer/Pester 安装链路已通过 |
 | Chrome | 已检测到 Chrome，但本轮未向现有 profile 加载 Extension；具体版本未记录 |
 | Tolaria | 已检测到 Tolaria 进程，但本轮未向真实 Vault 写入或验证文件监听 |
 
 ## 已验证
 
-上表中的历史环境验证保留为 V0.1 基线；Alpha 版本合同和打包脚本的当前门禁状态以本次发布副本验收证据为准。本地代码、打包、自动化测试和最终资产校验已通过，但真实 Chrome、Tolaria、Vault 和陌生用户安装链路仍未验证；两类状态不得互相替代。
+上表中的历史环境验证保留为 V0.1 基线。本轮在开发目录完成了 `pnpm.cmd run check`、Golden Test、SEA Helper 构建、Alpha Installer ZIP 组装和 Windows PowerShell/Pester 安装器验收（9 passed、0 failed），随后在发布目录独立重复并通过相同门禁。真实 Chrome、Tolaria、Vault 和陌生用户安装链路仍未验证；这些状态不得互相替代。
 
 - `pnpm run lint`
+- `pnpm.cmd run check`
+- `pnpm.cmd run test:golden`
 - 全 workspace TypeScript typecheck
 - 6 个 workspace 的单元测试和集成测试
 - Extractor 恶意 HTML、危险 URL、Unicode、代码块和 fallback 测试
@@ -32,10 +34,12 @@
 - Extension manifest 权限集合、固定 key 和 Native Host `allowed_origins` ID 一致性
 - Mock Host 的 Extension → Helper → File Channel 垂直链路
 - SEA 单文件 Helper 仅通过 `hello` 启动，Pester 测试不调用 Node.js runtime
-- Windows PowerShell 5.1 `configure-vault.ps1` → 无 BOM config → 真实 SEA Helper `clip.article` 写入
-- Windows per-user Install、Repair、Upgrade、Uninstall、Vault 配置和数据保留测试
-- 发布副本 Alpha 资产组装：Extension ZIP、Installer ZIP、SEA Helper、SBOM 和 SHA256 校验均通过
-- Installer ZIP 在不传 `-HelperPath` 时使用同包 Helper 的默认路径校验通过
+- SEA Helper 构建和 Alpha Installer ZIP 组装
+- Windows PowerShell `5.1.26100.9168` 下的 9 个 Installer/Pester 测试
+
+## 当前阻断的自动化验收
+
+- GitHub 远程 CI 和 CodeQL 需要在远程修复提交后重新核对；CodeQL 还需要仓库设置启用 Code scanning。
 
 ## 未验证
 

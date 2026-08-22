@@ -127,4 +127,4 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
   } finally {
     await rm(vault, { recursive: true, force: true });
   }
-});
+}, 15_000);

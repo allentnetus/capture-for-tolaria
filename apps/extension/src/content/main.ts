@@ -16,12 +16,32 @@ interface ContentFailure {
   message: string;
 }
 
+const CONTENT_LISTENER_REGISTRY_KEY =
+  "__captureForTolariaContentListenerRegistry";
+type ContentGlobal = typeof globalThis & {
+  [CONTENT_LISTENER_REGISTRY_KEY]?: WeakSet<object>;
+};
+
+function getInstalledMessageEvents(): WeakSet<object> {
+  const contentGlobal = globalThis as ContentGlobal;
+  contentGlobal[CONTENT_LISTENER_REGISTRY_KEY] ??= new WeakSet<object>();
+  return contentGlobal[CONTENT_LISTENER_REGISTRY_KEY];
+}
+
+const installedMessageEvents = getInstalledMessageEvents();
+
 export function installContentCaptureListener(): void {
   if (typeof chrome === "undefined" || !chrome.runtime?.onMessage) {
     return;
   }
 
-  chrome.runtime.onMessage.addListener(
+  const messageEvent = chrome.runtime.onMessage;
+  if (installedMessageEvents.has(messageEvent)) {
+    return;
+  }
+  installedMessageEvents.add(messageEvent);
+
+  messageEvent.addListener(
     (message: unknown, _sender, sendResponse) => {
       if (
         typeof message !== "object" ||

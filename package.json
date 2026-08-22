@@ -10,7 +10,7 @@
     "test:golden": "pnpm --filter @capture-for-tolaria/markdown test -- --run test/golden.test.ts",
     "typecheck": "pnpm -r run typecheck",
     "lint": "eslint .",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
+    "check": "pnpm run lint && pnpm run build && pnpm run typecheck && pnpm run test"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",

@@ -31,6 +31,9 @@ jobs:
       - name: Lint
         run: pnpm.cmd run lint
 
+      - name: Build workspace
+        run: pnpm.cmd run build
+
       - name: Typecheck
         run: pnpm.cmd run typecheck
 
@@ -39,9 +42,6 @@ jobs:
 
       - name: Golden tests
         run: pnpm.cmd run test:golden
-
-      - name: Build workspace
-        run: pnpm.cmd run build
 
       - name: Build single-file Helper
         shell: pwsh

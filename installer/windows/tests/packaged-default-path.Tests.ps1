@@ -1,5 +1,5 @@
 $scriptRoot = Split-Path -Parent $PSScriptRoot
-$repoRoot = (Resolve-Path (Join-Path $scriptRoot "..\..\..")).Path
+$repoRoot = (Resolve-Path (Join-Path $scriptRoot "..\..")).Path
 
 Describe "Packaged Installer default Helper path" {
     BeforeAll {

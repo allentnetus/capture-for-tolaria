@@ -12,7 +12,7 @@
 
 ## [0.1.0-alpha.1] - 2026-08-21
 
-本版本作为 Private GitHub Pre-release 分发，Release 身份为 `v0.1.0-alpha.1`。Installer ZIP 自包含同版本 Helper；同时提供 Extension ZIP、独立 Helper、SHA256 校验文件和 SPDX SBOM。
+本版本作为公开 GitHub Pre-release 分发，Release 身份为 `v0.1.0-alpha.1`。Installer ZIP 自包含同版本 Helper；同时提供 Extension ZIP、独立 Helper、SHA256 校验文件和 SPDX SBOM。
 
 ### 新增
 

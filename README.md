@@ -6,7 +6,7 @@
 
 当前交付目标是 V0.1 Product Alpha：Windows + Chrome + Article Capture + Direct File Channel。用户在公开文章页面点击 Capture，Extension 提取并清理正文，Native Messaging Helper 将普通 Markdown 原子地写入用户授权的 Tolaria Vault。
 
-当前 Alpha 版本：`v0.1.0-alpha.1`。源码仓库和 GitHub Release 仅面向受邀用户保持 Private；本版本不是公开稳定版，也未提交 Chrome Web Store。
+当前 Alpha 版本：`v0.1.0-alpha.1`。源码仓库和 GitHub Release 公开可见；本版本是公开 Alpha 预览版，不是公开稳定版，也未提交 Chrome Web Store。
 
 ## 当前能力
 
@@ -24,7 +24,7 @@ V0.1 暂不实现 MCP 9710、AI、图片本地化、多 Vault、Selection、Book
 
 ## 安装 Alpha
 
-1. 从 Private Release 下载以下资产，并先按 `SHA256SUMS.txt` 校验：
+1. 从 GitHub Release 下载以下公开 Alpha 资产，并先按 `SHA256SUMS.txt` 校验：
    - `capture-for-tolaria-installer-v0.1.0-alpha.1.zip`
    - `capture-for-tolaria-extension-v0.1.0-alpha.1.zip`
    - `capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe`

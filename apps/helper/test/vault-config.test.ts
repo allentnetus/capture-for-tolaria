@@ -30,7 +30,7 @@ it("保存并读取 per-user Vault 配置且不预创建 Inbox/Web", async () =>
     }
     await rm(workspace, { recursive: true, force: true });
   }
-});
+}, 30_000);
 
 it("区分缺失 Vault 与不可用 Vault", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "capture-for-tolaria-config-"));

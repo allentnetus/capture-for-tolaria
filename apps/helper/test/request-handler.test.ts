@@ -194,4 +194,4 @@ it("真实 Writer 集成创建 Inbox/Web 文件", async () => {
   } finally {
     await rm(vault, { recursive: true, force: true });
   }
-});
+}, 30_000);

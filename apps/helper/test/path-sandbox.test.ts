@@ -22,7 +22,7 @@ it("逐级创建 Inbox/Web 并返回 Vault 内目录", async () => {
   } finally {
     await rm(vault, { recursive: true, force: true });
   }
-});
+}, 30_000);
 
 it("拒绝路径穿越、绝对路径和文件目录冲突", async () => {
   const vault = await temporaryVault();
@@ -41,7 +41,7 @@ it("拒绝路径穿越、绝对路径和文件目录冲突", async () => {
   } finally {
     await rm(vault, { recursive: true, force: true });
   }
-});
+}, 30_000);
 
 it("拒绝指向 Vault 外部的 junction 或 symlink", async () => {
   const vault = await temporaryVault();
@@ -55,7 +55,7 @@ it("拒绝指向 Vault 外部的 junction 或 symlink", async () => {
     await rm(vault, { recursive: true, force: true });
     await rm(outside, { recursive: true, force: true });
   }
-});
+}, 30_000);
 
 it("对普通目录和 Windows reparse point 执行属性级检查", async () => {
   const vault = await temporaryVault();

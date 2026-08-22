@@ -46,6 +46,11 @@ jobs:
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
 
+      - name: Assemble Release ZIPs
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ReleaseTag $env:GITHUB_REF_NAME
+
       - name: Install Pester
         shell: pwsh
         run: |
@@ -57,11 +62,6 @@ jobs:
         run: |
           $result = Invoke-Pester -Path installer/windows/tests -PassThru
           if ($result.FailedCount -ne 0) { exit 1 }
-
-      - name: Assemble Release ZIPs
-        shell: pwsh
-        run: |
-          powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ReleaseTag $env:GITHUB_REF_NAME
 
       - name: Validate release contents
         shell: pwsh

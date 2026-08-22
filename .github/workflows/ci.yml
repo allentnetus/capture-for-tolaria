@@ -51,6 +51,12 @@ jobs:
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ReleaseTag v0.1.0-alpha.1
 
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module Pester -RequiredVersion 5.7.1 -Force -SkipPublisherCheck -Scope CurrentUser
+          Import-Module Pester -RequiredVersion 5.7.1 -Force
+
       - name: Run installer tests
         shell: pwsh
         run: |

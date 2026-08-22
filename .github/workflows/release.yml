@@ -46,6 +46,12 @@ jobs:
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
 
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module Pester -RequiredVersion 5.7.1 -Force -SkipPublisherCheck -Scope CurrentUser
+          Import-Module Pester -RequiredVersion 5.7.1 -Force
+
       - name: Run Windows release acceptance
         shell: pwsh
         run: |

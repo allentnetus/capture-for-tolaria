@@ -1,12 +1,12 @@
-$scriptRoot = Split-Path -Parent $PSScriptRoot
+$script:scriptRoot = Split-Path -Parent $PSScriptRoot
 
-function New-NativeFrame([string]$Json) {
+function script:New-NativeFrame([string]$Json) {
     $payload = [Text.Encoding]::UTF8.GetBytes($Json)
     $header = [BitConverter]::GetBytes([uint32]$payload.Length)
     return $header + $payload
 }
 
-function Read-NativeFrame($Stream) {
+function script:Read-NativeFrame($Stream) {
     $header = New-Object byte[] 4
     $read = $Stream.Read($header, 0, 4)
     if ($read -ne 4) {
@@ -27,7 +27,7 @@ function Read-NativeFrame($Stream) {
 
 Describe "single-file Helper" {
     It "answers hello without requiring a Node.js runtime" {
-        $repoRoot = (Resolve-Path (Join-Path $scriptRoot "..\..")).Path
+        $repoRoot = (Resolve-Path (Join-Path $script:scriptRoot "..\..")).Path
         $helper = Join-Path $repoRoot "release\capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe"
         if (-not (Test-Path -LiteralPath $helper)) {
             throw "Build the SEA Helper before running this test"

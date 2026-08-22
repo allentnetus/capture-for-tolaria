@@ -1,39 +1,39 @@
-$scriptRoot = Split-Path -Parent $PSScriptRoot
-$repoRoot = (Resolve-Path (Join-Path $scriptRoot "..\..")).Path
+$script:scriptRoot = Split-Path -Parent $PSScriptRoot
+$script:repoRoot = (Resolve-Path (Join-Path $script:scriptRoot "..\..")).Path
 
 Describe "Packaged Installer default Helper path" {
     BeforeAll {
-        $version = (Get-Content -LiteralPath (Join-Path $repoRoot "VERSION") -Raw).Trim()
-        $installerZip = Join-Path $repoRoot "release\capture-for-tolaria-installer-v$version.zip"
-        if (-not (Test-Path -LiteralPath $installerZip -PathType Leaf)) {
-            throw "Assemble the Alpha Installer ZIP before running this test: $installerZip"
+        $script:version = (Get-Content -LiteralPath (Join-Path $script:repoRoot "VERSION") -Raw).Trim()
+        $script:installerZip = Join-Path $script:repoRoot "release\capture-for-tolaria-installer-v$script:version.zip"
+        if (-not (Test-Path -LiteralPath $script:installerZip -PathType Leaf)) {
+            throw "Assemble the Alpha Installer ZIP before running this test: $script:installerZip"
         }
 
-        $testRoot = Join-Path $env:TEMP "capture-for-tolaria-packaged-default-$PID"
-        $previousLocalAppData = $env:LOCALAPPDATA
-        $env:LOCALAPPDATA = $testRoot
-        Expand-Archive -LiteralPath $installerZip -DestinationPath $testRoot -Force
-        $installerScript = Join-Path $testRoot "installer\windows\install.ps1"
-        $repairScript = Join-Path $testRoot "installer\windows\repair.ps1"
-        $uninstallScript = Join-Path $testRoot "installer\windows\uninstall.ps1"
-        $installRoot = Join-Path $testRoot "Programs\CaptureForTolaria"
+        $script:testRoot = Join-Path $env:TEMP "capture-for-tolaria-packaged-default-$PID"
+        $script:previousLocalAppData = $env:LOCALAPPDATA
+        $env:LOCALAPPDATA = $script:testRoot
+        Expand-Archive -LiteralPath $script:installerZip -DestinationPath $script:testRoot -Force
+        $script:installerScript = Join-Path $script:testRoot "installer\windows\install.ps1"
+        $script:repairScript = Join-Path $script:testRoot "installer\windows\repair.ps1"
+        $script:uninstallScript = Join-Path $script:testRoot "installer\windows\uninstall.ps1"
+        $script:installRoot = Join-Path $script:testRoot "Programs\CaptureForTolaria"
     }
 
     It "installs and repairs using the bundled Helper without -HelperPath" {
-        & $installerScript -InstallRoot $installRoot | Out-Null
-        Test-Path -LiteralPath (Join-Path $installRoot "capture-for-tolaria-helper.exe") | Should Be $true
+        & $script:installerScript -InstallRoot $script:installRoot | Out-Null
+        Test-Path -LiteralPath (Join-Path $script:installRoot "capture-for-tolaria-helper.exe") | Should Be $true
 
         $manifestPath = Join-Path $env:LOCALAPPDATA "CaptureForTolaria\native-host\com.capture_for_tolaria.helper.json"
         Remove-Item -LiteralPath $manifestPath -Force
-        & $repairScript -InstallRoot $installRoot | Out-Null
+        & $script:repairScript -InstallRoot $script:installRoot | Out-Null
         Test-Path -LiteralPath $manifestPath | Should Be $true
     }
 
     AfterAll {
-        if (Test-Path -LiteralPath $uninstallScript) {
-            & $uninstallScript -InstallRoot $installRoot -ClearConfig | Out-Null
+        if (Test-Path -LiteralPath $script:uninstallScript) {
+            & $script:uninstallScript -InstallRoot $script:installRoot -ClearConfig | Out-Null
         }
-        $env:LOCALAPPDATA = $previousLocalAppData
-        Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
+        $env:LOCALAPPDATA = $script:previousLocalAppData
+        Remove-Item -LiteralPath $script:testRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
 }

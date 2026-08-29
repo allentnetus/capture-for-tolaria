@@ -6,7 +6,7 @@
 
 当前交付目标是 `v0.1.0-beta.1`：Windows + Chrome + Article Capture + Direct File Channel。用户在公开文章页面点击 Capture，Extension 提取并清理正文，Native Messaging Helper 将普通 Markdown 和成功本地化的图片原子地写入用户授权的 Tolaria Vault。
 
-当前源码基线：`v0.1.0-beta.1`。`v0.1.0-alpha.1` 是已公开的历史 Alpha 预览版；Beta.1 的本地源码和发布目录可以先完成验证，但不等同于 GitHub Release 已发布，也未提交 Chrome Web Store。
+当前源码基线：`v0.1.0-beta.1`。`v0.1.0-alpha.1` 是已公开的历史 Alpha 预览版；Beta.1 已作为 [GitHub Pre-release](https://github.com/allentnetus/capture-for-tolaria/releases/tag/v0.1.0-beta.1) 发布，尚未提交 Chrome Web Store。
 
 当前 Beta.1 能力：对公开 Article 正文中识别到的图片执行本地化，将成功下载的图片以 `Assets/<sha256>.<ext>` 保存到文章目录；下载失败时保留远程引用并显示回退摘要。
 
@@ -27,7 +27,7 @@ Beta.1 暂不实现 MCP 9710、AI、多 Vault、Selection、Bookmark、Screensho
 
 ## 安装 Beta.1
 
-1. 当 GitHub Release 页面提供 `v0.1.0-beta.1` 资产后，从该页面下载以下文件，并先按 `SHA256SUMS.txt` 校验：
+1. 从 [GitHub Release `v0.1.0-beta.1`](https://github.com/allentnetus/capture-for-tolaria/releases/tag/v0.1.0-beta.1) 下载以下文件，并先按 `SHA256SUMS.txt` 校验：
    - `capture-for-tolaria-installer-v0.1.0-beta.1.zip`
    - `capture-for-tolaria-extension-v0.1.0-beta.1.zip`
    - `capture-for-tolaria-helper-0.1.0-beta.1-windows-x64.exe`

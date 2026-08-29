@@ -102,7 +102,8 @@ Describe "Windows PowerShell Vault configuration" {
         }
 
         $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
-        $config.vaultRoot | Should -Be $vault
+        $expectedVaultRoot = (Get-Item -LiteralPath $vault -Force).FullName
+        $config.vaultRoot | Should -Be $expectedVaultRoot
         $config.allowSyntheticDns | Should -Be $true
     }
 

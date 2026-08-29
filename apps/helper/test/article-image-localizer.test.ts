@@ -105,6 +105,19 @@ it("候选未出现在 Markdown 中时不下载也不写入资源", async () => 
   expect(result.summary).toEqual({ requested: 1, localized: 0, fallback: 0 });
 });
 
+it("图片引用超出协议字段上限时不执行本地化", async () => {
+  const remoteUrl = "https://public.example/overlong-alt.png";
+  const markdown = `![${"a".repeat(513)}](${remoteUrl})`;
+  const fetcher = fakeFetcher({ [remoteUrl]: imageResponse(new Uint8Array([2])) });
+
+  const result = await localizeArticleImages(markdown, [{ remoteUrl }], policy, fetcher);
+
+  expect(fetcher.fetch).not.toHaveBeenCalled();
+  expect(result.markdown).toBe(markdown);
+  expect(result.assets).toEqual([]);
+  expect(result.summary).toEqual({ requested: 1, localized: 0, fallback: 0 });
+});
+
 it("不改写普通链接和 fenced code 中的同 URL", async () => {
   const remoteUrl = "https://public.example/code.png";
   const fetcher = fakeFetcher({ [remoteUrl]: imageResponse(new Uint8Array([6])) });

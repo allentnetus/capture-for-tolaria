@@ -23,7 +23,7 @@ export interface ImageLocalizationResult {
   warnings: string[];
 }
 
-const IMAGE_TARGET_PATTERN = /!\[([^\]]*)\]\(([^)\s]+)\)/gu;
+const IMAGE_TARGET_PATTERN = /!\[([^\]]{0,512})\]\(([^)\s]{1,2048})\)/gu;
 const MIME_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",

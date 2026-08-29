@@ -1,10 +1,12 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import {
   createArticleRequest,
   validateCaptureArticleMessage,
   validateCaptureResponse,
   validateContentPayload
 } from "../src/background/messages.js";
+import { handleCaptureMessage, type CaptureDependencies } from "../src/background/main.js";
+import type { NativeMessagingPort } from "../src/background/native-messaging.js";
 
 const payload = {
   relativeFolder: "Inbox/Web",
@@ -32,6 +34,13 @@ it("校验 Content Script payload 并拒绝超大 Markdown", () => {
     ...payload,
     sourceUrl: "javascript:alert(1)"
   })).toThrow();
+  expect(validateContentPayload({
+    ...payload,
+    images: [{ remoteUrl: "https://cdn.example.com/article/hero.png", altText: "Hero" }]
+  }).images).toEqual([{
+    remoteUrl: "https://cdn.example.com/article/hero.png",
+    altText: "Hero"
+  }]);
 });
 
 it("创建带 requestId 的 clip.article 请求并校验响应", () => {
@@ -42,4 +51,122 @@ it("创建带 requestId 的 clip.article 请求并校验响应", () => {
     relativePath: "Inbox/Web/file.md"
   });
   expect(() => validateCaptureResponse({ ok: true })).toThrow();
+  expect(validateCaptureResponse({
+    ok: true,
+    relativePath: "Inbox/Web/file.md",
+    summary: { requested: 2, localized: 1, fallback: 1 },
+    warnings: ["IMAGE_DOWNLOAD_FAILED"]
+  })).toEqual({
+    ok: true,
+    relativePath: "Inbox/Web/file.md",
+    summary: { requested: 2, localized: 1, fallback: 1 },
+    warnings: ["IMAGE_DOWNLOAD_FAILED"]
+  });
+});
+
+class SummaryPort implements NativeMessagingPort {
+  readonly onMessage = {
+    addListener: (listener: (value: unknown) => void) => {
+      this.messageListeners.add(listener);
+    },
+    removeListener: (listener: (value: unknown) => void) => {
+      this.messageListeners.delete(listener);
+    }
+  };
+  readonly onDisconnect = {
+    addListener: (listener: () => void) => {
+      this.disconnectListeners.add(listener);
+    },
+    removeListener: (listener: () => void) => {
+      this.disconnectListeners.delete(listener);
+    }
+  };
+  private readonly messageListeners = new Set<(value: unknown) => void>();
+  private readonly disconnectListeners = new Set<() => void>();
+
+  postMessage(message: unknown): void {
+    const requestId =
+      typeof message === "object" &&
+      message !== null &&
+      "requestId" in message &&
+      typeof message.requestId === "string"
+        ? message.requestId
+        : "request-from-test";
+    const response =
+      typeof message === "object" && message !== null && "action" in message && message.action === "hello"
+        ? {
+            protocolVersion: 1,
+            helperVersion: "0.1.0-beta.1",
+            capabilities: ["clip.article", "direct-file"]
+          }
+        : {
+            protocolVersion: 1,
+            requestId,
+            helperVersion: "0.1.0-beta.1",
+            ok: true,
+            result: {
+              relativePath: "Inbox/Web/article.md",
+              assets: [{
+                remoteUrl: "https://cdn.example.com/article/hero.png",
+                relativePath: "Inbox/Web/Assets/hash.png",
+                contentType: "image/png",
+                byteLength: 12
+              }],
+              summary: { requested: 2, localized: 1, fallback: 1 },
+              warnings: ["IMAGE_DOWNLOAD_FAILED"]
+            }
+          };
+    queueMicrotask(() => {
+      for (const listener of this.messageListeners) {
+        listener(response);
+      }
+    });
+  }
+
+  disconnect(): void {
+    for (const listener of this.disconnectListeners) {
+      listener();
+    }
+  }
+}
+
+it("转发 Helper 的图片摘要和 warning 且不泄露绝对路径", async () => {
+  const payloadWithImages = {
+    ...payload,
+    markdown: "![Hero](https://cdn.example.com/article/hero.png)",
+    images: [{ remoteUrl: "https://cdn.example.com/article/hero.png", altText: "Hero" }]
+  };
+  const contentMessages: unknown[] = [];
+  const dependencies: CaptureDependencies = {
+    getActiveTab: async () => ({ id: 1, url: "https://example.com/article" }),
+    executeContentScript: vi.fn(async () => undefined),
+    sendContentMessage: vi.fn(async (_tabId, message) => {
+      contentMessages.push(message);
+      return message.type === "extract.article"
+        ? { ok: true, payload: payloadWithImages }
+        : { ok: true };
+    }),
+    connectNative: () => new SummaryPort()
+  };
+
+  const response = await handleCaptureMessage(
+    { type: "capture.article" },
+    "extension-id",
+    "extension-id",
+    dependencies
+  );
+
+  expect(response).toEqual({
+    ok: true,
+    relativePath: "Inbox/Web/article.md",
+    summary: { requested: 2, localized: 1, fallback: 1 },
+    warnings: ["IMAGE_DOWNLOAD_FAILED"]
+  });
+  expect(JSON.stringify(response)).not.toContain("C:\\Users");
+  expect(contentMessages.at(-1)).toMatchObject({
+    type: "capture.result",
+    status: "saved",
+    summary: { requested: 2, localized: 1, fallback: 1 },
+    warnings: ["IMAGE_DOWNLOAD_FAILED"]
+  });
 });

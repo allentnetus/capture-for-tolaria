@@ -10,8 +10,18 @@ import {
   type HelloResponse
 } from "@capture-for-tolaria/protocol";
 import { writeMarkdownCreateOnly, type WriteInput, type WriteResult } from "./atomic-create-writer.js";
+import {
+  writeCaptureBundleCreateOnly,
+  type CaptureBundleInput,
+  type CaptureBundleWriteResult
+} from "./atomic-create-writer.js";
+import { localizeArticleImages } from "./article-image-localizer.js";
+import {
+  DEFAULT_ASSET_LOCALIZATION_POLICY,
+  type AssetFetcher
+} from "./asset-downloader.js";
 import { FileChannelError } from "./errors.js";
-import { resolveConfiguredVault } from "./vault-resolver.js";
+import { resolveConfiguredVaultConfig } from "./vault-resolver.js";
 
 export type HelperResponse = ClipResponse | HelloResponse;
 
@@ -20,10 +30,18 @@ export interface RequestHandlerOptions {
   capabilities?: string[];
   getVault?: () => Promise<string | null>;
   writeMarkdown?: (input: WriteInput) => Promise<WriteResult>;
+  writeCaptureBundle?: (
+    input: CaptureBundleInput
+  ) => Promise<CaptureBundleWriteResult>;
+  assetFetcher?: AssetFetcher;
 }
 
-const DEFAULT_HELPER_VERSION = "0.1.0-alpha.1";
+const DEFAULT_HELPER_VERSION = "0.1.0-beta.1";
 const DEFAULT_CAPABILITIES = ["clip.article", "direct-file"];
+
+const DEFAULT_ASSET_FETCHER: AssetFetcher = {
+  fetch: (url, init) => globalThis.fetch(url, init)
+};
 
 function errorResponse(
   requestId: string,
@@ -75,9 +93,15 @@ export async function handleRequest(
   }
 
   try {
-    const configuredVault = options.getVault
-      ? await options.getVault()
-      : await resolveConfiguredVault();
+    let configuredVault: string | null;
+    let allowSyntheticDns = false;
+    if (options.getVault) {
+      configuredVault = await options.getVault();
+    } else {
+      const configured = await resolveConfiguredVaultConfig();
+      configuredVault = configured.vaultRoot;
+      allowSyntheticDns = configured.allowSyntheticDns === true;
+    }
     if (!configuredVault) {
       return errorResponse(
         request.requestId,
@@ -85,6 +109,35 @@ export async function handleRequest(
         "VAULT_NOT_CONFIGURED",
         "尚未配置 Tolaria Vault"
       );
+    }
+
+    if (request.payload.images !== undefined) {
+      const localized = await localizeArticleImages(
+        request.payload.markdown,
+        request.payload.images,
+        { ...DEFAULT_ASSET_LOCALIZATION_POLICY, allowSyntheticDns },
+        options.assetFetcher ?? DEFAULT_ASSET_FETCHER
+      );
+      const bundleWriter = options.writeCaptureBundle ?? writeCaptureBundleCreateOnly;
+      const result = await bundleWriter({
+        vaultRoot: configuredVault,
+        relativeFolder: request.payload.relativeFolder,
+        title: request.payload.title,
+        markdown: localized.markdown,
+        assets: localized.assets
+      });
+      return {
+        protocolVersion: PROTOCOL_VERSION,
+        requestId: request.requestId,
+        helperVersion,
+        ok: true,
+        result: {
+          relativePath: result.relativePath,
+          assets: result.assets,
+          summary: localized.summary,
+          warnings: localized.warnings
+        }
+      };
     }
 
     const writer = options.writeMarkdown ?? writeMarkdownCreateOnly;

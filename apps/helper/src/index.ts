@@ -5,7 +5,10 @@ export const HELPER_ACTIONS = ["hello", "clip.article"] as const;
 export type HelperAction = (typeof HELPER_ACTIONS)[number];
 
 export {
+  writeCaptureBundleCreateOnly,
   writeMarkdownCreateOnly,
+  type CaptureBundleInput,
+  type CaptureBundleWriteResult,
   type WriteInput,
   type WriteResult
 } from "./atomic-create-writer.js";
@@ -13,6 +16,18 @@ export {
   FileChannelError,
   type FileChannelErrorCode
 } from "./errors.js";
+export {
+  DEFAULT_ASSET_LOCALIZATION_POLICY,
+  downloadAsset,
+  type AssetFetcher,
+  type AssetLocalizationPolicy,
+  type DownloadedAsset
+} from "./asset-downloader.js";
+export {
+  localizeArticleImages,
+  type ImageLocalizationResult,
+  type PreparedAsset
+} from "./article-image-localizer.js";
 export {
   handleRawRequest,
   handleRequest,
@@ -22,6 +37,7 @@ export {
 export {
   assertNoReparsePoint,
   assertSafeFilename,
+  prepareVaultAssetsDirectory,
   prepareVaultDirectory,
   relativePathFromVault,
   type PreparedVaultDirectory
@@ -33,12 +49,16 @@ export {
 } from "./filename.js";
 export {
   getConfigPath,
+  getConfiguredVaultConfig,
   getConfiguredVault,
   setConfiguredVault,
   validateConfiguredVault,
   type VaultConfig
 } from "./vault-config.js";
-export { resolveConfiguredVault } from "./vault-resolver.js";
+export {
+  resolveConfiguredVault,
+  resolveConfiguredVaultConfig
+} from "./vault-resolver.js";
 export {
   MAX_NATIVE_MESSAGE_BYTES,
   NativeMessageParser,

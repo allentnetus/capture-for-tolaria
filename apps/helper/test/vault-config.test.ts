@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
+  getConfiguredVaultConfig,
   getConfiguredVault,
   setConfiguredVault,
   validateConfiguredVault
@@ -57,6 +58,35 @@ it("读取 Windows PowerShell 可能写入的 UTF-8 BOM 配置", async () => {
       "utf8"
     );
     expect(await getConfiguredVault()).toBe(vault);
+  } finally {
+    if (previous === undefined) {
+      delete process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH;
+    } else {
+      process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH = previous;
+    }
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+it("读取显式启用的 fake-IP DNS 兼容开关", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "capture-for-tolaria-fake-dns-"));
+  const vault = join(workspace, "vault");
+  const configPath = join(workspace, "config.json");
+  const previous = process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH;
+  process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH = configPath;
+
+  try {
+    await mkdir(vault);
+    await writeFile(
+      configPath,
+      JSON.stringify({ vaultRoot: vault, allowSyntheticDns: true }),
+      "utf8"
+    );
+    await expect(getConfiguredVaultConfig()).resolves.toMatchObject({
+      vaultRoot: vault,
+      allowSyntheticDns: true
+    });
+    await expect(getConfiguredVault()).resolves.toBe(vault);
   } finally {
     if (previous === undefined) {
       delete process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH;

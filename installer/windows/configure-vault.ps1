@@ -2,7 +2,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$VaultPath,
-    [string]$ConfigPath = (Join-Path $env:LOCALAPPDATA "CaptureForTolaria\config.json")
+    [string]$ConfigPath = (Join-Path $env:LOCALAPPDATA "CaptureForTolaria\config.json"),
+    [switch]$AllowSyntheticDns
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,7 +22,11 @@ $configDirectory = Split-Path -Parent $configPath
 $tempPath = Join-Path $configDirectory "config.json.tmp-$PID"
 
 New-Item -ItemType Directory -Path $configDirectory -Force | Out-Null
-$config = @{ vaultRoot = $resolvedVault } | ConvertTo-Json -Depth 3
+$configObject = [ordered]@{ vaultRoot = $resolvedVault }
+if ($AllowSyntheticDns.IsPresent) {
+    $configObject.allowSyntheticDns = $true
+}
+$config = $configObject | ConvertTo-Json -Depth 3
 try {
     $utf8NoBom = New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false
     [System.IO.File]::WriteAllText($tempPath, $config, $utf8NoBom)
@@ -36,5 +41,6 @@ finally {
 [pscustomobject]@{
     configPath = $configPath
     vaultRoot = $resolvedVault
+    allowSyntheticDns = $AllowSyntheticDns.IsPresent
     inboxCreated = $false
 }

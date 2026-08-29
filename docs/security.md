@@ -38,7 +38,7 @@ DOM 必须先克隆，再在克隆内容上运行 Readability。结果必须经�
 4. DOM Cleanup，移除隐藏导航、Cookie Banner 和无关控件。
 5. Turndown + GFM 转换。
 
-Readability 失败时不得静默把整页 `body.innerText` 写入 Vault。V0.1 只保留经过协议和 URL 检查的远程图片 URL，不由 Helper 自动下载图片。
+Readability 失败时不得静默把整页 `body.innerText` 写入 Vault。Alpha.1 只保留经过协议和 URL 检查的远程图片 URL；Beta.1 对正文中识别出的公开图片执行独立的 Helper 侧受限下载。
 
 ## 4. 文件系统安全
 
@@ -58,6 +58,13 @@ Helper 只能处理业务级 `clip.article`，不能提供 `writeFile(anyPath)`�
 - atomic 提交依赖同一卷 hard link；文件系统不支持该能力时返回 `ATOMIC_COMMIT_UNAVAILABLE`，不得降级为覆盖写入。
 - 临时文件提交失败时清理临时文件，并返回稳定错误。
 
+图片 Bundle 还必须满足：
+
+- `img` / `picture/source` 候选只接受无用户名、无密码的 `http:` 或 `https:` URL；Extension 不传图片二进制。
+- 每次请求前解析并检查 DNS 目标，默认拒绝 loopback、RFC1918 私有、link-local、multicast、unspecified 和保留地址；`Location` 重定向目标逐次重复校验。仅当用户显式设置 `allowSyntheticDns=true` 时，DNS 名称解析出的当前 fake-IP 映射段 `198.18.0.0/15` 和 `fdfe:dcba:9876::/48` 可作为本机代理兼容例外；直接写入的 IP、真实私有目标和其他保留地址仍拒绝。
+- 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `image/avif`；默认单图 8 MiB、总量 32 MiB、10 秒超时和 3 次重定向上限。
+- 资源只写入当前文章目录的 `Assets/<sha256>.<ext>`，使用 create-only 语义；已有同 hash 文件可复用但不得覆盖。Markdown 写入失败时，不删除已有或仍被 Markdown 引用的 Asset。
+
 ## 5. 协议安全
 
 所有请求必须携带 `protocolVersion`、`requestId`、`extensionVersion` 和业务 `action`，并进行运行时校验。拒绝未知 action、不支持版本、空标识、非 HTTP/HTTPS 来源、超限 Markdown、越界路径和错误 payload 形状。
@@ -75,9 +82,8 @@ V0.1 不包含：
 - cookies 上传
 - 页面凭据采集
 - 后台网络抓取
-- 图片自动下载
 
-保存的 Markdown 仅写入用户授权的本地 Vault。来源 URL 是用户明确剪藏文章的元数据；它不会触发 Helper 对远程站点的请求。
+保存的 Markdown 和图片 Assets 仅写入用户授权的本地 Vault。来源 URL 是用户明确剪藏文章的元数据；它不会单独触发网络请求。Beta.1 的图片请求只处理用户本次剪藏中识别到的公开图片，不携带 cookies、`Authorization` 或页面凭据；单张图片失败时正文仍保存并回退到安全远程引用。
 
 ## 7. 发布前检查
 

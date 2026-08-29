@@ -13,9 +13,13 @@ if (-not (Test-Path -LiteralPath $versionPath -PathType Leaf)) {
     throw "VERSION file not found: $versionPath"
 }
 $version = (Get-Content -LiteralPath $versionPath -Raw).Trim()
-if ($version -notmatch '^\d+\.\d+\.\d+-alpha\.\d+$') {
-    throw "VERSION is not a supported Alpha version: $version"
+if ($version -notmatch '^(?<chromeVersion>\d+\.\d+\.\d+)-(?<channel>alpha|beta)\.(?<releaseNumber>\d+)$') {
+    throw "VERSION is not a supported pre-release version: $version"
 }
+$chromeVersion = $Matches.chromeVersion
+$channelName = if ($Matches.channel -eq "alpha") { "Alpha" } else { "Beta" }
+$releaseNumber = $Matches.releaseNumber
+$expectedVersionName = "$chromeVersion $channelName $releaseNumber"
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
     $OutputDirectory = Join-Path $repoRoot "release"
 }
@@ -82,7 +86,7 @@ try {
         if ($permissions -ne "activeTab,nativeMessaging,scripting" -or $null -ne $extensionManifest.host_permissions) {
             throw "Extension manifest permissions are outside the V0.1 contract"
         }
-        if ($extensionManifest.version -ne "0.1.0" -or $extensionManifest.version_name -ne "0.1.0 Alpha 1") {
+        if ($extensionManifest.version -ne $chromeVersion -or $extensionManifest.version_name -ne $expectedVersionName) {
             throw "Extension manifest version contract is invalid"
         }
 

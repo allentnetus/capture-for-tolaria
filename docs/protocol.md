@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 协议
 
-> 状态：V0.1 wire contract 基线
+> 状态：V0.1 wire contract 基线；Beta.1 图片字段保持 `protocolVersion=1`
 >
 > 传输使用 Chrome Native Messaging。业务 action 只允许 `hello` 和 `clip.article`；协议校验由 `@capture-for-tolaria/protocol` 实现。
 
@@ -23,7 +23,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-01H...",
-  "extensionVersion": "0.1.0-alpha.1",
+  "extensionVersion": "0.1.0-beta.1",
   "action": "hello"
 }
 ```
@@ -44,7 +44,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-hello",
-  "extensionVersion": "0.1.0-alpha.1",
+  "extensionVersion": "0.1.0-beta.1",
   "action": "hello"
 }
 ```
@@ -54,7 +54,7 @@ N bytes UTF-8 JSON
 ```json
 {
   "protocolVersion": 1,
-  "helperVersion": "0.1.0-alpha.1",
+  "helperVersion": "0.1.0-beta.1",
   "capabilities": ["clip.article", "direct-file"]
 }
 ```
@@ -69,7 +69,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "extensionVersion": "0.1.0-alpha.1",
+  "extensionVersion": "0.1.0-beta.1",
   "action": "clip.article",
   "payload": {
     "relativeFolder": "Inbox/Web",
@@ -79,7 +79,13 @@ N bytes UTF-8 JSON
     "metadata": {
       "author": "Author",
       "type": "Reference"
-    }
+    },
+    "images": [
+      {
+        "remoteUrl": "https://cdn.example.com/article/hero.png",
+        "altText": "Hero"
+      }
+    ]
   }
 }
 ```
@@ -91,7 +97,8 @@ N bytes UTF-8 JSON
 - `markdown` 必须是非空、最长 1,000,000 个字符的字符串；上限由协议包的 `MAX_MARKDOWN_CHARACTERS` 导出。
 - `sourceUrl` 只接受最长 2,048 个字符、无用户名和密码的 `http:` 或 `https:` URL。
 - `metadata` 只接受最多 32 个字符串字段；key 最长 64 个字符，value 最长 512 个字符。
-- 请求不接受最终绝对路径、目标文件名、任意写入动作或二进制资源。
+- `images` 为可选字段，最多 128 个候选；每个 `remoteUrl` 只接受最长 2,048 个字符、无用户名和密码的 `http:` 或 `https:` URL，`altText` 最长 512 个字符。
+- 请求不接受最终绝对路径、目标文件名、任意写入动作或图片二进制；图片二进制只在 Helper 内部受限下载和写入。
 
 成功响应：
 
@@ -99,13 +106,31 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "helperVersion": "0.1.0-alpha.1",
+  "helperVersion": "0.1.0-beta.1",
   "ok": true,
   "result": {
-    "relativePath": "Inbox/Web/20260821 - Article title.md"
+    "relativePath": "Inbox/Web/20260821 - Article title.md",
+    "assets": [
+      {
+        "remoteUrl": "https://cdn.example.com/article/hero.png",
+        "relativePath": "Inbox/Web/Assets/<sha256>.png",
+        "contentType": "image/png",
+        "byteLength": 128
+      }
+    ],
+    "summary": {
+      "requested": 1,
+      "localized": 1,
+      "fallback": 0
+    },
+    "warnings": []
   }
 }
 ```
+
+`assets`、`summary` 和 `warnings` 都是可选结果字段；没有 `images` 的旧请求仍只返回 `relativePath`。`assets.relativePath` 相对于 Vault，正文 Markdown 中使用当前文章目录下的 `Assets/<sha256>.<ext>`。
+
+Helper 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `image/avif`。单图默认上限为 8 MiB，单次剪藏默认总上限为 32 MiB，单图请求超时 10 秒，最多跟随 3 次重定向；Extension 对完整 `clip.article` 响应最多等待 60 秒，以覆盖多图顺序处理和文件提交时间。请求不携带 cookies、`Authorization` 或页面凭据；`image/svg+xml`、CSS 背景图、`blob:`、登录后图片和需要浏览器凭据的防盗链资源不属于本能力范围。失败图片保留安全的远程 Markdown 引用，并计入 `fallback`。
 
 ## 5. 错误响应
 
@@ -113,7 +138,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "helperVersion": "0.1.0-alpha.1",
+  "helperVersion": "0.1.0-beta.1",
   "ok": false,
   "error": {
     "code": "INVALID_PATH",
@@ -122,7 +147,7 @@ N bytes UTF-8 JSON
 }
 ```
 
-错误码必须稳定且可供 UI 展示。请求 schema 失败至少区分：`INVALID_REQUEST`、`UNSUPPORTED_PROTOCOL`、`INVALID_PATH`、`INVALID_URL` 和 `PAYLOAD_TOO_LARGE`；文件通道还包括 `VAULT_NOT_CONFIGURED`、`VAULT_ACCESS_DENIED`、`TARGET_EXISTS`、`NAME_EXHAUSTED`、`ATOMIC_COMMIT_UNAVAILABLE` 和 `WRITE_FAILED`。如果 raw request 中带有合法的 `requestId`，错误响应保留校验后的规范化关联值；缺失或不合法时使用 `unknown`。错误消息不能泄露绝对 Vault 路径之外的敏感信息。
+错误码必须稳定且可供 UI 展示。请求 schema 失败至少区分：`INVALID_REQUEST`、`UNSUPPORTED_PROTOCOL`、`INVALID_PATH`、`INVALID_URL` 和 `PAYLOAD_TOO_LARGE`；文件通道还包括 `VAULT_NOT_CONFIGURED`、`VAULT_ACCESS_DENIED`、`TARGET_EXISTS`、`NAME_EXHAUSTED`、`ATOMIC_COMMIT_UNAVAILABLE` 和 `WRITE_FAILED`。图片下载失败优先在成功结果的 `warnings` 中表达，不以单张图片失败阻止正文保存。如果 raw request 中带有合法的 `requestId`，错误响应保留校验后的规范化关联值；缺失或不合法时使用 `unknown`。错误消息不能泄露绝对 Vault 路径、响应正文、cookies 或凭据。
 
 ## 6. 版本协商
 

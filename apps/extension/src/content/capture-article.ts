@@ -22,11 +22,15 @@ export function captureArticleFromDocument(
 ): ArticlePayload {
   const extracted = extractArticle(document, sourceUrl);
   const markdown = renderMarkdown(extracted, clippedAt);
-  return {
+  const payload: ArticlePayload = {
     relativeFolder: DEFAULT_RELATIVE_FOLDER,
     title: markdown.title,
     markdown: markdown.markdown,
     sourceUrl: markdown.sourceUrl,
     metadata: metadataFromResult(extracted)
   };
+  if (markdown.images.length > 0) {
+    payload.images = markdown.images;
+  }
+  return payload;
 }

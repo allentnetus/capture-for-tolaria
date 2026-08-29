@@ -10,24 +10,32 @@ Describe "PowerShell script defaults" {
     }
 
     It "supports documented no-argument build, install, repair, and SBOM commands" {
-        & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "build-helper.ps1") 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "build-helper.ps1 failed without arguments"
-        }
+        $previousErrorActionPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "Continue"
 
-        & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "install.ps1") 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "install.ps1 failed without arguments"
-        }
+            & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "build-helper.ps1") 2>$null | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "build-helper.ps1 failed without arguments"
+            }
 
-        & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "repair.ps1") 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "repair.ps1 failed without arguments"
-        }
+            & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "install.ps1") 2>$null | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "install.ps1 failed without arguments"
+            }
 
-        & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "generate-sbom.ps1") 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "generate-sbom.ps1 failed without arguments"
+            & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "repair.ps1") 2>$null | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "repair.ps1 failed without arguments"
+            }
+
+            & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "generate-sbom.ps1") 2>$null | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "generate-sbom.ps1 failed without arguments"
+            }
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
         }
 
         Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA "Programs\CaptureForTolaria\capture-for-tolaria-helper.exe") | Should -Be $true

@@ -1,6 +1,6 @@
 # Windows 安装、修复、升级和卸载
 
-V0.1 Alpha 安装到当前用户目录，不需要管理员权限，不写入 `Program Files`，不注册系统级 Native Host。目标用户不需要安装 Node.js。
+`v0.1.0-beta.1` 安装到当前用户目录，不需要管理员权限，不写入 `Program Files`，不注册系统级 Native Host。目标用户不需要安装 Node.js。
 
 ## 前置条件
 
@@ -8,8 +8,8 @@ V0.1 Alpha 安装到当前用户目录，不需要管理员权限，不写入 `P
 - Chrome MV3
 - 一个用户有写权限的 Tolaria Vault
 - Vault 所在文件系统支持同一卷 hard link；V0.1 的 atomic create-only 写入不在不支持该能力的文件系统上降级为覆盖写入
-- `v0.1.0-alpha.1` 的 Installer ZIP、Extension ZIP、Helper 单文件、`SHA256SUMS.txt` 和 `SBOM.spdx.json`
-- 解压后的 Installer ZIP 根目录应同时存在 `VERSION` 和 `capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe`
+- `v0.1.0-beta.1` 的 Installer ZIP、Extension ZIP、Helper 单文件、`SHA256SUMS.txt` 和 `SBOM.spdx.json`
+- 解压后的 Installer ZIP 根目录应同时存在 `VERSION` 和 `capture-for-tolaria-helper-0.1.0-beta.1-windows-x64.exe`
 
 ## 安装
 
@@ -23,7 +23,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/install.ps
 `install.ps1` 默认按以下顺序寻找同版本 Helper：Installer ZIP 根目录、`installer/windows` 目录、开发目录的 `release` 目录。下载包不需要 Node.js，也不需要把 Helper 放进仓库目录。若使用自定义位置，可显式传入：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/install.ps1 -HelperPath "C:\Path\To\capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe"
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/install.ps1 -HelperPath "C:\Path\To\capture-for-tolaria-helper-0.1.0-beta.1-windows-x64.exe"
 ```
 
 配置脚本只验证并记录 Vault 根目录，不创建 `Inbox/Web`。第一次实际剪藏时，Helper 才逐级创建 `Inbox` 和 `Web` 并检查每一级真实路径和 reparse 状态。
@@ -70,8 +70,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/uninstall.
 
 卸载后还需要在 `chrome://extensions` 手动移除已加载的 Extension。
 
-## Alpha 限制
+## Beta.1 限制
 
-`v0.1.0-alpha.1` 构建未签名，Extension ZIP 通过 Chrome 开发者模式加载。当前只支持 Windows + Chrome + MV3 Article Capture + Direct File Channel；不支持 MCP、AI、图片本地化、Selection、Bookmark、Screenshot、Edge、macOS 或 Linux。发布前请核对 `SHA256SUMS.txt`，不要把私钥、用户配置或 Vault 数据放进 ZIP。
+`v0.1.0-beta.1` 构建未签名，Extension ZIP 通过 Chrome 开发者模式加载。当前支持 Windows + Chrome + MV3 Article Capture + Direct File Channel，以及正文图片的受限本地化；仍不支持 MCP、AI、Selection、Bookmark、Screenshot、Edge、macOS 或 Linux。发布前请核对 `SHA256SUMS.txt`，不要把私钥、用户配置或 Vault 数据放进 ZIP。
 
 验收顺序为：`configure-vault → install → 加载 Extension → 打开公开文章并 Capture → 检查 Markdown/Vault → Repair → Upgrade → Uninstall`。卸载不删除 Vault、Markdown、Assets 或配置文件。

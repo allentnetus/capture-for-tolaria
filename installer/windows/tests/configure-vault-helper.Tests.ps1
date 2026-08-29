@@ -2,6 +2,7 @@ Describe "Windows PowerShell Vault configuration" {
     BeforeAll {
         $scriptRoot = Split-Path -Parent $PSScriptRoot
         $repoRoot = (Resolve-Path (Join-Path $scriptRoot "..\..")).Path
+        $version = (Get-Content -LiteralPath (Join-Path $repoRoot "VERSION") -Raw).Trim()
 
         function New-NativeFrame([string]$Json) {
             $payload = [Text.Encoding]::UTF8.GetBytes($Json)
@@ -30,7 +31,7 @@ Describe "Windows PowerShell Vault configuration" {
         $testRoot = Join-Path $env:TEMP "capture-for-tolaria-config-helper-$PID"
         $vault = Join-Path $testRoot "Vault"
         $configPath = Join-Path $testRoot "CaptureForTolaria\config.json"
-        $helper = Join-Path $repoRoot "release\capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe"
+        $helper = Join-Path $repoRoot "release\capture-for-tolaria-helper-$version-windows-x64.exe"
         New-Item -ItemType Directory -Path $vault -Force | Out-Null
     }
 
@@ -64,7 +65,7 @@ Describe "Windows PowerShell Vault configuration" {
         $request = @{
             protocolVersion = 1
             requestId = "sea-config-test"
-            extensionVersion = "0.1.0-alpha.1"
+            extensionVersion = $version
             action = "clip.article"
             payload = @{
                 relativeFolder = "Inbox/Web"
@@ -88,6 +89,21 @@ Describe "Windows PowerShell Vault configuration" {
         $written.Count | Should -Be 1
         (Get-Content -LiteralPath $written[0].FullName -Raw) | Should -Match "SEA config smoke"
         $process.ExitCode | Should -Be 0
+    }
+
+    It "writes the explicit synthetic DNS compatibility flag when requested" {
+        $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
+        & $powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $scriptRoot "configure-vault.ps1") `
+            -VaultPath $vault `
+            -ConfigPath $configPath `
+            -AllowSyntheticDns | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "configure-vault.ps1 failed to write synthetic DNS compatibility mode"
+        }
+
+        $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+        $config.vaultRoot | Should -Be ((Resolve-Path -LiteralPath $vault).Path)
+        $config.allowSyntheticDns | Should -Be $true
     }
 
     AfterAll {

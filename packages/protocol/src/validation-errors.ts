@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { MAX_MARKDOWN_CHARACTERS } from "./schema.js";
+import {
+  MAX_IMAGE_ALT_TEXT_LENGTH,
+  MAX_IMAGE_CANDIDATES,
+  MAX_MARKDOWN_CHARACTERS
+} from "./schema.js";
 import { PROTOCOL_VERSION } from "./types.js";
 
 export type RequestValidationErrorCode =
@@ -73,6 +77,36 @@ export function classifyRequestValidationError(
       code: "PAYLOAD_TOO_LARGE",
       message: "markdown 超出长度限制"
     };
+  }
+
+  if (hasIssuePath(error, "payload.images")) {
+    const images = Array.isArray(payload?.images) ? payload.images : [];
+    const hasRemoteUrlIssue =
+      error instanceof z.ZodError &&
+      error.issues.some((issue) =>
+        /^payload\.images\.\d+\.remoteUrl$/u.test(issue.path.join("."))
+      );
+    if (hasRemoteUrlIssue) {
+      return {
+        code: "INVALID_URL",
+        message: "images.remoteUrl 必须是无凭据的 HTTP 或 HTTPS URL"
+      };
+    }
+
+    const hasAltTextIssue =
+      error instanceof z.ZodError &&
+      error.issues.some((issue) =>
+        /^payload\.images\.\d+\.altText$/u.test(issue.path.join("."))
+      );
+    if (images.length > MAX_IMAGE_CANDIDATES || hasAltTextIssue) {
+      return {
+        code: "PAYLOAD_TOO_LARGE",
+        message:
+          images.length > MAX_IMAGE_CANDIDATES
+            ? "images 候选过多"
+            : `images.altText 超出 ${MAX_IMAGE_ALT_TEXT_LENGTH} 字符限制`
+      };
+    }
   }
 
   return {

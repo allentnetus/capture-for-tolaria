@@ -174,6 +174,13 @@ export async function prepareVaultDirectory(
   };
 }
 
+export async function prepareVaultAssetsDirectory(
+  vaultRoot: string,
+  relativeFolder: string
+): Promise<PreparedVaultDirectory> {
+  return prepareVaultDirectory(vaultRoot, `${relativeFolder}/Assets`);
+}
+
 export function assertSafeFilename(filename: string): void {
   if (
     filename.length === 0 ||

@@ -2,11 +2,13 @@ import { Buffer } from "node:buffer";
 import { Readable } from "node:stream";
 import { expect, it } from "vitest";
 import {
+  MAX_NATIVE_MESSAGE_BYTES,
   NativeMessageParser,
   NativeMessagingError,
   encodeNativeMessage,
   readNativeMessages
 } from "../src/index.js";
+import { PROTOCOL_VERSION } from "@capture-for-tolaria/protocol";
 
 function frame(payload: Buffer): Buffer {
   const header = Buffer.alloc(4);
@@ -62,4 +64,33 @@ it("能够从 Node stream 读取完整消息", async () => {
     messages.push(message);
   }
   expect(messages).toEqual([{ ok: true }]);
+});
+
+it("将 images 元数据计入完整 Native Messaging 帧长度预算", () => {
+  const largeMarkdown = "中".repeat(600_000);
+  const baseRequest = {
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "req-large-images",
+    extensionVersion: "0.1.0-beta.1",
+    action: "clip.article",
+    payload: {
+      relativeFolder: "Inbox/Web",
+      title: "Large image metadata",
+      markdown: largeMarkdown,
+      sourceUrl: "https://example.com/article",
+      metadata: {}
+    }
+  };
+  const images = Array.from({ length: 128 }, (_, index) => ({
+    remoteUrl: `https://cdn.example/${String(index).padStart(3, "0")}${"a".repeat(2_000)}.png`,
+    altText: "图".repeat(170)
+  }));
+
+  expect(encodeNativeMessage(baseRequest).length).toBeLessThanOrEqual(
+    MAX_NATIVE_MESSAGE_BYTES + 4
+  );
+  expect(() => encodeNativeMessage({
+    ...baseRequest,
+    payload: { ...baseRequest.payload, images }
+  })).toThrow(NativeMessagingError);
 });

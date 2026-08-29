@@ -11,4 +11,5 @@ coverage/
 .DS_Store
 Thumbs.db
 release/
+.beta-extension-dist/
 installer/windows/*.blob

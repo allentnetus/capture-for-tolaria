@@ -79,15 +79,7 @@ export function renderMarkdown(
     "",
     `# ${title}`,
     "",
-    `> Source: ${result.sourceUrl}`,
-    "",
-    "## Content",
-    "",
     body,
-    "",
-    "## Source",
-    "",
-    result.sourceUrl,
     ""
   ].join("\n");
 
@@ -95,6 +87,7 @@ export function renderMarkdown(
     frontmatter,
     markdown,
     title,
-    sourceUrl: result.sourceUrl
+    sourceUrl: result.sourceUrl,
+    images: result.images.map((image) => ({ ...image }))
   };
 }

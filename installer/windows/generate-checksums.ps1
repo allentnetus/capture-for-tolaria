@@ -16,8 +16,8 @@ if (-not (Test-Path -LiteralPath $versionPath -PathType Leaf)) {
     throw "VERSION file not found: $versionPath"
 }
 $version = (Get-Content -LiteralPath $versionPath -Raw).Trim()
-if ($version -notmatch '^\d+\.\d+\.\d+-alpha\.\d+$') {
-    throw "VERSION is not a supported Alpha version: $version"
+if ($version -notmatch '^\d+\.\d+\.\d+-(alpha|beta)\.\d+$') {
+    throw "VERSION is not a supported pre-release version: $version"
 }
 $expectedFiles = @(
     "capture-for-tolaria-extension-v$version.zip",
@@ -32,13 +32,11 @@ foreach ($expectedFile in $expectedFiles) {
 }
 $checksumPath = Join-Path $releaseRoot "SHA256SUMS.txt"
 $lines = @(
-    Get-ChildItem -LiteralPath $releaseRoot -File |
-        Where-Object { $_.Name -ne "SHA256SUMS.txt" } |
-        Sort-Object Name |
-        ForEach-Object {
-            $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-            "$hash  $($_.Name)"
-        }
+    foreach ($expectedFile in $expectedFiles) {
+        $expectedPath = Join-Path $releaseRoot $expectedFile
+        $hash = (Get-FileHash -LiteralPath $expectedPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        "$hash  $expectedFile"
+    }
 )
 $utf8NoBom = New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false
 [System.IO.File]::WriteAllLines($checksumPath, [string[]]$lines, $utf8NoBom)

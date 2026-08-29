@@ -1,5 +1,6 @@
 import {
   validateRequest,
+  type AssetSummary,
   type ArticlePayload,
   type ArticleRequest
 } from "@capture-for-tolaria/protocol";
@@ -20,6 +21,8 @@ export interface ContentCaptureResultMessage {
   type: "capture.result";
   status: "saved";
   relativePath: string;
+  summary?: AssetSummary;
+  warnings?: string[];
 }
 
 export interface ContentCaptureErrorMessage {
@@ -37,6 +40,8 @@ export type ContentMessage =
 export interface CaptureSuccessMessage {
   ok: true;
   relativePath: string;
+  summary?: AssetSummary;
+  warnings?: string[];
 }
 
 export interface CaptureErrorMessage {
@@ -78,7 +83,7 @@ export function validateContentPayload(value: unknown): ArticlePayload {
   const request = validateRequest({
     protocolVersion: 1,
     requestId: "content-validation",
-    extensionVersion: "0.1.0-alpha.1",
+    extensionVersion: "0.1.0-beta.1",
     action: "clip.article",
     payload
   });
@@ -128,7 +133,23 @@ export function validateCaptureResponse(value: unknown): CaptureResponse {
     if (!("relativePath" in value) || typeof value.relativePath !== "string") {
       throw new Error("Service Worker 成功响应缺少相对路径");
     }
-    return { ok: true, relativePath: value.relativePath };
+    const response: CaptureSuccessMessage = {
+      ok: true,
+      relativePath: value.relativePath
+    };
+    if ("summary" in value) {
+      if (!isAssetSummary(value.summary)) {
+        throw new Error("Service Worker 成功响应的图片摘要无效");
+      }
+      response.summary = value.summary;
+    }
+    if ("warnings" in value) {
+      if (!isWarnings(value.warnings)) {
+        throw new Error("Service Worker 成功响应的图片 warning 无效");
+      }
+      response.warnings = value.warnings;
+    }
+    return response;
   }
   if (
     !("code" in value) ||
@@ -139,4 +160,25 @@ export function validateCaptureResponse(value: unknown): CaptureResponse {
     throw new Error("Service Worker 错误响应无效");
   }
   return { ok: false, code: value.code, message: value.message };
+}
+
+function isAssetSummary(value: unknown): value is AssetSummary {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "requested" in value &&
+    "localized" in value &&
+    "fallback" in value &&
+    [value.requested, value.localized, value.fallback].every(
+      (count) => typeof count === "number" && Number.isInteger(count) && count >= 0
+    )
+  );
+}
+
+function isWarnings(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= 128 &&
+    value.every((warning) => typeof warning === "string" && warning.length <= 512)
+  );
 }

@@ -1,6 +1,6 @@
 import { Readability } from "@mozilla/readability";
 import { checkArticleQuality } from "./quality.js";
-import { sanitizeArticleHtml } from "./sanitize.js";
+import { sanitizeArticleContent } from "./sanitize.js";
 import { ArticleExtractionError, type ExtractionResult } from "./types.js";
 
 const SEMANTIC_SELECTORS = [
@@ -25,9 +25,9 @@ function buildCandidateResult(
   ownerDocument: Document,
   metadata: CandidateMetadata
 ): ExtractionResult | null {
-  const sanitizedHtml = sanitizeArticleHtml(html, sourceUrl, ownerDocument);
+  const sanitized = sanitizeArticleContent(html, sourceUrl, ownerDocument);
   const candidateDocument = ownerDocument.implementation.createHTMLDocument("article");
-  candidateDocument.body.innerHTML = sanitizedHtml;
+  candidateDocument.body.innerHTML = sanitized.html;
   const quality = checkArticleQuality(candidateDocument.body);
   if (!quality.accepted) {
     return null;
@@ -44,11 +44,20 @@ function buildCandidateResult(
 
   const result: ExtractionResult = {
     title,
-    html: sanitizedHtml,
+    html: sanitized.html,
     textContent: quality.textContent,
     sourceUrl,
-    extractionMethod: metadata.extractionMethod
+    extractionMethod: metadata.extractionMethod,
+    images: []
   };
+  const seenImages = new Set<string>();
+  for (const image of sanitized.images) {
+    if (seenImages.has(image.remoteUrl)) {
+      continue;
+    }
+    seenImages.add(image.remoteUrl);
+    result.images.push(image);
+  }
   const author = metadata.author?.trim();
   if (author) {
     result.author = author;

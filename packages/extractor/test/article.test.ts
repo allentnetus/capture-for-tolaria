@@ -87,9 +87,81 @@ it("从 src、data-src 和 srcset 中选择可用图片 URL", () => {
   expect(result.html).toContain('src="https://example.com/lazy/hero.png"');
   expect(result.html).not.toContain("data-src");
   expect(result.html).not.toContain("srcset");
+  expect(result.images).toEqual([
+    {
+      remoteUrl: "https://example.com/lazy/hero.png",
+      altText: "Hero"
+    }
+  ]);
 });
 
-it("拒绝 file、javascript、vbscript 和危险 data URL", () => {
+it("按优先级提取 data-srcset、picture/source 和 srcset 图片候选", () => {
+  const result = extractArticle(
+    documentFrom(`
+      <article><h1>Image candidates</h1>
+        <p>This article has several image loading forms that should become reusable candidates.</p>
+        <img src="/placeholder.gif" data-srcset="/images/lazy.png 1x, /images/lazy@2x.png 2x" alt="Lazy">
+        <picture>
+          <source srcset="/images/hero.webp 1x, /images/hero@2x.webp 2x">
+          <img src="/placeholder-hero.gif" alt="Hero">
+        </picture>
+        <img srcset="/images/fallback.png 1x, /images/fallback@2x.png 2x" alt="Fallback">
+      </article>
+    `),
+    "https://example.com/articles/page"
+  );
+
+  expect(result.images).toEqual([
+    {
+      remoteUrl: "https://example.com/images/lazy.png",
+      altText: "Lazy"
+    },
+    {
+      remoteUrl: "https://example.com/images/hero.webp",
+      altText: "Hero"
+    },
+    {
+      remoteUrl: "https://example.com/images/fallback.png",
+      altText: "Fallback"
+    }
+  ]);
+});
+
+it("对重复图片 URL 只保留第一个候选", () => {
+  const result = extractArticle(
+    documentFrom(`
+      <article><h1>Repeated images</h1>
+        <p>This article repeats one image URL and should download it only once.</p>
+        <img src="/images/repeated.png" alt="First">
+        <img src="/images/repeated.png" alt="Second">
+      </article>
+    `),
+    "https://example.com/articles/page"
+  );
+
+  expect(result.images).toEqual([
+    {
+      remoteUrl: "https://example.com/images/repeated.png",
+      altText: "First"
+    }
+  ]);
+});
+
+it("不把代码块中的图片样式文本当作图片候选", () => {
+  const result = extractArticle(
+    documentFrom(`
+      <article><h1>Code image syntax</h1>
+        <p>This article contains a code example that resembles Markdown image syntax.</p>
+        <pre><code>![Code](https://example.com/code.png)</code></pre>
+      </article>
+    `),
+    "https://example.com/articles/page"
+  );
+
+  expect(result.images).toEqual([]);
+});
+
+it("拒绝 file、javascript、vbscript、blob、凭据和危险 data URL", () => {
   const result = extractArticle(
     documentFrom(`
       <article><h1>Unsafe URLs</h1>
@@ -97,14 +169,17 @@ it("拒绝 file、javascript、vbscript 和危险 data URL", () => {
         <img src="file:///secret.txt" alt="file">
         <img src="javascript:alert(1)" alt="js">
         <img src="vbscript:msgbox(1)" alt="vbscript">
+        <img src="blob:https://example.com/blob-id" alt="blob">
+        <img src="https://user:password@example.com/secret.png" alt="credential">
         <img src="data:text/html,<script>alert(1)</script>" alt="data">
       </article>
     `),
     "https://example.com/articles/page"
   );
 
-  expect(result.html).not.toMatch(/file:|javascript:|vbscript:|data:text/iu);
+  expect(result.html).not.toMatch(/file:|javascript:|vbscript:|blob:|data:text|user:password/iu);
   expect(result.html).not.toMatch(/<img/iu);
+  expect(result.images).toEqual([]);
 });
 
 it("保留代码块的 language class", () => {

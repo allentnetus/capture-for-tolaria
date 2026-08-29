@@ -58,7 +58,9 @@ it("renders the branded capture surface with accessible status semantics", async
 it("shows loading and success states without losing the saved path", async () => {
   const captureArticle = vi.fn().mockResolvedValue({
     ok: true,
-    relativePath: "Inbox/Web/Example article.md"
+    relativePath: "Inbox/Web/Example article.md",
+    summary: { requested: 3, localized: 2, fallback: 1 },
+    warnings: ["IMAGE_DOWNLOAD_FAILED"]
   });
   const { container, dom } = mount({
     getActiveTab: async () => null,
@@ -84,6 +86,7 @@ it("shows loading and success states without losing the saved path", async () =>
     expect(status.dataset.state).toBe("success");
     expect(status.textContent).toContain("Saved to Tolaria");
     expect(status.textContent).toContain("Inbox/Web/Example article.md");
+    expect(status.textContent).toContain("Images: 2 localized, 1 fallback");
   } finally {
     dom.window.close();
   }

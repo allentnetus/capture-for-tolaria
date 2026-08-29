@@ -8,7 +8,13 @@ function resultFromHtml(html: string): ExtractionResult {
     html,
     textContent: "Conversion article content",
     sourceUrl: "https://example.com/articles/conversion",
-    extractionMethod: "readability"
+    extractionMethod: "readability",
+    images: [
+      {
+        remoteUrl: "https://example.com/images/hero.png",
+        altText: "Hero"
+      }
+    ]
   };
 }
 
@@ -16,7 +22,7 @@ function render(html: string): MarkdownDocument {
   return renderMarkdown(resultFromHtml(html), "2026-08-21T17:05:00+08:00");
 }
 
-it("生成稳定的 frontmatter 和来源区块", () => {
+it("生成稳定的 frontmatter 但不在正文重复来源", () => {
   const document = render("<h1>Conversion article</h1><p>Body content.</p>");
 
   expect(document.frontmatter).toMatchObject({
@@ -27,8 +33,26 @@ it("生成稳定的 frontmatter 和来源区块", () => {
     clipped: "2026-08-21T17:05:00+08:00"
   });
   expect(document.markdown).toContain("# Conversion article");
-  expect(document.markdown).toContain("> Source: https://example.com/articles/conversion");
-  expect(document.markdown).toContain("## Source");
+  expect(document.markdown).toContain(
+    'source_url: "https://example.com/articles/conversion"'
+  );
+  expect(document.markdown).not.toContain(
+    "> Source: https://example.com/articles/conversion"
+  );
+  expect(document.markdown).not.toContain("## Source");
+  expect(document.markdown).not.toContain("\n## Content\n");
+  expect(document.markdown.trimEnd()).not.toMatch(
+    /https:\/\/example\.com\/articles\/conversion$/u
+  );
+});
+
+it("移除生成的 Content 包装但保留正文中的同名标题", () => {
+  const document = render(
+    "<h1>Conversion article</h1><h2>Content</h2><p>Body content.</p>"
+  );
+
+  expect(document.markdown.match(/^## Content$/gmu)).toEqual(["## Content"]);
+  expect(document.markdown).toContain("Body content.");
 });
 
 it("支持 GFM 表格、任务列表、删除线、代码和引用", () => {
@@ -61,6 +85,12 @@ it("保留链接、图片和 lazy image 转换后的 URL", () => {
   expect(document.markdown).toContain("[Guide](https://example.com/docs)");
   expect(document.markdown).toContain("![Hero](https://example.com/images/hero.png)");
   expect(document.markdown).toContain("![Lazy](https://example.com/images/lazy.png)");
+  expect(document.images).toEqual([
+    {
+      remoteUrl: "https://example.com/images/hero.png",
+      altText: "Hero"
+    }
+  ]);
 });
 
 it("不把可执行标签写入 Markdown", () => {

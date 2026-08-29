@@ -7,6 +7,7 @@ import { FileChannelError } from "./errors.js";
 
 export interface VaultConfig {
   vaultRoot: string;
+  allowSyntheticDns?: boolean;
 }
 
 function configRoot(): string {
@@ -44,7 +45,7 @@ export async function validateConfiguredVault(
   }
 }
 
-export async function getConfiguredVault(): Promise<string | null> {
+export async function getConfiguredVaultConfig(): Promise<VaultConfig | null> {
   try {
     const raw = await readFile(configRoot(), "utf8");
     const json = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
@@ -58,7 +59,10 @@ export async function getConfiguredVault(): Promise<string | null> {
     ) {
       return null;
     }
-    return resolve(parsed.vaultRoot);
+    return {
+      vaultRoot: resolve(parsed.vaultRoot),
+      allowSyntheticDns: "allowSyntheticDns" in parsed && parsed.allowSyntheticDns === true
+    };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return null;
@@ -72,6 +76,10 @@ export async function getConfiguredVault(): Promise<string | null> {
       { cause: error }
     );
   }
+}
+
+export async function getConfiguredVault(): Promise<string | null> {
+  return (await getConfiguredVaultConfig())?.vaultRoot ?? null;
 }
 
 export async function setConfiguredVault(vaultPath: string): Promise<void> {

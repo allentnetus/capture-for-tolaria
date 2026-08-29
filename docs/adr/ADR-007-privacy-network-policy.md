@@ -9,7 +9,7 @@
 
 ## 决策
 
-V0.1 不包含账号、云服务、服务器上传、telemetry、浏览历史采集、cookies 采集或后台网络抓取。Extension 仅在用户点击时读取当前页面；Helper 不为远程图片发起下载请求，Markdown 只保留经过检查的 HTTP/HTTPS URL。
+V0.1 不包含账号、云服务、服务器上传、telemetry、浏览历史采集、cookies 采集或后台网络抓取。Extension 仅在用户点击时读取当前页面；Beta.1 的 Helper 只在用户触发剪藏且 Extractor 已识别出正文图片时，以无凭据、受限方式下载图片；Markdown 对失败图片仍保留经过检查的 HTTP/HTTPS URL。
 
 ## 后果
 

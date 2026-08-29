@@ -25,6 +25,67 @@ it("接受带版本的文章请求", () => {
   expect(validateRequest(validArticleRequest).action).toBe("clip.article");
 });
 
+it("接受带图片候选的文章请求", () => {
+  const request = validateRequest({
+    ...validArticleRequest,
+    payload: {
+      ...validArticleRequest.payload,
+      images: [
+        {
+          remoteUrl: "https://cdn.example.com/article/hero.png",
+          altText: "Hero"
+        }
+      ]
+    }
+  });
+
+  expect(request.action === "clip.article" && request.payload.images).toEqual([
+    {
+      remoteUrl: "https://cdn.example.com/article/hero.png",
+      altText: "Hero"
+    }
+  ]);
+});
+
+it("拒绝超出数量、长度或协议限制的图片候选", () => {
+  expect(() => validateRequest({
+    ...validArticleRequest,
+    payload: {
+      ...validArticleRequest.payload,
+      images: Array.from({ length: 129 }, (_, index) => ({
+        remoteUrl: `https://cdn.example.com/${index}.png`
+      }))
+    }
+  })).toThrow();
+
+  expect(() => validateRequest({
+    ...validArticleRequest,
+    payload: {
+      ...validArticleRequest.payload,
+      images: [{ remoteUrl: "file:///secret.png" }]
+    }
+  })).toThrow();
+
+  expect(() => validateRequest({
+    ...validArticleRequest,
+    payload: {
+      ...validArticleRequest.payload,
+      images: [{ remoteUrl: "https://user:password@cdn.example.com/image.png" }]
+    }
+  })).toThrow();
+
+  expect(() => validateRequest({
+    ...validArticleRequest,
+    payload: {
+      ...validArticleRequest.payload,
+      images: [{
+        remoteUrl: "https://cdn.example.com/image.png",
+        altText: "x".repeat(513)
+      }]
+    }
+  })).toThrow();
+});
+
 it("拒绝未知 action", () => {
   expect(() => validateRequest({
     ...validArticleRequest,
@@ -99,6 +160,33 @@ it("校验成功响应时保留 requestId", () => {
     result: { relativePath: "Inbox/Web/20260821 - Article.md" }
   });
   expect(response.requestId).toBe("req-1");
+});
+
+it("接受带图片本地化摘要的成功响应", () => {
+  const response = validateResponse({
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "req-images",
+    helperVersion: "0.1.0-beta.1",
+    ok: true,
+    result: {
+      relativePath: "Inbox/Web/20260821 - Article.md",
+      assets: [{
+        remoteUrl: "https://cdn.example.com/article/hero.png",
+        relativePath: "Inbox/Web/Assets/abc.png",
+        contentType: "image/png",
+        byteLength: 128
+      }],
+      summary: { requested: 1, localized: 1, fallback: 0 },
+      warnings: []
+    }
+  });
+
+  expect(response).toMatchObject({
+    requestId: "req-images",
+    result: {
+      summary: { requested: 1, localized: 1, fallback: 0 }
+    }
+  });
 });
 
 it("能够生成带 capabilities 的 hello 响应", () => {

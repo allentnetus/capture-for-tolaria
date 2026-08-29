@@ -12,9 +12,16 @@ V0.1 不包含：
 - 浏览历史或 cookies 采集
 - 页面凭据或无关 DOM storage 采集
 - 后台网络抓取
-- 图片自动下载
 
-来源 URL 会作为 Markdown 元数据写入本地文件。Helper 不根据该 URL 发起网络请求；远程图片 URL 在 V0.1 只作为 Markdown 引用保留。
+来源 URL 会作为 Markdown 元数据写入本地文件。Alpha.1 的保存行为不会自动下载图片；Beta.1 仅在用户点击剪藏、且 Extractor 已识别出正文图片时，由 Helper 对公开图片 URL 执行受限本地化。
+
+## Beta.1 图片本地化边界
+
+- 只处理正文中的 `img` / `picture/source` 图片候选；支持 `data-src`、`data-srcset`、`srcset` 和相对 HTTP/HTTPS URL。
+- 不读取或转发 cookies、`Authorization`、页面凭据或浏览器登录态。图片请求使用无凭据方式，并在 Helper 内检查重定向目标。
+- 默认单图上限 8 MiB、单次剪藏总上限 32 MiB、超时 10 秒、最多 3 次重定向；只接受 JPEG、PNG、GIF、WebP 和 AVIF，拒绝 SVG。
+- 成功图片写入用户授权 Vault 当前文章目录下的 `Assets/<sha256>.<ext>`；Markdown 只改写成功资源。下载失败不丢失正文，远程图片引用保留并显示回退摘要。
+- 图片字节不会进入 Native Messaging payload，也不会上传云端；CSS 背景图、`blob:`、登录后图片和需要防盗链凭据的资源不属于 Beta.1 范围。如果用户显式为当前本机 fake-IP 网络启用 `allowSyntheticDns`，Helper 仍不读取或发送 cookies、`Authorization` 或页面凭据；该开关只允许当前代理映射段继续使用无凭据请求，默认关闭。
 
 ## 本地数据
 

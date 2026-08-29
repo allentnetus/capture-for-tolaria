@@ -30,7 +30,8 @@ Describe "single-file Helper" {
 
     It "answers hello without requiring a Node.js runtime" {
         $repoRoot = (Resolve-Path (Join-Path $scriptRoot "..\..")).Path
-        $helper = Join-Path $repoRoot "release\capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe"
+        $version = (Get-Content -LiteralPath (Join-Path $repoRoot "VERSION") -Raw).Trim()
+        $helper = Join-Path $repoRoot "release\capture-for-tolaria-helper-$version-windows-x64.exe"
         if (-not (Test-Path -LiteralPath $helper)) {
             throw "Build the SEA Helper before running this test"
         }
@@ -45,7 +46,7 @@ Describe "single-file Helper" {
         $process.StartInfo = $startInfo
         $process.Start() | Should -Be $true
 
-        $request = '{"protocolVersion":1,"requestId":"hello-test","extensionVersion":"0.1.0-alpha.1","action":"hello"}'
+        $request = '{"protocolVersion":1,"requestId":"hello-test","extensionVersion":"' + $version + '","action":"hello"}'
         $frame = New-NativeFrame $request
         $process.StandardInput.BaseStream.Write($frame, 0, $frame.Length)
         $process.StandardInput.BaseStream.Flush()

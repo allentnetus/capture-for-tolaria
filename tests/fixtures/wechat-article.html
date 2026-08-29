@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <title>公众号图片文章 Fixture</title>
+  </head>
+  <body>
+    <article>
+      <h1>公众号图片文章 Fixture</h1>
+      <p>这是一份脱敏合成的公众号文章 Fixture，用于验证公开文章图片候选提取和本地化。</p>
+      <p>文章正文保留标题、段落、链接、图片和代码结构，不包含真实文章正文或用户数据。</p>
+      <img
+        src="https://cdn.example.com/placeholder.gif"
+        data-src="https://cdn.example.com/images/hero.jpg"
+        alt="主图"
+      >
+      <img
+        src="https://cdn.example.com/placeholder.gif"
+        data-srcset="/images/detail.png 1x, /images/detail@2x.png 2x"
+        alt="细节图"
+      >
+      <picture>
+        <source srcset="/images/diagram.webp 1x, /images/diagram@2x.webp 2x">
+        <img src="/images/diagram-placeholder.gif" alt="示意图">
+      </picture>
+      <img src="https://cdn.example.com/images/hero.jpg" alt="重复主图">
+      <p><a href="https://example.com/reference">安全参考链接</a></p>
+      <pre><code>![代码示例](https://cdn.example.com/images/code.png)</code></pre>
+    </article>
+  </body>
+</html>

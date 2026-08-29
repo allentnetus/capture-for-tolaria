@@ -8,14 +8,6 @@ clipped: "2026-08-21T17:05:00+08:00"
 
 # Relative links
 
-> Source: https://example.com/fixtures/relative-links.html
-
-## Content
-
 This article contains links and images that must resolve against the source page URL.
 
 [Read the guide](https://example.com/docs/start) ![Diagram](https://example.com/fixtures/images/diagram.svg)
-
-## Source
-
-https://example.com/fixtures/relative-links.html

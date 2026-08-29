@@ -1,3 +1,5 @@
+import type { ImageCandidate } from "@capture-for-tolaria/extractor";
+
 export type Frontmatter = Record<string, string | undefined>;
 
 export interface MarkdownDocument {
@@ -5,6 +7,7 @@ export interface MarkdownDocument {
   markdown: string;
   title: string;
   sourceUrl: string;
+  images: ImageCandidate[];
 }
 
 export function serializeFrontmatter(frontmatter: Frontmatter): string {

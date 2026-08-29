@@ -4,12 +4,38 @@ export const SUPPORTED_ACTIONS = ["hello", "clip.article"] as const;
 
 export type CaptureAction = (typeof SUPPORTED_ACTIONS)[number];
 
+export interface ImageCandidate {
+  remoteUrl: string;
+  altText?: string;
+}
+
+export interface LocalizedAsset {
+  remoteUrl: string;
+  relativePath: string;
+  contentType: string;
+  byteLength: number;
+}
+
+export interface AssetSummary {
+  requested: number;
+  localized: number;
+  fallback: number;
+}
+
+export interface ClipResult {
+  relativePath: string;
+  assets?: LocalizedAsset[];
+  summary?: AssetSummary;
+  warnings?: string[];
+}
+
 export interface ArticlePayload {
   relativeFolder: string;
   title: string;
   markdown: string;
   sourceUrl: string;
   metadata: Record<string, string | undefined>;
+  images?: ImageCandidate[];
 }
 
 export interface HelloRequest {
@@ -34,7 +60,7 @@ export interface ClipSuccessResponse {
   requestId: string;
   helperVersion: string;
   ok: true;
-  result: { relativePath: string };
+  result: ClipResult;
 }
 
 export interface ClipErrorResponse {

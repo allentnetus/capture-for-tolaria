@@ -47,9 +47,11 @@ jobs:
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
 
-      - name: Assemble Alpha release bundle
+      - name: Assemble current release bundle
         shell: pwsh
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ReleaseTag v0.1.0-alpha.1
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ReleaseTag "v$version"
 
       - name: Install Pester
         shell: pwsh

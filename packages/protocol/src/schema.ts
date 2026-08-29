@@ -10,6 +10,8 @@ export const MAX_SOURCE_URL_LENGTH = 2_048;
 export const MAX_METADATA_KEY_LENGTH = 64;
 export const MAX_METADATA_VALUE_LENGTH = 512;
 export const MAX_RESPONSE_PATH_LENGTH = 1_024;
+export const MAX_IMAGE_CANDIDATES = 128;
+export const MAX_IMAGE_ALT_TEXT_LENGTH = 512;
 
 const boundedIdentifier = (label: string, max: number) =>
   z.string().trim().min(1, `${label} 不能为空`).max(max, `${label} 超出长度限制`);
@@ -34,11 +36,11 @@ const safeRelativeFolder = z
     );
   }, "relativeFolder 必须是安全的相对目录");
 
-const httpSourceUrl = z
+const httpUrl = (label: string, max: number) => z
   .string()
   .trim()
-  .min(1, "sourceUrl 不能为空")
-  .max(MAX_SOURCE_URL_LENGTH, "sourceUrl 超出长度限制")
+  .min(1, `${label} 不能为空`)
+  .max(max, `${label} 超出长度限制`)
   .refine((value) => {
     try {
       const url = new URL(value);
@@ -50,7 +52,19 @@ const httpSourceUrl = z
     } catch {
       return false;
     }
-  }, "sourceUrl 必须是无凭据的 HTTP 或 HTTPS URL");
+  }, `${label} 必须是无凭据的 HTTP 或 HTTPS URL`);
+
+const httpSourceUrl = httpUrl("sourceUrl", MAX_SOURCE_URL_LENGTH);
+
+const imageCandidateSchema = z
+  .object({
+    remoteUrl: httpUrl("images.remoteUrl", MAX_SOURCE_URL_LENGTH),
+    altText: z
+      .string()
+      .max(MAX_IMAGE_ALT_TEXT_LENGTH, "images.altText 超出长度限制")
+      .optional()
+  })
+  .strict();
 
 const metadataSchema = z
   .record(
@@ -71,7 +85,11 @@ export const articlePayloadSchema = z
       .min(1, "markdown 不能为空")
       .max(MAX_MARKDOWN_CHARACTERS, "markdown 超出长度限制"),
     sourceUrl: httpSourceUrl,
-    metadata: metadataSchema
+    metadata: metadataSchema,
+    images: z
+      .array(imageCandidateSchema)
+      .max(MAX_IMAGE_CANDIDATES, "images 候选过多")
+      .optional()
   })
   .strict();
 
@@ -116,18 +134,46 @@ const responseBase = {
   helperVersion: boundedIdentifier("helperVersion", MAX_VERSION_LENGTH)
 };
 
+const responsePath = z
+  .string()
+  .min(1, "relativePath 不能为空")
+  .max(MAX_RESPONSE_PATH_LENGTH, "relativePath 超出长度限制");
+
+const localizedAssetSchema = z
+  .object({
+    remoteUrl: httpUrl("assets.remoteUrl", MAX_SOURCE_URL_LENGTH),
+    relativePath: responsePath,
+    contentType: boundedIdentifier("contentType", 128),
+    byteLength: z
+      .number()
+      .int("byteLength 必须是整数")
+      .min(0, "byteLength 不能为负数")
+      .max(8 * 1024 * 1024, "byteLength 超出单图限制")
+  })
+  .strict();
+
+const assetSummarySchema = z
+  .object({
+    requested: z.number().int().min(0),
+    localized: z.number().int().min(0),
+    fallback: z.number().int().min(0)
+  })
+  .strict();
+
+const clipResultSchema = z
+  .object({
+    relativePath: responsePath,
+    assets: z.array(localizedAssetSchema).max(MAX_IMAGE_CANDIDATES).optional(),
+    summary: assetSummarySchema.optional(),
+    warnings: z.array(z.string().max(512)).max(128).optional()
+  })
+  .strict();
+
 export const successResponseSchema = z
   .object({
     ...responseBase,
     ok: z.literal(true),
-    result: z
-      .object({
-        relativePath: z
-          .string()
-          .min(1, "relativePath 不能为空")
-          .max(MAX_RESPONSE_PATH_LENGTH, "relativePath 超出长度限制")
-      })
-      .strict()
+    result: clipResultSchema
   })
   .strict();
 

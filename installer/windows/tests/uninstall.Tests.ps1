@@ -15,7 +15,7 @@ Describe "Capture for Tolaria uninstall" {
         & (Join-Path $scriptRoot "install.ps1") -HelperPath $helper -InstallRoot $installRoot | Out-Null
     }
 
-    It "拒绝删除不受保护的安装目录" {
+    It "rejects deleting an unprotected install directory" {
         $unsafeRoot = Join-Path $testRoot "Programs\Other"
         $sentinel = Join-Path $unsafeRoot "keep.txt"
         New-Item -ItemType Directory -Path $unsafeRoot -Force | Out-Null
@@ -34,7 +34,7 @@ Describe "Capture for Tolaria uninstall" {
         Remove-Item -LiteralPath $unsafeRoot -Recurse -Force
     }
 
-    It "拒绝清理默认目录之外的配置路径" {
+    It "rejects clearing config outside the default directory" {
         $unsafeConfigPath = Join-Path $testRoot "outside-config.json"
         Set-Content -LiteralPath $unsafeConfigPath -Value "keep" -Encoding utf8
 

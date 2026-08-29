@@ -8,6 +8,7 @@ import {
 
 export const NATIVE_HOST_NAME = "com.capture_for_tolaria.helper" as const;
 export const NATIVE_MESSAGE_TIMEOUT_MS = 10_000;
+export const NATIVE_CAPTURE_TIMEOUT_MS = 60_000;
 
 interface Listener<T> {
   addListener(listener: (value: T) => void): void;
@@ -141,7 +142,7 @@ export async function captureViaNativeMessaging(
       );
     }
 
-    const responsePromise = waitForMessage(port, NATIVE_MESSAGE_TIMEOUT_MS);
+    const responsePromise = waitForMessage(port, NATIVE_CAPTURE_TIMEOUT_MS);
     port.postMessage(request);
     const response = validateResponse(await responsePromise);
     if (response.requestId !== request.requestId) {

@@ -14,8 +14,8 @@ if (-not (Test-Path -LiteralPath $versionPath -PathType Leaf)) {
     throw "VERSION file not found: $versionPath"
 }
 $version = (Get-Content -LiteralPath $versionPath -Raw).Trim()
-if ($version -notmatch '^\d+\.\d+\.\d+-alpha\.\d+$') {
-    throw "VERSION is not a supported Alpha version: $version"
+if ($version -notmatch '^\d+\.\d+\.\d+-(alpha|beta)\.\d+$') {
+    throw "VERSION is not a supported pre-release version: $version"
 }
 $manifestPaths = @(
     (Join-Path $repoRoot "package.json")

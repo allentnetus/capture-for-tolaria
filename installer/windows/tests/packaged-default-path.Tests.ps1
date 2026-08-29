@@ -5,7 +5,7 @@ Describe "Packaged Installer default Helper path" {
         $version = (Get-Content -LiteralPath (Join-Path $repoRoot "VERSION") -Raw).Trim()
         $installerZip = Join-Path $repoRoot "release\capture-for-tolaria-installer-v$version.zip"
         if (-not (Test-Path -LiteralPath $installerZip -PathType Leaf)) {
-            throw "Assemble the Alpha Installer ZIP before running this test: $installerZip"
+            throw "Assemble the packaged Installer ZIP before running this test: $installerZip"
         }
 
         $testRoot = Join-Path $env:TEMP "capture-for-tolaria-packaged-default-$PID"

@@ -1,6 +1,6 @@
 # Capture for Tolaria —— 最终产品与技术方案
 
-> 文档状态：V0.1 Product Alpha 当前方案基线（实现已完成，真实 Chrome/Tolaria 验收待完成）
+> 文档状态：`v0.1.0-beta.1` 当前方案基线（实现已完成，真实 Chrome/Tolaria 验收待完成）
 >
 > 项目名称：Capture for Tolaria
 >
@@ -94,7 +94,7 @@ V0.1 范围：
 | Tolaria 写入方式 | Direct File Channel |
 | 默认目录 | `Inbox/Web` |
 | 文件写入语义 | Atomic + Create-only，不覆盖已有文件 |
-| 图片 | V0.1 保留远程 HTTP/HTTPS URL |
+| 图片 | `v0.1.0-beta.1` 对公开 Article 提供受限图片本地化 MVP；失败时保留安全的远程 HTTP/HTTPS URL |
 | Tolaria 运行状态 | Tolaria 未运行时仍尽量支持保存 |
 | Vault 配置 | V0.1 配置一个用户授权的 Vault，保存到 `%LOCALAPPDATA%\CaptureForTolaria\config.json` |
 | 目录创建 | 写入时逐级 `mkdir`，每一级创建或发现后立即检查真实路径和 reparse 状态 |
@@ -114,7 +114,7 @@ V0.1 的 Article Capture 由用户点击触发，Extension 使用 `activeTab`、
 - Selection、Bookmark、Screenshot 和右键菜单的完整体验
 - MCP 9710 集成
 - 多 Vault 和 Vault Context
-- 图片本地化和资源目录管理
+- 当前 `v0.1.0-beta.1` 已包含公开 Article 图片本地化 MVP；完整的 Assets 管理、资源复用和模板能力继续排入后续版本
 - AI 摘要、标签、类型推荐和知识关联
 - Edge、macOS、Linux
 - 云同步、账号系统和自建云服务
@@ -140,7 +140,7 @@ Native Messaging Helper
 File Channel
 ```
 
-V0.2+ 的路线图再评估 Edge Extension 和 MCP Channel；它们不是当前 Alpha 的已实现能力。两个 Channel 的职责必须分离：
+V0.2+ 的路线图再评估 Edge Extension 和 MCP Channel；它们不是当前 Beta.1 的已实现能力。两个 Channel 的职责必须分离：
 
 ```text
 基础 Capture
@@ -204,7 +204,7 @@ V0.2+ 的路线图再评估 Edge Extension 和 MCP Channel；它们不是当前 
 | Tolaria 未启动时保存 | 支持 | 不依赖其实现 |
 | 9710 未运行时保存 | 支持 | 不支持 |
 | 创建 Markdown | 支持 | 支持 |
-| 保存 Assets | V0.2.5 扩展 | 视 Tolaria 能力而定 |
+| 保存 Assets | `v0.1.0-beta.1` 提供 Article 图片本地化 MVP；`v0.2.5-beta.1` 扩展高级资源管理 | 视 Tolaria 能力而定 |
 | Vault Context | 不支持 | 支持 |
 | 搜索已有知识 | 不支持 | 支持 |
 | 更新已有笔记 | 有限 | 支持 |
@@ -246,7 +246,7 @@ Native Helper
 Tolaria Vault / Inbox/Web/*.md
 ```
 
-V0.2+ 如果启用 MCP，才评估以下可选路径；它不属于当前 Alpha 验收链路：
+V0.2+ 如果启用 MCP，才评估以下可选路径；它不属于当前 Beta.1 验收链路：
 
 ```text
 Chrome / Edge
@@ -461,15 +461,7 @@ clipped: "2026-08-21T17:05:00+08:00"
 
 # Pi Agent Architecture
 
-> Source: https://example.com/pi-agent
-
-## Content
-
 完整网页正文……
-
-## Source
-
-https://example.com/pi-agent
 ```
 
 ### 6.2 AI 增强内容
@@ -678,13 +670,19 @@ vault.context
 
 ### 8.3 图片策略
 
-V0.1 只在 Markdown 中保留经过检查的远程 URL：
+当前 `v0.1.0-beta.1` 对公开 Article 图片执行受限本地化；下载失败时仍保留经过检查的远程 URL：
 
 ```markdown
 ![](https://cdn.example.com/image.png)
 ```
 
-V0.2.5 再实现图片本地化：
+图片下载成功时，Markdown 改用当前 Article 目录下的相对资源路径：
+
+```markdown
+![](Assets/<sha256>.png)
+```
+
+`v0.1.0-beta.1` 已实现公众号 Article 的图片本地化 MVP；`v0.2.5-beta.1` 再扩展完整的 Assets 管理、资源复用和模板能力：
 
 ```text
 Remote Image
@@ -693,7 +691,7 @@ Helper
     ↓
 安全下载
     ↓
-assets/
+    Assets/
     ↓
 重写 Markdown 引用
 ```
@@ -703,7 +701,7 @@ assets/
 ```text
 Resources/Web/
 ├─ Pi Agent Architecture.md
-└─ assets/
+└─ Assets/
    └─ pi-agent-architecture/
       ├─ 001.png
       ├─ 002.webp
@@ -799,7 +797,7 @@ Request：
 {
   "protocolVersion": 1,
   "requestId": "uuid",
-  "extensionVersion": "0.1.0-alpha.1",
+  "extensionVersion": "0.1.0-beta.1",
   "action": "clip.article",
   "payload": {
     "relativeFolder": "Inbox/Web",
@@ -820,7 +818,7 @@ Response：
 {
   "protocolVersion": 1,
   "requestId": "uuid",
-  "helperVersion": "0.1.0-alpha.1",
+  "helperVersion": "0.1.0-beta.1",
   "ok": true,
   "result": {
     "relativePath": "Inbox/Web/article.md"
@@ -873,6 +871,7 @@ UTF-8 JSON
 - 调试日志统一写入 `stderr`
 - 禁止 `console.log("Helper started")` 等内容污染 `stdout`
 - Clipper 采用短事务：connect → request → response → disconnect
+- `hello` 握手等待 10 秒；完整 `clip.article` 响应等待 60 秒，以覆盖图片顺序处理和文件提交时间
 - V0.1 不需要永久连接
 
 ## 10. MCP Channel（V0.2+）
@@ -1176,7 +1175,7 @@ HKCU\Software\Google\Chrome\NativeMessagingHosts\com.capture_for_tolaria.helper
 
 Native Messaging 注册使用 `HKCU`，尽量避免管理员权限、UAC 和系统级安装。当前 V0.1 不会把 `uninstall.ps1` 安装成 `uninstall.exe`；卸载从 Installer ZIP 中的 `installer/windows/uninstall.ps1` 运行。
 
-V0.1 Alpha 的 Extension 交付采用 Release ZIP + Chrome 开发者模式加载，并在安装说明中明确 Extension ID 与 Native Host Manifest 的对应关系；Chrome Web Store 发布放到后续公开 Beta 计划。
+`v0.1.0-beta.1` 的 Extension 交付采用 Release ZIP + Chrome 开发者模式加载，并在安装说明中明确 Extension ID 与 Native Host Manifest 的对应关系；Chrome Web Store 发布仍放到后续版本。
 
 安装器必须幂等地支持：
 
@@ -1194,9 +1193,9 @@ Uninstall
 正式 Release 至少包含：
 
 ```text
-capture-for-tolaria-extension-v0.1.0-alpha.1.zip
-capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe
-capture-for-tolaria-installer-v0.1.0-alpha.1.zip
+capture-for-tolaria-extension-v0.1.0-beta.1.zip
+capture-for-tolaria-helper-0.1.0-beta.1-windows-x64.exe
+capture-for-tolaria-installer-v0.1.0-beta.1.zip
 INSTALL-WINDOWS.md
 SHA256SUMS.txt
 SBOM.spdx.json
@@ -1205,7 +1204,8 @@ SBOM.spdx.json
 使用 Git tag 和 SemVer：
 
 ```text
-v0.1.0-alpha.1
+v0.1.0-alpha.1（历史 Alpha）
+v0.1.0-beta.1
 v0.1.1
 v0.2.0
 ```
@@ -1216,7 +1216,7 @@ v0.2.0
 
 | 阶段 | 建议 |
 | --- | --- |
-| V0.1 Alpha | 可以暂时 unsigned |
+| `v0.1.0-beta.1` | 可以暂时 unsigned |
 | V0.2 Public Beta | 开始 Windows Code Signing |
 | V1.0 | 签名发布作为必需条件 |
 
@@ -1317,7 +1317,8 @@ docs/adr/
 ├─ ADR-005-vault-path-security.md
 ├─ ADR-006-markdown-output-format.md
 ├─ ADR-007-privacy-network-policy.md
-└─ ADR-008-tolaria-compatibility.md
+├─ ADR-008-tolaria-compatibility.md
+└─ ADR-009-article-image-localization.md
 ```
 
 优先冻结的四个实现基础是：
@@ -1334,9 +1335,10 @@ docs/adr/
 | 版本 | 核心能力 |
 | --- | --- |
 | V0.1 | Windows + Chrome + Article + Direct File Capture |
-| V0.1.5 | Selection + Bookmark + Right Click + Deep Link |
+| V0.1.0-beta.1 | 公众号优先的 Article 图片本地化 MVP |
+| V0.1.5 Beta（目标发布版 `v0.1.5-beta.1`） | Selection + Bookmark + Right Click + Deep Link |
 | V0.2 | MCP 9710 + `vault_context` + `list_vaults` + Multi Vault + `open_note` + Write Retry Store |
-| V0.2.5 | Image Localization + Assets + Templates + Shortcuts |
+| V0.2.5 Beta（目标发布版 `v0.2.5-beta.1`） | 高级 Assets 管理 + 资源复用 + Templates + Shortcuts |
 | V0.3 | Edge + macOS + Linux + 完整 Installer |
 | V0.4 | AI Summary + Tags + Type + Related Notes + Knowledge Linking |
 | V1.0 | 稳定跨平台版本 + 签名安装 + 完整兼容/升级体系 |
@@ -1357,7 +1359,7 @@ Knowledge Linking
 
 无论后续增加多少 AI 能力，原始网页内容都必须保留为事实层。
 
-## 18. V0.1 Product Alpha 验收标准
+## 18. `v0.1.0-beta.1` 验收标准
 
 验收对象不是开发者自己的机器，而是陌生 Windows 用户。
 
@@ -1386,6 +1388,8 @@ Markdown 正确写入 Tolaria Vault
     ↓
 内容和格式正确
     ↓
+正文图片成功写入文章目录的 `Assets/<sha256>.<ext>`；失败时保留安全远程引用
+    ↓
 已有文件不被覆盖
     ↓
 Tolaria 正确感知新文件
@@ -1400,7 +1404,7 @@ Native Host、Helper 和注册信息清理干净
 只有完整通过这条链路，才算完成：
 
 ```text
-Capture for Tolaria V0.1 Product Alpha
+Capture for Tolaria v0.1.0-beta.1
 ```
 
 ## 19. 最终方案定版

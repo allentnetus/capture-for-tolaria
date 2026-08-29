@@ -5,7 +5,16 @@ export type FileChannelErrorCode =
   | "TARGET_EXISTS"
   | "NAME_EXHAUSTED"
   | "ATOMIC_COMMIT_UNAVAILABLE"
-  | "WRITE_FAILED";
+  | "WRITE_FAILED"
+  | "ASSET_URL_INVALID"
+  | "ASSET_TARGET_BLOCKED"
+  | "ASSET_REDIRECT_BLOCKED"
+  | "ASSET_REDIRECT_LIMIT"
+  | "ASSET_UNSUPPORTED_TYPE"
+  | "ASSET_TOO_LARGE"
+  | "ASSET_TOTAL_TOO_LARGE"
+  | "ASSET_TIMEOUT"
+  | "ASSET_DOWNLOAD_FAILED";
 
 export class FileChannelError extends Error {
   readonly code: FileChannelErrorCode;

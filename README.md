@@ -4,9 +4,11 @@
 
 > 本项目与 Tolaria 项目无隶属关系，也未获得 Tolaria 项目的背书。
 
-当前交付目标是 V0.1 Product Alpha：Windows + Chrome + Article Capture + Direct File Channel。用户在公开文章页面点击 Capture，Extension 提取并清理正文，Native Messaging Helper 将普通 Markdown 原子地写入用户授权的 Tolaria Vault。
+当前交付目标是 `v0.1.0-beta.1`：Windows + Chrome + Article Capture + Direct File Channel。用户在公开文章页面点击 Capture，Extension 提取并清理正文，Native Messaging Helper 将普通 Markdown 和成功本地化的图片原子地写入用户授权的 Tolaria Vault。
 
-当前 Alpha 版本：`v0.1.0-alpha.1`。源码仓库和 GitHub Release 公开可见；本版本是公开 Alpha 预览版，不是公开稳定版，也未提交 Chrome Web Store。
+当前源码基线：`v0.1.0-beta.1`。`v0.1.0-alpha.1` 是已公开的历史 Alpha 预览版；Beta.1 的本地源码和发布目录可以先完成验证，但不等同于 GitHub Release 已发布，也未提交 Chrome Web Store。
+
+当前 Beta.1 能力：对公开 Article 正文中识别到的图片执行本地化，将成功下载的图片以 `Assets/<sha256>.<ext>` 保存到文章目录；下载失败时保留远程引用并显示回退摘要。
 
 ## 当前能力
 
@@ -17,17 +19,18 @@
 - Windows Vault 路径沙箱和逐级目录检查
 - atomic、create-only 写入；已有文件不覆盖，冲突使用后缀
 - Chrome MV3 Extension 和 Native Messaging Helper
+- Article 图片本地化、内容寻址 `Assets/<sha256>.<ext>` 和失败回退
 - per-user Vault 配置，无管理员权限
 - Native Host 安装、Repair、Upgrade 和 Uninstall 脚本
 
-V0.1 暂不实现 MCP 9710、AI、图片本地化、多 Vault、Selection、Bookmark、Screenshot、Edge、macOS、Linux、云同步或账号系统。
+Beta.1 暂不实现 MCP 9710、AI、多 Vault、Selection、Bookmark、Screenshot、Edge、macOS、Linux、云同步或账号系统。
 
-## 安装 Alpha
+## 安装 Beta.1
 
-1. 从 GitHub Release 下载以下公开 Alpha 资产，并先按 `SHA256SUMS.txt` 校验：
-   - `capture-for-tolaria-installer-v0.1.0-alpha.1.zip`
-   - `capture-for-tolaria-extension-v0.1.0-alpha.1.zip`
-   - `capture-for-tolaria-helper-0.1.0-alpha.1-windows-x64.exe`
+1. 当 GitHub Release 页面提供 `v0.1.0-beta.1` 资产后，从该页面下载以下文件，并先按 `SHA256SUMS.txt` 校验：
+   - `capture-for-tolaria-installer-v0.1.0-beta.1.zip`
+   - `capture-for-tolaria-extension-v0.1.0-beta.1.zip`
+   - `capture-for-tolaria-helper-0.1.0-beta.1-windows-x64.exe`
    - `SHA256SUMS.txt`
    - `SBOM.spdx.json`
 2. 解压 Installer ZIP；版本化 Helper 已位于 ZIP 根目录，不需要 Node.js，也不需要仓库中的 `release/` 目录。
@@ -57,7 +60,9 @@ Native Helper
 Vault/Inbox/Web/YYYYMMDD - Title.md
 ```
 
-默认不上传网页正文，不收集 telemetry、cookies、浏览历史或账号信息。图片在 V0.1 只保留经过检查的远程 HTTP/HTTPS URL；本 Alpha 尚未实现图片本地化。
+默认不上传网页正文，不收集 telemetry、cookies、浏览历史或账号信息。Beta.1 对正文中识别出的图片执行无凭据、受限的本地化；成功资源写入文章目录的 `Assets/`，失败资源保留经过检查的远程 HTTP/HTTPS URL。
+
+Beta.1 图片请求只使用无凭据的 HTTP/HTTPS 方式，不发送 cookies、`Authorization` 或页面凭据；默认单图 8 MiB、单次 32 MiB、单图请求 10 秒超时、整次图片本地化预算 45 秒、最多 3 次重定向，并拒绝 SVG、私有目标和登录后图片。Helper 将实际连接固定到已通过检查的 DNS 地址，同时保留原始主机名用于 HTTP Host 和 TLS SNI；Extension 对包含图片处理的完整 `clip.article` 响应最多等待 60 秒。Extension 在协议校验前最多发送 128 个图片候选，超出的图片保留远程引用。使用 fake-IP DNS 的本机网络可以通过 `configure-vault.ps1 -AllowSyntheticDns` 显式启用兼容模式；该模式默认关闭，且仍拒绝直接写入的 IP、真实私有目标和其他保留地址。
 
 ## 权限
 
@@ -93,10 +98,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-help
 如果本机 Chrome 正在加载 `apps/extension/dist`，Windows 可能暂时锁定其中的 `manifest.json`。此时可把 Extension 构建到隔离目录，再将该目录传给打包脚本：
 
 ```powershell
-$env:CAPTURE_FOR_TOLARIA_EXTENSION_DIST = "$PWD\.alpha-extension-dist"
+$env:CAPTURE_FOR_TOLARIA_EXTENSION_DIST = "$PWD\.beta-extension-dist"
 node apps/extension/build.mjs
 Remove-Item Env:CAPTURE_FOR_TOLARIA_EXTENSION_DIST
-powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ExtensionDirectory .\.alpha-extension-dist -ReleaseTag v0.1.0-alpha.1
+powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ExtensionDirectory .\.beta-extension-dist -ReleaseTag v0.1.0-beta.1
 ```
 
 安装器 Pester 测试：
@@ -107,6 +112,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& {
   if ($result.FailedCount -ne 0) { exit 1 }
 }'
 ```
+
+如果当前网络把公共域名解析到 fake-IP 地址，且确认该映射由本机可信网络代理提供，可以在配置 Vault 时显式启用 Beta.1 兼容模式：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath 'C:\Path\To\Vault' -AllowSyntheticDns
+```
+
+该开关只影响当前用户配置，普通配置默认保持严格的私有/保留地址拒绝策略。
 
 ## 文档
 

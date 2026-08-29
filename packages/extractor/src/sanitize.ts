@@ -1,4 +1,5 @@
 import createDOMPurify from "dompurify";
+import type { ImageCandidate } from "./types.js";
 
 const FORBIDDEN_TAGS = [
   "script",
@@ -32,19 +33,34 @@ function resolveSafeHttpUrl(value: string, sourceUrl: string): string | null {
   }
 }
 
-function firstSrcsetCandidate(value: string | null): string | null {
+function srcsetCandidates(value: string | null): string[] {
   if (!value) {
-    return null;
+    return [];
   }
 
-  const candidate = value
+  return value
     .split(",")
     .map((entry) => entry.trim().split(/\s+/u)[0])
-    .find((entry): entry is string => Boolean(entry));
-  return candidate ?? null;
+    .filter((entry): entry is string => Boolean(entry));
 }
 
-function cleanResourceUrls(root: Element, sourceUrl: string): void {
+function firstSafeUrl(
+  values: readonly (string | null)[],
+  sourceUrl: string,
+  srcset = false
+): string | null {
+  const candidates = values.flatMap((value) =>
+    srcset ? srcsetCandidates(value) : value ? [value] : []
+  );
+  return candidates
+    .map((candidate) => resolveSafeHttpUrl(candidate, sourceUrl))
+    .find((candidate): candidate is string => Boolean(candidate)) ?? null;
+}
+
+function cleanResourceUrls(
+  root: Element,
+  sourceUrl: string
+): ImageCandidate[] {
   for (const link of Array.from(root.querySelectorAll("a[href]"))) {
     const href = link.getAttribute("href");
     const safeHref = href ? resolveSafeHttpUrl(href, sourceUrl) : null;
@@ -55,32 +71,56 @@ function cleanResourceUrls(root: Element, sourceUrl: string): void {
     }
   }
 
+  const images: ImageCandidate[] = [];
   for (const image of Array.from(root.querySelectorAll("img"))) {
-    const candidates = [
-      image.getAttribute("src"),
-      image.getAttribute("data-src"),
-      firstSrcsetCandidate(image.getAttribute("srcset"))
-    ];
-    const safeSrc = candidates
-      .filter((candidate): candidate is string => Boolean(candidate))
-      .map((candidate) => resolveSafeHttpUrl(candidate, sourceUrl))
-      .find((candidate): candidate is string => Boolean(candidate));
+    const pictureSources = image.closest("picture")
+      ? Array.from(image.closest("picture")!.querySelectorAll("source"))
+      : [];
+    const pictureCandidates = pictureSources.flatMap((source) => [
+      source.getAttribute("data-src"),
+      source.getAttribute("data-srcset"),
+      source.getAttribute("srcset")
+    ]);
+    const safeSrc =
+      firstSafeUrl([image.getAttribute("data-src")], sourceUrl) ??
+      firstSafeUrl([image.getAttribute("data-srcset")], sourceUrl, true) ??
+      firstSafeUrl(pictureCandidates, sourceUrl, true) ??
+      firstSafeUrl([image.getAttribute("srcset")], sourceUrl, true) ??
+      firstSafeUrl([image.getAttribute("src")], sourceUrl);
 
     if (safeSrc) {
       image.setAttribute("src", safeSrc);
       image.removeAttribute("data-src");
+      image.removeAttribute("data-srcset");
       image.removeAttribute("srcset");
+      const altText = image.getAttribute("alt")?.trim();
+      images.push(
+        altText
+          ? { remoteUrl: safeSrc, altText }
+          : { remoteUrl: safeSrc }
+      );
     } else {
       image.remove();
     }
   }
+
+  for (const source of Array.from(root.querySelectorAll("picture > source"))) {
+    source.remove();
+  }
+
+  return images;
 }
 
-export function sanitizeArticleHtml(
+export interface SanitizedArticle {
+  html: string;
+  images: ImageCandidate[];
+}
+
+export function sanitizeArticleContent(
   html: string,
   sourceUrl: string,
   ownerDocument: Document
-): string {
+): SanitizedArticle {
   const window = ownerDocument.defaultView;
   if (!window) {
     throw new Error("Article document 必须关联可用的 DOM window");
@@ -111,6 +151,14 @@ export function sanitizeArticleHtml(
     }
   }
 
-  cleanResourceUrls(outputDocument.body, sourceUrl);
-  return outputDocument.body.innerHTML;
+  const images = cleanResourceUrls(outputDocument.body, sourceUrl);
+  return { html: outputDocument.body.innerHTML, images };
+}
+
+export function sanitizeArticleHtml(
+  html: string,
+  sourceUrl: string,
+  ownerDocument: Document
+): string {
+  return sanitizeArticleContent(html, sourceUrl, ownerDocument).html;
 }

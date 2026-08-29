@@ -1,3 +1,8 @@
+export interface ImageCandidate {
+  remoteUrl: string;
+  altText?: string;
+}
+
 export interface ExtractionResult {
   title: string;
   html: string;
@@ -6,6 +11,7 @@ export interface ExtractionResult {
   published?: string;
   sourceUrl: string;
   extractionMethod: "readability" | "semantic-fallback";
+  images: ImageCandidate[];
 }
 
 export type ExtractionErrorCode = "INVALID_SOURCE_URL" | "NO_RELIABLE_ARTICLE";

@@ -70,6 +70,13 @@ jobs:
           if ($env:GITHUB_REF_NAME -ne "v$version") {
             throw "Release tag $env:GITHUB_REF_NAME does not match VERSION $version"
           }
+          if ($version -notmatch '^(?<chromeVersion>\d+\.\d+\.\d+)-(?<channel>alpha|beta)\.(?<releaseNumber>\d+)$') {
+            throw "VERSION is not a supported pre-release version: $version"
+          }
+          $chromeVersion = $Matches.chromeVersion
+          $channelName = if ($Matches.channel -eq "alpha") { "Alpha" } else { "Beta" }
+          $releaseNumber = $Matches.releaseNumber
+          $expectedVersionName = "$chromeVersion $channelName $releaseNumber"
           $helperPath = "release\capture-for-tolaria-helper-$version-windows-x64.exe"
           if (-not (Test-Path $helperPath)) {
             throw "Release Helper is missing: $helperPath"
@@ -89,7 +96,7 @@ jobs:
             if ($permissions -ne "activeTab,nativeMessaging,scripting" -or $null -ne $extensionManifest.host_permissions) {
               throw "Extension manifest permissions are outside the V0.1 contract"
             }
-            if ($extensionManifest.version -ne "0.1.0" -or $extensionManifest.version_name -ne "0.1.0 Alpha 1") {
+            if ($extensionManifest.version -ne $chromeVersion -or $extensionManifest.version_name -ne $expectedVersionName) {
               throw "Extension manifest version contract is invalid"
             }
 

@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 故障排查
 
-> 当前文档记录 V0.1 的用户可见错误边界。开发目录和发布目录的 `pnpm.cmd run check`、Golden Test、Alpha Installer 资产组装和 Windows Pester 均已完成；真实 Chrome、Tolaria、Vault 用户链路仍待验收，不能用代码级门禁替代这些证据。
+> 当前文档记录 `v0.1.0-beta.1` 的用户可见错误边界。开发目录的完整 `pnpm.cmd run check`、Markdown/Extension 门禁和独立 Golden Test 已通过；Beta.1 的 Windows Pester/Installer 证据仍待补齐。历史发布记录中的 Alpha Installer 资产不代表当前 Beta.1 状态；真实 Chrome、Tolaria、Vault 用户链路仍待验收，不能用代码级门禁替代这些证据。
 
 ## 1. Capture 按钮不可用
 
@@ -58,7 +58,19 @@ V0.1 是 create-only。目标文件已存在时 Helper 会依次尝试确定性�
 
 检查文章是否使用了受限脚本渲染、登录墙、无限滚动或非标准正文结构。Extractor 应报告 Readability 质量失败，而不是把整页导航和 Footer 静默写入 Markdown。用固定 fixture 复现后再调整提取规则。
 
-## 7. 如何收集诊断信息
+## 7. `Images: 0 localized, N fallback`
+
+这表示正文已经保存，但图片下载没有成功；远程 Markdown 引用会被保留，不应把这个结果当作图片已经本地化。先检查 `Inbox/Web/Assets/` 是否存在对应文件，并确认当前 Extension 和 Helper 来自同一版本。
+
+如果当前网络把公网域名解析到本机代理使用的 fake-IP 映射段，可以在确认网络环境后显式开启兼容模式：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath 'C:\Path\To\Vault' -AllowSyntheticDns
+```
+
+该开关只允许 DNS 名称解析出的 `198.18.0.0/15` 和 `fdfe:dcba:9876::/48` 映射继续请求，默认关闭；直接写入 URL 的 IP、真实私有目标、回环地址和其他保留地址仍会被拒绝。重新加载当前版本 Extension 后再截取文章。
+
+## 8. 如何收集诊断信息
 
 提交问题时提供：
 

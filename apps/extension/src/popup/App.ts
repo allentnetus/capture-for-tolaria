@@ -5,6 +5,13 @@ export interface PopupRuntime {
   captureArticle(): Promise<CaptureResponse>;
 }
 
+function successDetail(response: Extract<CaptureResponse, { ok: true }>): string {
+  if (!response.summary) {
+    return response.relativePath;
+  }
+  return `${response.relativePath} · Images: ${response.summary.localized} localized, ${response.summary.fallback} fallback`;
+}
+
 export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void {
   const ownerDocument = container.ownerDocument;
   const shell = container;
@@ -129,7 +136,7 @@ export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void 
         button.removeAttribute("aria-busy");
         buttonLabel.textContent = "Save to Tolaria";
         if (response.ok) {
-          setStatus("success", "Saved to Tolaria", response.relativePath);
+          setStatus("success", "Saved to Tolaria", successDetail(response));
         } else {
           setStatus("error", "Capture failed", `${response.code}: ${response.message}`);
         }

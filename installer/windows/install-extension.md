@@ -1,6 +1,6 @@
 # Chrome Extension 安装
 
-V0.1 Alpha 使用 Release ZIP 和 Chrome 开发者模式，不使用 Chrome Web Store。
+`v0.1.0-beta.1` 使用 Release ZIP 和 Chrome 开发者模式，不使用 Chrome Web Store。
 
 1. 解压 Release ZIP。
 2. 打开 `chrome://extensions`。
@@ -25,4 +25,4 @@ Extension manifest 中的公开 `key` 只用于固定 ID。Release 私钥不提�
 
 关闭正在进行的剪藏，替换解压后的 Extension 目录，在 `chrome://extensions` 点击 Extension 的刷新按钮。Helper 通过 `hello` 检查协议版本和 capabilities；协议不兼容时不会写入 Vault。
 
-V0.1 不自动下载或执行新 Helper。Alpha 构建未签名，用户应只从项目 Release 页面获取校验过的 ZIP，并核对 `SHA256SUMS.txt`。
+V0.1.x 不自动下载或执行新 Helper。Beta.1 构建未签名，用户应只从项目 Release 页面获取校验过的 ZIP，并核对 `SHA256SUMS.txt`。

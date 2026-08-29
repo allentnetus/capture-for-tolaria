@@ -12,7 +12,7 @@ import {
   type ContentMessage
 } from "./messages.js";
 
-export const EXTENSION_VERSION = "0.1.0-alpha.1";
+export const EXTENSION_VERSION = "0.1.0-beta.1";
 
 export interface ActiveTab {
   id: number;
@@ -81,7 +81,16 @@ export async function handleCaptureMessage(
       dependencies.connectNative
     );
     const captureResponse: CaptureResponse = response.ok
-      ? { ok: true, relativePath: response.result.relativePath }
+      ? {
+          ok: true,
+          relativePath: response.result.relativePath,
+          ...(response.result.summary
+            ? { summary: response.result.summary }
+            : {}),
+          ...(response.result.warnings
+            ? { warnings: response.result.warnings }
+            : {})
+        }
       : {
           ok: false,
           code: response.error.code,
@@ -94,7 +103,13 @@ export async function handleCaptureMessage(
           ? {
               type: "capture.result",
               status: "saved",
-              relativePath: captureResponse.relativePath
+              relativePath: captureResponse.relativePath,
+              ...(captureResponse.summary
+                ? { summary: captureResponse.summary }
+                : {}),
+              ...(captureResponse.warnings
+                ? { warnings: captureResponse.warnings }
+                : {})
             }
           : {
               type: "capture.result",

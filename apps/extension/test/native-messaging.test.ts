@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import {
   NATIVE_HOST_NAME,
   NativeMessagingClientError,
@@ -11,6 +11,7 @@ class FakePort implements NativeMessagingPort {
   readonly messages: unknown[] = [];
   disconnected = false;
   responseRequestId = "req-1";
+  responseDelayMs = 0;
   private readonly messageListeners = new Set<(value: unknown) => void>();
   private readonly disconnectListeners = new Set<() => void>();
   readonly onMessage = {
@@ -45,13 +46,18 @@ class FakePort implements NativeMessagingPort {
       });
       return;
     }
-    this.emit({
+    const response = {
       protocolVersion: 1,
       requestId: this.responseRequestId,
       helperVersion: "0.1.0-alpha.1",
       ok: true,
       result: { relativePath: "Inbox/Web/20260821 - Article.md" }
-    });
+    };
+    if (this.responseDelayMs > 0) {
+      setTimeout(() => this.emit(response), this.responseDelayMs);
+    } else {
+      this.emit(response);
+    }
   }
 
   disconnect(): void {
@@ -107,4 +113,23 @@ it("requestId 不匹配时安全失败并断开连接", async () => {
     NativeMessagingClientError
   );
   expect(port.disconnected).toBe(true);
+});
+
+it("等待超过旧 10 秒的文章响应，避免图片处理完成后误报超时", async () => {
+  vi.useFakeTimers();
+  try {
+    const port = new FakePort();
+    port.responseDelayMs = 15_000;
+    const responsePromise = captureViaNativeMessaging(request, () => port);
+
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(15_000);
+
+    await expect(responsePromise).resolves.toMatchObject({
+      ok: true,
+      requestId: "req-1"
+    });
+  } finally {
+    vi.useRealTimers();
+  }
 });

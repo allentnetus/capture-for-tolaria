@@ -13,7 +13,8 @@ export type ExtractionStep = (typeof EXTRACTION_STEPS)[number];
 export {
   ArticleExtractionError,
   type ExtractionErrorCode,
-  type ExtractionResult
+  type ExtractionResult,
+  type ImageCandidate
 } from "./types.js";
 export { extractArticle } from "./article.js";
 export {

@@ -7,16 +7,22 @@ export {
 export type {
   ArticlePayload,
   ArticleRequest,
+  AssetSummary,
   CaptureAction,
   ClipErrorResponse,
   ClipRequest,
   ClipResponse,
+  ClipResult,
   ClipSuccessResponse,
   HelloRequest,
-  HelloResponse
+  HelloResponse,
+  ImageCandidate,
+  LocalizedAsset
 } from "./types.js";
 
 export {
+  MAX_IMAGE_ALT_TEXT_LENGTH,
+  MAX_IMAGE_CANDIDATES,
   MAX_MARKDOWN_CHARACTERS,
   MAX_METADATA_KEY_LENGTH,
   MAX_METADATA_VALUE_LENGTH,

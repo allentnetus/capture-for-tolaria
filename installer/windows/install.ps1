@@ -14,8 +14,8 @@ if ([string]::IsNullOrWhiteSpace($HelperPath)) {
         throw "VERSION file not found beside the Installer package: $versionPath"
     }
     $version = (Get-Content -LiteralPath $versionPath -Raw).Trim()
-    if ($version -notmatch '^\d+\.\d+\.\d+-alpha\.\d+$') {
-        throw "VERSION is not a supported Alpha version: $version"
+    if ($version -notmatch '^\d+\.\d+\.\d+-(alpha|beta)\.\d+$') {
+        throw "VERSION is not a supported pre-release version: $version"
     }
     $helperName = "capture-for-tolaria-helper-$version-windows-x64.exe"
     $candidates = @(

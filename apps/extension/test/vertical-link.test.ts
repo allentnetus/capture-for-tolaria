@@ -111,7 +111,7 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
         "source_url: \"https://example.com/integration/article\""
       );
     }
-    expect(EXTENSION_VERSION).toBe("0.1.0-alpha.1");
+    expect(EXTENSION_VERSION).toBe("0.1.0-beta.1");
     const resultMessages = contentMessages.filter(
       (message): message is { type: "capture.result"; status: "saved"; relativePath: string } =>
         typeof message === "object" &&

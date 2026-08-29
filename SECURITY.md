@@ -29,6 +29,7 @@ Capture for Tolaria 将网页 DOM、标题、来源 URL、metadata 和 Markdown 
 - HTML 经过 Readability、Sanitization、DOM Cleanup 后才进入 Markdown；图片候选只允许无凭据 HTTP/HTTPS URL。
 - `relativeFolder` 逐级创建和校验 canonical path，拒绝 `..`、symlink、junction 和 reparse point 逃逸。
 - 文件写入 create-only、atomic，不覆盖已有文件。
-- 图片下载在 Helper 内重复校验目标地址，拒绝 loopback、私有、link-local、multicast、unspecified、保留地址、危险重定向、凭据 URL、超限响应和 `image/svg+xml`。
-- 图片资源使用 `Assets/<sha256>.<ext>` 内容寻址，临时资源通过 create-only 提交；Markdown 失败时只清理本次创建且未被已有 Markdown 引用的资源。
+- 图片下载在 Helper 内重复校验目标地址，拒绝 loopback、私有、link-local、multicast、unspecified、保留地址、危险重定向、凭据 URL、超限响应和 `image/svg+xml`；实际 HTTP(S) 连接固定到已检查的 DNS 地址，原始主机名只用于 Host 和 TLS SNI。
+- 图片资源使用 `Assets/<sha256>.<ext>` 内容寻址，临时资源通过 create-only 提交；已有同名 Asset 复用前校验文件大小和 SHA-256；Markdown 失败时只清理本次创建且未被已有 Markdown 引用的资源。
+- Extension 在协议校验前最多传递 128 个图片候选，超出部分保留原始远程引用；Helper 的整次图片本地化预算为 45 秒。
 - V0.1 local-first，无 telemetry、账号、云上传、浏览历史和 cookies 采集；图片请求不携带 cookies 或 `Authorization`。

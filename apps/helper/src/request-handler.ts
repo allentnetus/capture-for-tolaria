@@ -17,6 +17,7 @@ import {
 } from "./atomic-create-writer.js";
 import { localizeArticleImages } from "./article-image-localizer.js";
 import {
+  DEFAULT_ASSET_FETCHER,
   DEFAULT_ASSET_LOCALIZATION_POLICY,
   type AssetFetcher
 } from "./asset-downloader.js";
@@ -38,10 +39,6 @@ export interface RequestHandlerOptions {
 
 const DEFAULT_HELPER_VERSION = "0.1.0-beta.1";
 const DEFAULT_CAPABILITIES = ["clip.article", "direct-file"];
-
-const DEFAULT_ASSET_FETCHER: AssetFetcher = {
-  fetch: (url, init) => globalThis.fetch(url, init)
-};
 
 function errorResponse(
   requestId: string,

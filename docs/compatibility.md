@@ -42,10 +42,10 @@
 以下证据来自开发目录的 Beta.1 图片能力实现，尚未改变上面的 Alpha.1 发布身份：
 
 - Extractor 覆盖 `data-src`、`data-srcset`、`srcset`、`picture/source`、相对 URL、重复候选、凭据 URL、`blob:`、危险协议和代码块场景。
-- Helper 受限下载器覆盖允许 MIME、SVG/HTML 拒绝、单图/总量/流式超限、超时、手动重定向、IPv4/IPv6 私有目标和无 Cookie/`Authorization` 请求头。
-- Bundle Writer 覆盖 `Assets/` create-only、同 hash 复用、Markdown 冲突、失败清理和 Assets/目标 reparse point。
-- Extension 覆盖图片 payload、结果摘要/warning 传递和 Popup 的 `localized` / `fallback` 文案。
-- 合成 `wechat-article.html` 内存链路确认图片 Markdown 使用内容哈希相对路径，普通链接和 fenced code 不被改写。
+- Helper 受限下载器覆盖允许 MIME、SVG/HTML 拒绝、单图/总量/流式超限、单图/整体超时、手动重定向、IPv4/IPv6 私有目标、DNS 地址绑定和无 Cookie/`Authorization` 请求头。
+- Bundle Writer 覆盖 `Assets/` create-only、同 hash 复用前的完整性校验、Markdown 冲突、失败清理和 Assets/目标 reparse point。
+- Extension 覆盖图片 payload、协议校验前的 128 张候选上限、结果摘要/warning 传递和 Popup 的 `localized` / `fallback` 文案。
+- 合成 `wechat-article.html` 内存链路确认图片 Markdown 使用内容哈希相对路径，支持图片 URL 中的平衡括号，普通链接和 fenced code 不被改写。
 - Native Messaging 完整 UTF-8 帧测试确认图片元数据计入 `MAX_NATIVE_MESSAGE_BYTES`。
 
 当前主机的 Windows PowerShell/Pester 门禁仍未形成 Beta.1 通过证据：主机只有 Pester 3.4.0（项目断言使用 Pester 5 的 `-Be` 语法），Pester 5.7.1 临时获取又受到 PowerShellGet/证书环境阻断；即使使用当前 Pester 3.4.0，HKCU Native Messaging 注册还会被执行沙箱拒绝。因此本节的 Beta.1 证据不包含 Installer/Pester 通过结论。

@@ -13,6 +13,9 @@
 - Beta.1 修复：将包含图片处理的 `clip.article` 完整响应等待时间从 10 秒调整为 60 秒，避免 Helper 已继续完成保存时 Popup 先误报响应超时；单图下载安全超时仍为 10 秒。
 - Beta.1 开发：拒绝 SVG、危险协议、凭据 URL、私有/保留网络目标、危险重定向和超限图片；不读取或发送 cookies、`Authorization` 或页面凭据。
 - Beta.1 开发：针对将公网域名解析到 `198.18.0.0/15` 或 `fdfe:dcba:9876::/48` 的本机 fake-IP 网络，增加默认关闭的 `-AllowSyntheticDns` 显式兼容模式；直接写入的 IP、真实私有目标和其他保留地址仍拒绝。
+- Beta.1 安全修复：将通过目标校验的 DNS 地址固定到实际 HTTP(S) 连接，并保留原始主机名用于 Host 和 TLS SNI，降低 DNS rebinding 风险。
+- Beta.1 稳定性修复：Extension 在协议校验前限制最多 128 个图片候选；Helper 对整次图片本地化设置 45 秒预算，超出候选安全回退。
+- Beta.1 完整性修复：已有同名内容寻址 Asset 复用前校验文件大小和 SHA-256；Markdown 图片解析支持 URL 中的平衡括号。
 - 修复 Windows PowerShell 5.1 下四个发布脚本的无参数默认路径。
 - 配置文件改为无 BOM UTF-8，并让 Helper 兼容已有 BOM 配置。
 - 增加 PowerShell 5.1 配置到真实 SEA Helper 写入测试。

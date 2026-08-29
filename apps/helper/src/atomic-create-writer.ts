@@ -47,6 +47,30 @@ async function ensureExistingAssetTargetSafe(targetPath: string): Promise<void> 
   }
 }
 
+async function ensureExistingAssetContentMatches(
+  targetPath: string,
+  expectedContent: Uint8Array
+): Promise<void> {
+  try {
+    const stats = await lstat(targetPath);
+    await assertNoReparsePoint(targetPath, stats);
+    if (!stats.isFile() || stats.size !== expectedContent.byteLength) {
+      throw new FileChannelError("WRITE_FAILED", "已有图片资源内容与哈希文件名不匹配");
+    }
+    const existingContent = await readFile(targetPath);
+    const expectedHash = createHash("sha256").update(expectedContent).digest("hex");
+    const existingHash = createHash("sha256").update(existingContent).digest("hex");
+    if (existingHash !== expectedHash) {
+      throw new FileChannelError("WRITE_FAILED", "已有图片资源内容与哈希文件名不匹配");
+    }
+  } catch (error) {
+    if (error instanceof FileChannelError) {
+      throw error;
+    }
+    throw new FileChannelError("WRITE_FAILED", "无法验证已有图片资源", { cause: error });
+  }
+}
+
 export interface WriteInput {
   vaultRoot: string;
   relativeFolder: string;
@@ -320,7 +344,7 @@ export async function writeCaptureBundleCreateOnly(
       try {
         const commit = await createOnlyLink(temporaryPath, targetPath);
         if (commit === "exists") {
-          await ensureExistingAssetTargetSafe(targetPath);
+          await ensureExistingAssetContentMatches(targetPath, asset.content);
         } else {
           createdTargets.push(targetPath);
           createdRelativePaths.push(asset.relativePath);

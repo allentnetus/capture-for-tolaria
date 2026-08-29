@@ -61,9 +61,9 @@ Helper 只能处理业务级 `clip.article`，不能提供 `writeFile(anyPath)`�
 图片 Bundle 还必须满足：
 
 - `img` / `picture/source` 候选只接受无用户名、无密码的 `http:` 或 `https:` URL；Extension 不传图片二进制。
-- 每次请求前解析并检查 DNS 目标，默认拒绝 loopback、RFC1918 私有、link-local、multicast、unspecified 和保留地址；`Location` 重定向目标逐次重复校验。仅当用户显式设置 `allowSyntheticDns=true` 时，DNS 名称解析出的当前 fake-IP 映射段 `198.18.0.0/15` 和 `fdfe:dcba:9876::/48` 可作为本机代理兼容例外；直接写入的 IP、真实私有目标和其他保留地址仍拒绝。
-- 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `image/avif`；默认单图 8 MiB、总量 32 MiB、10 秒超时和 3 次重定向上限。
-- 资源只写入当前文章目录的 `Assets/<sha256>.<ext>`，使用 create-only 语义；已有同 hash 文件可复用但不得覆盖。Markdown 写入失败时，不删除已有或仍被 Markdown 引用的 Asset。
+- 每次请求前解析并检查 DNS 目标，并将通过检查的地址固定到实际 HTTP(S) 连接；默认拒绝 loopback、RFC1918 私有、link-local、multicast、unspecified 和保留地址；`Location` 重定向目标逐次重复校验。HTTP Host 和 TLS SNI 仍使用原始主机名。仅当用户显式设置 `allowSyntheticDns=true` 时，DNS 名称解析出的当前 fake-IP 映射段 `198.18.0.0/15` 和 `fdfe:dcba:9876::/48` 可作为本机代理兼容例外；直接写入的 IP、真实私有目标和其他保留地址仍拒绝。
+- 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `image/avif`；默认单图 8 MiB、总量 32 MiB、单图 10 秒超时、整次图片本地化 45 秒预算和 3 次重定向上限。
+- 资源只写入当前文章目录的 `Assets/<sha256>.<ext>`，使用 create-only 语义；已有同 hash 文件复用前必须校验文件大小和 SHA-256，且不得覆盖。Markdown 写入失败时，不删除已有或仍被 Markdown 引用的 Asset。
 
 ## 5. 协议安全
 

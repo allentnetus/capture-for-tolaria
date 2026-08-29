@@ -1,5 +1,8 @@
 import { lookup } from "node:dns/promises";
+import { request as httpRequest } from "node:http";
 import { isIP } from "node:net";
+import { request as httpsRequest } from "node:https";
+import { Readable } from "node:stream";
 import type { ImageCandidate } from "@capture-for-tolaria/protocol";
 import { FileChannelError } from "./errors.js";
 
@@ -7,6 +10,7 @@ export interface AssetLocalizationPolicy {
   maxAssetBytes: number;
   maxTotalBytes: number;
   timeoutMs: number;
+  maxLocalizationTimeMs: number;
   maxRedirects: number;
   allowSyntheticDns: boolean;
 }
@@ -14,13 +18,16 @@ export interface AssetLocalizationPolicy {
 export interface AssetFetcher {
   fetch(
     url: string,
-    init: {
-      signal: AbortSignal;
-      redirect: "manual";
-      headers: { Accept: "image/*" };
-    }
+    init: AssetFetchInit
   ): Promise<Response>;
   resolveHost?: (hostname: string) => Promise<string[]>;
+}
+
+export interface AssetFetchInit {
+  signal: AbortSignal;
+  redirect: "manual";
+  headers: { Accept: "image/*" };
+  pinnedAddress: string;
 }
 
 export interface DownloadedAsset {
@@ -33,6 +40,7 @@ export const DEFAULT_ASSET_LOCALIZATION_POLICY: AssetLocalizationPolicy = {
   maxAssetBytes: 8 * 1024 * 1024,
   maxTotalBytes: 32 * 1024 * 1024,
   timeoutMs: 10_000,
+  maxLocalizationTimeMs: 45_000,
   maxRedirects: 3,
   allowSyntheticDns: false
 };
@@ -241,7 +249,7 @@ async function resolveAndValidateTarget(
   fetcher: AssetFetcher,
   redirect: boolean,
   allowSyntheticDns: boolean
-): Promise<void> {
+): Promise<string> {
   const hostname = url.hostname.replace(/^\[|\]$/gu, "");
   const allowSyntheticDnsForHostname = allowSyntheticDns && isIP(hostname) === 0;
   const addresses = isIP(hostname)
@@ -257,7 +265,62 @@ async function resolveAndValidateTarget(
   ) {
     return fail(redirect ? "ASSET_REDIRECT_BLOCKED" : "ASSET_TARGET_BLOCKED", "图片目标地址被阻止");
   }
+  const pinnedAddress = addresses[0];
+  if (!pinnedAddress) {
+    return fail(redirect ? "ASSET_REDIRECT_BLOCKED" : "ASSET_TARGET_BLOCKED", "图片目标地址被阻止");
+  }
+  return pinnedAddress;
 }
+
+function fetchWithPinnedAddress(
+  value: string,
+  init: AssetFetchInit
+): Promise<Response> {
+  const url = new URL(value);
+  const hostname = url.hostname.replace(/^\[|\]$/gu, "");
+  const request = url.protocol === "https:" ? httpsRequest : httpRequest;
+  const pinnedAddress = init.pinnedAddress;
+
+  return new Promise((resolve, reject) => {
+    const clientRequest = request({
+      protocol: url.protocol,
+      hostname,
+      port: url.port || undefined,
+      path: `${url.pathname}${url.search}`,
+      method: "GET",
+      headers: init.headers,
+      signal: init.signal,
+      lookup: (_hostname, options, callback) => {
+        const family = isIP(pinnedAddress);
+        if (options.all) {
+          callback(null, [{ address: pinnedAddress, family }]);
+        } else {
+          callback(null, pinnedAddress, family);
+        }
+      },
+      ...(url.protocol === "https:" ? { servername: hostname } : {})
+    }, (response) => {
+      const headers = new Headers();
+      for (const [name, headerValue] of Object.entries(response.headers)) {
+        if (headerValue === undefined) {
+          continue;
+        }
+        headers.set(name, Array.isArray(headerValue) ? headerValue.join(", ") : headerValue);
+      }
+      const body = Readable.toWeb(response) as ReadableStream<Uint8Array>;
+      resolve(new Response(body, {
+        status: response.statusCode ?? 500,
+        headers
+      }));
+    });
+    clientRequest.once("error", reject);
+    clientRequest.end();
+  });
+}
+
+export const DEFAULT_ASSET_FETCHER: AssetFetcher = {
+  fetch: fetchWithPinnedAddress
+};
 
 function contentTypeOf(response: Response): string {
   const contentType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
@@ -303,7 +366,7 @@ export async function downloadAsset(
 
   let redirectCount = 0;
   while (true) {
-    await resolveAndValidateTarget(
+    const pinnedAddress = await resolveAndValidateTarget(
       currentUrl,
       fetcher,
       redirectCount > 0,
@@ -318,7 +381,8 @@ export async function downloadAsset(
         response = await fetcher.fetch(currentUrl.toString(), {
           signal: controller.signal,
           redirect: "manual",
-          headers: { Accept: "image/*" }
+          headers: { Accept: "image/*" },
+          pinnedAddress
         });
       } catch (error) {
         if (error instanceof FileChannelError) {

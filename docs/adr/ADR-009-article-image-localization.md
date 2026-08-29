@@ -61,16 +61,17 @@ Helper 使用注入的 `AssetFetcher`，真实下载器必须：
 - 不发送 cookies、Authorization、Referer 中的敏感信息或页面凭据；
 - 手动处理重定向并限制最多 3 次；
 - 在初始 URL、每个重定向目标和最终 URL 上重新检查 HTTP/HTTPS；
+- 将通过检查的 DNS 地址固定到实际 HTTP(S) 连接，同时保留原始主机名用于 HTTP Host 和 TLS SNI，避免校验后的地址被 DNS rebinding 替换；
 - 拒绝 loopback、link-local、私有网段、保留地址和无法安全解析的目标；
 - 检查允许的图片 MIME 类型；
-- 限制单图 8 MiB、整次请求 32 MiB、连接超时 10 秒；
+- 限制单图 8 MiB、整次请求 32 MiB、单图请求超时 10 秒和整次图片本地化预算 45 秒；
 - 超限或响应不符合要求时清理临时内容并返回稳定 warning。
 
 默认允许的 MIME 类型为 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `image/avif`。`image/svg+xml` 不在允许列表内，避免把可执行 SVG 内容写入 Vault。
 
 ### Assets 命名和一致提交
 
-资源写入当前 Article 的 `relativeFolder` 下的 `Assets/`，文件名采用下载内容的 SHA-256 前缀和由 MIME 推导的扩展名：
+资源写入当前 Article 的 `relativeFolder` 下的 `Assets/`，文件名采用下载内容的 SHA-256 前缀和由 MIME 推导的扩展名；已有同名 Asset 复用前校验文件大小和 SHA-256：
 
 ```text
 Inbox/Web/

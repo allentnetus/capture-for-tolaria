@@ -40,10 +40,10 @@ V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境�
 3. Content Script 克隆当前 `document`，不修改文章正文和业务页面结构；错误反馈时只注入独立的 toast UI。
 4. Extractor 在克隆 DOM 上依次执行 Readability、结果质量检查、Sanitization 和 DOM Cleanup。
 5. Markdown 管线生成带 `title`、`source_url`、`clipped`、`type` 的 Markdown 文档；来源 URL 只保留在 frontmatter 元数据中，不在正文顶部或底部重复追加；`site`、`author` 和 `published` 为可选元数据，图片同时保留安全远程引用和可选候选清单。
-6. Extension 发送 `clip.article` 请求。请求只包含相对目录、标题、Markdown、HTTPS/HTTP 来源、有限元数据和可选 `images` 候选，不携带图片二进制。
-7. Helper 校验协议、请求大小、来源 URL、相对目录和标题；对存在于正文且不在 fenced code 中的图片，使用无 cookies/`Authorization` 的受限 HTTP(S) 下载，拒绝私有目标、危险重定向、超限响应和 SVG。
-8. Helper 在当前文章目录的 `Assets/` 中以 SHA-256 内容寻址资源，使用 create-only Bundle 语义先提交资源再提交 Markdown；成功资源替换为 `Assets/<sha256>.<ext>`，失败资源保留远程引用。
-9. Helper 返回带校验后规范化 `requestId` 的成功或稳定错误响应；图片成功数、回退数和 warning 通过可选结果字段传回 Popup。握手仍使用 10 秒等待，包含图片处理的完整 `clip.article` 响应使用 60 秒等待；单图下载安全超时仍为 10 秒。
+6. Extension 发送 `clip.article` 请求。请求只包含相对目录、标题、Markdown、HTTPS/HTTP 来源、有限元数据和可选 `images` 候选，不携带图片二进制；候选在协议校验前限制为最多 128 个。
+7. Helper 校验协议、请求大小、来源 URL、相对目录和标题；对存在于正文且不在 fenced code 中的图片，使用无 cookies/`Authorization` 的受限 HTTP(S) 下载，拒绝私有目标、危险重定向、超限响应和 SVG；实际连接固定到已检查的 DNS 地址，同时保留原始主机名用于 Host 和 TLS SNI。
+8. Helper 在当前文章目录的 `Assets/` 中以 SHA-256 内容寻址资源，使用 create-only Bundle 语义先提交资源再提交 Markdown；成功资源替换为 `Assets/<sha256>.<ext>`，已有同名 Asset 复用前校验大小和 SHA-256，失败资源保留远程引用。
+9. Helper 返回带校验后规范化 `requestId` 的成功或稳定错误响应；图片成功数、回退数和 warning 通过可选结果字段传回 Popup。握手仍使用 10 秒等待，包含图片处理的完整 `clip.article` 响应使用 60 秒等待；单图下载安全超时仍为 10 秒，整次图片本地化预算为 45 秒。
 
 ## 4. File Channel 与 MCP Channel
 
@@ -72,5 +72,5 @@ Extension 和 Helper 共用 `protocolVersion`、`requestId`、组件版本和 ca
 - 目标文件已存在时使用确定性的 `(2)`、`(3)` 等冲突后缀，原文件内容不变；达到后缀上限时返回 `NAME_EXHAUSTED`。
 - atomic create-only 使用同一卷 hard link；目标文件系统不支持该语义时返回 `ATOMIC_COMMIT_UNAVAILABLE`。
 - Native Messaging 的 stdout 只输出协议帧；日志走 stderr。
-- 图片下载只接受无凭据 HTTP/HTTPS URL，解析并检查每次请求的目标地址；默认单图 8 MiB、单次 32 MiB、10 秒超时、最多 3 次重定向。默认拒绝私有/保留目标；只有用户在本机配置中显式启用 `allowSyntheticDns` 时，DNS 名称解析出的当前 fake-IP 映射段 `198.18.0.0/15` 和 `fdfe:dcba:9876::/48` 才可继续请求，直接写入的 IP 和真实私有目标仍被拒绝。
+- 图片下载只接受无凭据 HTTP/HTTPS URL，解析并检查每次请求的目标地址，并把已检查的地址固定到实际连接；默认单图 8 MiB、单次 32 MiB、单图 10 秒超时、整次图片本地化 45 秒预算、最多 3 次重定向。默认拒绝私有/保留目标；只有用户在本机配置中显式启用 `allowSyntheticDns` 时，DNS 名称解析出的当前 fake-IP 映射段 `198.18.0.0/15` 和 `fdfe:dcba:9876::/48` 才可继续请求，直接写入的 IP 和真实私有目标仍被拒绝。HTTP Host 和 TLS SNI 仍使用原始主机名。
 - 默认不收集遥测、浏览历史、cookies、页面凭据或账号信息；图片字节只在本机 Helper 和用户授权 Vault 内处理。

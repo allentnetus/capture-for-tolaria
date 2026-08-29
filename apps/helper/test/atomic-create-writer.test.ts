@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readdir, readFile, rm, symlink } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
@@ -178,6 +178,29 @@ it("重复剪藏复用同一个内容寻址 Asset 且不覆盖原资源", async 
     expect(await readFile(join(vault, "Inbox/Web", asset.relativePath))).toEqual(
       Buffer.from([1, 2, 3])
     );
+  } finally {
+    await rm(vault, { recursive: true, force: true });
+  }
+}, 30_000);
+
+it("已有内容寻址 Asset 内容不匹配时拒绝复用", async () => {
+  const vault = await temporaryVault();
+  try {
+    const asset = preparedAsset();
+    const assetPath = join(vault, "Inbox", "Web", asset.relativePath);
+    await mkdir(join(vault, "Inbox", "Web", "Assets"), { recursive: true });
+    await writeFile(assetPath, new Uint8Array([9]));
+
+    await expect(writeCaptureBundleCreateOnly({
+      vaultRoot: vault,
+      relativeFolder: "Inbox/Web",
+      title: "Corrupted asset",
+      markdown: `![Image](${asset.relativePath})`,
+      assets: [asset],
+      capturedAt
+    })).rejects.toMatchObject({ code: "WRITE_FAILED" });
+
+    await expect(readFile(assetPath)).resolves.toEqual(Buffer.from([9]));
   } finally {
     await rm(vault, { recursive: true, force: true });
   }

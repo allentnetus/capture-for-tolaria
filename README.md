@@ -62,7 +62,7 @@ Vault/Inbox/Web/YYYYMMDD - Title.md
 
 默认不上传网页正文，不收集 telemetry、cookies、浏览历史或账号信息。Beta.1 对正文中识别出的图片执行无凭据、受限的本地化；成功资源写入文章目录的 `Assets/`，失败资源保留经过检查的远程 HTTP/HTTPS URL。
 
-Beta.1 图片请求只使用无凭据的 HTTP/HTTPS 方式，不发送 cookies、`Authorization` 或页面凭据；默认单图 8 MiB、单次 32 MiB、单图请求 10 秒超时、最多 3 次重定向，并拒绝 SVG、私有目标和登录后图片。Extension 对包含图片处理的完整 `clip.article` 响应最多等待 60 秒。使用 fake-IP DNS 的本机网络可以通过 `configure-vault.ps1 -AllowSyntheticDns` 显式启用兼容模式；该模式默认关闭，且仍拒绝直接写入的 IP、真实私有目标和其他保留地址。
+Beta.1 图片请求只使用无凭据的 HTTP/HTTPS 方式，不发送 cookies、`Authorization` 或页面凭据；默认单图 8 MiB、单次 32 MiB、单图请求 10 秒超时、整次图片本地化预算 45 秒、最多 3 次重定向，并拒绝 SVG、私有目标和登录后图片。Helper 将实际连接固定到已通过检查的 DNS 地址，同时保留原始主机名用于 HTTP Host 和 TLS SNI；Extension 对包含图片处理的完整 `clip.article` 响应最多等待 60 秒。Extension 在协议校验前最多发送 128 个图片候选，超出的图片保留远程引用。使用 fake-IP DNS 的本机网络可以通过 `configure-vault.ps1 -AllowSyntheticDns` 显式启用兼容模式；该模式默认关闭，且仍拒绝直接写入的 IP、真实私有目标和其他保留地址。
 
 ## 权限
 

@@ -1,6 +1,8 @@
+import { createServer } from "node:http";
 import { expect, it, vi } from "vitest";
 import {
   DEFAULT_ASSET_LOCALIZATION_POLICY,
+  DEFAULT_ASSET_FETCHER,
   FileChannelError,
   downloadAsset,
   type AssetFetcher,
@@ -201,6 +203,61 @@ it("仅在显式启用 fake-IP 兼容时接受当前代理映射", async () => {
   expect(result.contentType).toBe("image/png");
   expect([...result.bytes]).toEqual([1, 2, 3]);
   expect(fetcher.fetch).toHaveBeenCalledTimes(1);
+});
+
+it("将已验证的 DNS 地址传给实际请求层", async () => {
+  const fetcher = fakeFetcher(
+    async () => response(new Uint8Array([1, 2, 3]), "image/png"),
+    ["93.184.216.34", "93.184.216.35"]
+  );
+
+  await downloadAsset(candidate(), smallPolicy, fetcher, 0);
+
+  expect(fetcher.fetch.mock.calls[0]?.[1]).toHaveProperty(
+    "pinnedAddress",
+    "93.184.216.34"
+  );
+});
+
+it("默认请求层使用固定地址连接并保留原始 Host", async () => {
+  let port = 0;
+  const server = createServer((request, response) => {
+    if (request.headers.host !== `public.example:${port}`) {
+      response.statusCode = 400;
+      response.end("unexpected host");
+      return;
+    }
+    response.writeHead(200, { "content-type": "image/png" });
+    response.end(Buffer.from([7, 8, 9]));
+  });
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => resolve());
+  });
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    server.close();
+    throw new Error("Test server did not expose a TCP port");
+  }
+  port = address.port;
+
+  try {
+    const result = await DEFAULT_ASSET_FETCHER.fetch(
+      `http://public.example:${port}/image.png`,
+      {
+        signal: new AbortController().signal,
+        redirect: "manual",
+        headers: { Accept: "image/*" },
+        pinnedAddress: "127.0.0.1"
+      }
+    );
+    expect(result.status).toBe(200);
+    expect([...new Uint8Array(await result.arrayBuffer())]).toEqual([7, 8, 9]);
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+  }
 });
 
 it("fake-IP 兼容模式仍拒绝真实私有目标", async () => {

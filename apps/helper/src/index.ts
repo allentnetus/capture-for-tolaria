@@ -17,9 +17,11 @@ export {
   type FileChannelErrorCode
 } from "./errors.js";
 export {
+  DEFAULT_ASSET_FETCHER,
   DEFAULT_ASSET_LOCALIZATION_POLICY,
   downloadAsset,
   type AssetFetcher,
+  type AssetFetchInit,
   type AssetLocalizationPolicy,
   type DownloadedAsset
 } from "./asset-downloader.js";

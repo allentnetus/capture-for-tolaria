@@ -43,3 +43,29 @@ it("将正文图片候选传递到 clip.article payload", () => {
     altText: "Hero image"
   }]);
 });
+
+it("在协议校验前将图片候选限制在 128 张", () => {
+  const imageMarkup = Array.from(
+    { length: 129 },
+    (_, index) => `<img src="https://cdn.example.com/article/${index}.png" alt="Image ${index}">`
+  ).join("");
+  const document = new JSDOM(`
+    <article>
+      <h1>Article with many images</h1>
+      <p>This article body is long enough to pass extraction and include many safe images.</p>
+      ${imageMarkup}
+    </article>
+  `, { url: "https://example.com/article-with-many-images" }).window.document;
+
+  const payload = captureArticleFromDocument(
+    document,
+    "https://example.com/article-with-many-images",
+    "2026-08-27T22:00:00+08:00"
+  );
+
+  expect(payload.images).toHaveLength(128);
+  expect(payload.images?.[127]?.remoteUrl).toBe(
+    "https://cdn.example.com/article/127.png"
+  );
+  expect(payload.images?.[128]).toBeUndefined();
+});

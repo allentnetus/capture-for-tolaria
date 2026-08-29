@@ -88,6 +88,26 @@ it("重复候选只下载一次并替换所有相同图片目标", async () => {
   expect(result.summary).toEqual({ requested: 1, localized: 1, fallback: 0 });
 });
 
+it("支持图片 URL 中的平衡括号", async () => {
+  const remoteUrl = "https://public.example/image(1).png";
+  const bytes = new Uint8Array([5, 6]);
+  const fetcher = fakeFetcher({ [remoteUrl]: imageResponse(bytes) });
+
+  const result = await localizeArticleImages(
+    `![Parenthesized](${remoteUrl})`,
+    [{ remoteUrl }],
+    policy,
+    fetcher
+  );
+
+  expect(fetcher.fetch).toHaveBeenCalledWith(
+    remoteUrl,
+    expect.objectContaining({ pinnedAddress: "93.184.216.34" })
+  );
+  expect(result.markdown).toBe(`![Parenthesized](${assetPath(bytes)})`);
+  expect(result.summary).toEqual({ requested: 1, localized: 1, fallback: 0 });
+});
+
 it("候选未出现在 Markdown 中时不下载也不写入资源", async () => {
   const remoteUrl = "https://public.example/not-present.png";
   const fetcher = fakeFetcher({ [remoteUrl]: imageResponse(new Uint8Array([1])) });
@@ -116,6 +136,29 @@ it("图片引用超出协议字段上限时不执行本地化", async () => {
   expect(result.markdown).toBe(markdown);
   expect(result.assets).toEqual([]);
   expect(result.summary).toEqual({ requested: 1, localized: 0, fallback: 0 });
+});
+
+it("达到整体本地化时限后不再发起图片请求", async () => {
+  const firstUrl = "https://public.example/first.png";
+  const secondUrl = "https://public.example/second.png";
+  const fetcher = fakeFetcher({
+    [firstUrl]: imageResponse(new Uint8Array([3])),
+    [secondUrl]: imageResponse(new Uint8Array([4]))
+  });
+  const deadlinePolicy = { ...policy, maxLocalizationTimeMs: 0 };
+
+  const result = await localizeArticleImages(
+    `![First](${firstUrl})\n\n![Second](${secondUrl})`,
+    [{ remoteUrl: firstUrl }, { remoteUrl: secondUrl }],
+    deadlinePolicy,
+    fetcher
+  );
+
+  expect(fetcher.fetch).not.toHaveBeenCalled();
+  expect(result.markdown).toContain(firstUrl);
+  expect(result.markdown).toContain(secondUrl);
+  expect(result.summary).toEqual({ requested: 2, localized: 0, fallback: 2 });
+  expect(result.warnings).toEqual(["IMAGE_TIMEOUT", "IMAGE_TIMEOUT"]);
 });
 
 it("不改写普通链接和 fenced code 中的同 URL", async () => {

@@ -130,7 +130,7 @@ N bytes UTF-8 JSON
 
 `assets`、`summary` 和 `warnings` 都是可选结果字段；没有 `images` 的旧请求仍只返回 `relativePath`。`assets.relativePath` 相对于 Vault，正文 Markdown 中使用当前文章目录下的 `Assets/<sha256>.<ext>`。
 
-Helper 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `image/avif`。单图默认上限为 8 MiB，单次剪藏默认总上限为 32 MiB，单图请求超时 10 秒，最多跟随 3 次重定向；Extension 对完整 `clip.article` 响应最多等待 60 秒，以覆盖多图顺序处理和文件提交时间。请求不携带 cookies、`Authorization` 或页面凭据；`image/svg+xml`、CSS 背景图、`blob:`、登录后图片和需要浏览器凭据的防盗链资源不属于本能力范围。失败图片保留安全的远程 Markdown 引用，并计入 `fallback`。
+Helper 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `image/avif`。Extension 在协议校验前最多传递 128 个图片候选；超出部分保留远程引用。单图默认上限为 8 MiB，单次剪藏默认总上限为 32 MiB，单图请求超时 10 秒，整次图片本地化预算 45 秒，最多跟随 3 次重定向；实际连接固定到已检查的 DNS 地址，同时保留原始主机名用于 HTTP Host 和 TLS SNI。Extension 对完整 `clip.article` 响应最多等待 60 秒，以覆盖图片处理和文件提交时间。请求不携带 cookies、`Authorization` 或页面凭据；`image/svg+xml`、CSS 背景图、`blob:`、登录后图片和需要浏览器凭据的防盗链资源不属于本能力范围。已有同名内容寻址 Asset 复用前校验文件大小和 SHA-256；失败图片保留安全的远程 Markdown 引用，并计入 `fallback`。
 
 ## 5. 错误响应
 

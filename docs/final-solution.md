@@ -1203,7 +1203,9 @@ GitHub Release 面向普通用户只公开一个自包含 Installer ZIP：
 v0.1.0-alpha.1（历史 Alpha）
 v0.1.0-beta.1（历史 Beta）
 v0.1.0-beta.2（历史 Beta）
-v0.1.0-beta.5（当前发布目标）
+v0.1.0-beta.3（历史 Beta）
+v0.1.0-beta.4（历史 Beta）
+v0.1.0-beta.5（当前发布版本）
 v0.1.1
 v0.2.0
 ```

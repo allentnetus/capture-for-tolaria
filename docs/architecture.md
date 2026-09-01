@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 架构
 
-> 状态：`v0.1.0-beta.1` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化
+> 状态：`v0.1.0-beta.5` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化与可配置 Vault 路径
 >
 > 本文与 `docs/final-solution.md` 配套，冻结第一条可验证的 Article Capture 主链路。
 
@@ -12,13 +12,13 @@ V0.1 只支持 Windows、Chrome 和 Article Capture。用户在公开文章页�
 Chrome 页面
     ↓ 用户点击 Capture
 MV3 Extension
-    ↓ Native Messaging
+    ↓ 读取 defaultRelativeFolder，并在 clip.article 前注入相对目录
 Helper
     ↓ 受限图片下载 + Direct File Channel
-Tolaria Vault / Inbox/Web/*.md + Assets/<sha256>.<ext>
+Tolaria Vault / <defaultRelativeFolder>/*.md + Assets/<sha256>.<ext>
 ```
 
-V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.1 的图片本地化仍由用户触发并在 Helper 内完成；MCP Channel、AI、多 Vault 和跨平台支持不属于本版本。
+V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.5 的图片本地化仍由用户触发并在 Helper 内完成，Vault root 和默认相对目录可由 Settings 配置；MCP Channel、AI、多 Vault 和跨平台支持不属于本版本。
 
 ## 2. 组件职责
 
@@ -33,6 +33,17 @@ V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境�
 
 各层保持单向依赖：协议和共享类型位于边界层，网页管线不调用文件系统，Helper 不接受 Extension 传入的最终绝对路径。
 
+### 2.1 存储配置归属
+
+两项路径配置由不同组件作为唯一可信来源管理：
+
+| 配置 | 唯一存储位置 | 读取/更新方 | 约束 |
+| --- | --- | --- | --- |
+| Vault root | 当前用户应用数据目录中的 `CaptureForTolaria` 配置文件 | Helper；Extension Settings 通过 `vault.config.get` / `vault.config.set` 间接访问 | 只接受 Windows 绝对路径；Helper 校验普通目录、读写权限和 reparse point，并原子更新配置 |
+| 默认目录 | `chrome.storage.local` 的 `defaultRelativeFolder` | Extension Service Worker、Popup、Options Page | 只接受 Vault 内安全相对目录；缺失或异常时使用 `Inbox/Web` |
+
+Extension 不缓存 Vault root，也不把它放入普通 `clip.article` 请求。旧 Helper 如果没有 `vault.config` capability，Settings 显示兼容配置提示并继续保留 `clip.article` 路径；用户可使用 `configure-vault.ps1` 配置 Vault root。
+
 ## 3. Article Capture 流程
 
 1. 用户点击 Popup 的 Article Capture。
@@ -40,7 +51,7 @@ V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境�
 3. Content Script 克隆当前 `document`，不修改文章正文和业务页面结构；错误反馈时只注入独立的 toast UI。
 4. Extractor 在克隆 DOM 上依次执行 Readability、结果质量检查、Sanitization 和 DOM Cleanup。
 5. Markdown 管线生成带 `title`、`source_url`、`clipped`、`type` 的 Markdown 文档；来源 URL 只保留在 frontmatter 元数据中，不在正文顶部或底部重复追加；`site`、`author` 和 `published` 为可选元数据，图片同时保留安全远程引用和可选候选清单。
-6. Extension 发送 `clip.article` 请求。请求只包含相对目录、标题、Markdown、HTTPS/HTTP 来源、有限元数据和可选 `images` 候选，不携带图片二进制；候选在协议校验前限制为最多 128 个。
+6. Service Worker 从 `chrome.storage.local` 读取并校验 `defaultRelativeFolder`，在发送前覆盖 Content Script 的初始 `Inbox/Web`；随后 Extension 发送 `clip.article` 请求。请求只包含相对目录、标题、Markdown、HTTPS/HTTP 来源、有限元数据和可选 `images` 候选，不携带图片二进制；候选在协议校验前限制为最多 128 个。
 7. Helper 校验协议、请求大小、来源 URL、相对目录和标题；对存在于正文且不在 fenced code 中的图片，使用无 cookies/`Authorization` 的受限 HTTP(S) 下载，拒绝私有目标、危险重定向、超限响应和 SVG；实际连接固定到已检查的 DNS 地址，同时保留原始主机名用于 Host 和 TLS SNI。
 8. Helper 在当前文章目录的 `Assets/` 中以 SHA-256 内容寻址资源，使用 create-only Bundle 语义先提交资源再提交 Markdown；成功资源替换为 `Assets/<sha256>.<ext>`，已有同名 Asset 复用前校验大小和 SHA-256，失败资源保留远程引用。
 9. Helper 返回带校验后规范化 `requestId` 的成功或稳定错误响应；图片成功数、回退数和 warning 通过可选结果字段传回 Popup。握手仍使用 10 秒等待，包含图片处理的完整 `clip.article` 响应使用 60 秒等待；单图下载安全超时仍为 10 秒，整次图片本地化预算为 45 秒。
@@ -51,9 +62,9 @@ V0.1 只实现 File Channel：
 
 - Tolaria 未运行时仍可保存。
 - 只创建新 Markdown，不覆盖已有文件。
-- 默认目录为 `Inbox/Web`。
-- Vault 配置存储在 `%LOCALAPPDATA%\\CaptureForTolaria\\config.json`。
-- 首次配置只验证 Vault 根目录，不预创建 `Inbox/Web`。
+- 默认目录为 `Inbox/Web`，用户可在 Extension Popup 的 `Settings` 页面改为其他安全相对目录。
+- Vault 配置存储在当前用户应用数据目录中的 `CaptureForTolaria` 配置文件。
+- 首次配置只验证 Vault 根目录，不预创建默认目录；实际写入时才按目录段逐级创建和校验。
 
 未来 MCP Channel 负责 `vault_context`、搜索、更新、UI 控制和知识增强；它不能成为 V0.1 基础保存链路的前置依赖。
 
@@ -67,6 +78,7 @@ Extension 和 Helper 共用 `protocolVersion`、`requestId`、组件版本和 ca
 
 - Helper 只暴露 `hello` 与 `clip.article` 等业务级 action。
 - Extension 不传入最终绝对输出路径。
+- Vault root 只存在于 Helper 的本机配置和设置页配置响应，不进入普通 `clip.article` 请求；Extension `chrome.storage.local` 只保存 `defaultRelativeFolder`。
 - `relativeFolder` 不能包含绝对路径、盘符、UNC 前缀或 `..`。
 - 目录每一级创建或发现后立即检查真实路径和 Windows reparse 状态。
 - 目标文件已存在时使用确定性的 `(2)`、`(3)` 等冲突后缀，原文件内容不变；达到后缀上限时返回 `NAME_EXHAUSTED`。

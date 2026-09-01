@@ -55,6 +55,86 @@ it("renders the branded capture surface with accessible status semantics", async
   }
 });
 
+it("显示自定义默认目录并提供 Settings 入口", async () => {
+  const openSettings = vi.fn();
+  const { container, dom } = mount({
+    getActiveTab: async () => ({ title: "Example article" }),
+    getDefaultRelativeFolder: vi.fn().mockResolvedValue("Inbox/Reading"),
+    openSettings,
+    captureArticle: vi.fn()
+  });
+
+  try {
+    await Promise.resolve();
+    expect(container.textContent).toContain("Inbox/Reading");
+    const settings = container.querySelector<HTMLButtonElement>(
+      "[data-role=settings]"
+    );
+    if (!settings) throw new Error("Settings button missing");
+    settings.click();
+    expect(openSettings).toHaveBeenCalledTimes(1);
+  } finally {
+    dom.window.close();
+  }
+});
+
+it("默认目录读取失败时回退 Inbox/Web", async () => {
+  const getDefaultRelativeFolder = vi.fn().mockRejectedValue(
+    new Error("storage unavailable")
+  );
+  const { container, dom } = mount({
+    getActiveTab: async () => null,
+    getDefaultRelativeFolder,
+    captureArticle: vi.fn()
+  });
+
+  try {
+    await Promise.resolve();
+    const folderRow = [...container.querySelectorAll<HTMLElement>(".meta-row")]
+      .find((row) => row.textContent?.includes("Folder"));
+    expect(folderRow?.textContent).toContain("Inbox/Web");
+  } finally {
+    dom.window.close();
+  }
+});
+
+it("Settings 打开失败时显示稳定错误且不禁用剪藏", async () => {
+  const captureArticle = vi.fn().mockResolvedValue({
+    ok: true,
+    relativePath: "Inbox/Web/Example article.md"
+  });
+  const { container, dom } = mount({
+    getActiveTab: async () => null,
+    openSettings: vi.fn().mockRejectedValue(new Error("internal details")),
+    captureArticle
+  });
+
+  try {
+    const settings = container.querySelector<HTMLButtonElement>(
+      "[data-role=settings]"
+    );
+    const capture = container.querySelector<HTMLButtonElement>(
+      ".primary-action"
+    );
+    const status = container.querySelector<HTMLElement>('[role="status"]');
+    if (!settings || !capture || !status) {
+      throw new Error("Popup controls missing");
+    }
+    settings.click();
+    await Promise.resolve();
+    expect(status.dataset.state).toBe("error");
+    expect(status.textContent).toContain("Unable to open Settings");
+    expect(status.textContent).not.toContain("internal details");
+    expect(capture.disabled).toBe(false);
+
+    capture.click();
+    await Promise.resolve();
+    expect(captureArticle).toHaveBeenCalledTimes(1);
+  } finally {
+    dom.window.close();
+  }
+});
+
 it("shows loading and success states without losing the saved path", async () => {
   const captureArticle = vi.fn().mockResolvedValue({
     ok: true,

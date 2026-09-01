@@ -49,10 +49,10 @@ export function classifyRequestValidationError(
     };
   }
 
-  if (hasIssuePath(error, "payload.relativeFolder")) {
+  if (hasIssuePath(error, "payload.relativeFolder") || hasIssuePath(error, "payload.vaultRoot")) {
     return {
       code: "INVALID_PATH",
-      message: "relativeFolder 必须是安全的相对目录"
+      message: hasIssuePath(error, "payload.vaultRoot") ? "vaultRoot 无效或超出长度限制" : "relativeFolder 必须是安全的相对目录"
     };
   }
 

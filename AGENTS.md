@@ -2,11 +2,18 @@
 
 ## 开发与发布目录边界
 
-- `G:\Capture for Tolaria` 是本地开发、测试和问题修复目录，也是开发阶段的源码基准。
-- `G:\发布\Capture for Tolaria-GitHub` 是 GitHub 发布专用目录；GitHub 的 commit、push、tag 和 Release 只能从该目录执行。
+- 开发工作区是本地开发、测试和问题修复目录，也是开发阶段的源码基准。
+- 发布工作区是 GitHub 发布专用目录；GitHub 的 commit、push、tag 和 Release 只能从该目录执行。
 - 发布前只允许按“开发目录 → 发布目录”单向同步经过审核的源码；不得把发布目录反向覆盖开发目录，也不得在两个目录之间做无审计的双向镜像。
 - 发布目录应使用独立的 Git 历史和远端配置。开发目录不作为 GitHub 发布工作区。
 - 同步或提交时不得包含 `.pnpm-store/`、`node_modules/`、`dist/`、`release/`、Vault 数据、`.env` 文件、私钥、证书、Native Host 用户路径、日志或测试临时目录。
+
+## 同步与用户交付
+
+- 本地用户只领取当前 VERSION 对应的 capture-for-tolaria-installer-v<VERSION>.zip；Installer ZIP 必须自包含 Extension、Helper 和安装脚本，不把 Extension ZIP、独立 Helper、源码或开发依赖作为用户安装前置。
+- 该 Installer ZIP 可在发布目录根部作为待上传或本地交付资产暂存，必须被 .gitignore 忽略，不进入源码 commit，也不得从发布目录反向复制到开发目录。
+- 同步顺序固定为：开发目录修改并验证 → 只同步审核后的源码和文档 → 发布目录重新安装依赖并验证 → 从发布目录组装 Installer ZIP → 上传 GitHub Release → 用干净临时目录验证安装；node_modules/、dist/、release/ 仅可作为临时构建产物，完成后清理。
+- GitHub Release 只公开 Installer ZIP；其他组包中间文件即使在 CI 中生成，也不作为用户下载包。
 
 ## 验证要求
 

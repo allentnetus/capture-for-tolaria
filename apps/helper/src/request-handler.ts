@@ -5,9 +5,10 @@ import {
   PROTOCOL_VERSION,
   validateRequest,
   type ClipErrorResponse,
-  type ClipRequest,
   type ClipResponse,
-  type HelloResponse
+  type HelloResponse,
+  type ProtocolRequest,
+  type VaultConfigResponse
 } from "@capture-for-tolaria/protocol";
 import { writeMarkdownCreateOnly, type WriteInput, type WriteResult } from "./atomic-create-writer.js";
 import {
@@ -23,13 +24,16 @@ import {
 } from "./asset-downloader.js";
 import { FileChannelError } from "./errors.js";
 import { resolveConfiguredVaultConfig } from "./vault-resolver.js";
+import { setConfiguredVault, type VaultConfig } from "./vault-config.js";
 
-export type HelperResponse = ClipResponse | HelloResponse;
+export type HelperResponse = ClipResponse | VaultConfigResponse | HelloResponse;
 
 export interface RequestHandlerOptions {
   helperVersion?: string;
   capabilities?: string[];
   getVault?: () => Promise<string | null>;
+  getVaultConfig?: () => Promise<VaultConfig | null>;
+  setVault?: (vaultPath: string) => Promise<void>;
   writeMarkdown?: (input: WriteInput) => Promise<WriteResult>;
   writeCaptureBundle?: (
     input: CaptureBundleInput
@@ -37,8 +41,8 @@ export interface RequestHandlerOptions {
   assetFetcher?: AssetFetcher;
 }
 
-const DEFAULT_HELPER_VERSION = "0.1.0-beta.1";
-const DEFAULT_CAPABILITIES = ["clip.article", "direct-file"];
+const DEFAULT_HELPER_VERSION = "0.1.0-beta.5";
+const DEFAULT_CAPABILITIES = ["clip.article", "direct-file", "vault.config"];
 
 function errorResponse(
   requestId: string,
@@ -79,7 +83,7 @@ function getCorrelationRequestId(value: unknown): string {
 }
 
 export async function handleRequest(
-  request: ClipRequest,
+  request: ProtocolRequest,
   options: RequestHandlerOptions = {}
 ): Promise<HelperResponse> {
   const helperVersion = options.helperVersion ?? DEFAULT_HELPER_VERSION;
@@ -90,6 +94,47 @@ export async function handleRequest(
   }
 
   try {
+    const getVaultConfig = options.getVaultConfig ?? resolveConfiguredVaultConfig;
+    if (request.action === "vault.config.get") {
+      const configured = await getVaultConfig();
+      if (!configured) {
+        return errorResponse(
+          request.requestId,
+          helperVersion,
+          "VAULT_NOT_CONFIGURED",
+          "尚未配置 Tolaria Vault"
+        );
+      }
+      return {
+        protocolVersion: PROTOCOL_VERSION,
+        requestId: request.requestId,
+        helperVersion,
+        ok: true,
+        result: { vaultRoot: configured.vaultRoot }
+      };
+    }
+
+    if (request.action === "vault.config.set") {
+      const setVault = options.setVault ?? setConfiguredVault;
+      await setVault(request.payload.vaultRoot);
+      const configured = await getVaultConfig();
+      if (!configured) {
+        return errorResponse(
+          request.requestId,
+          helperVersion,
+          "VAULT_NOT_CONFIGURED",
+          "尚未配置 Tolaria Vault"
+        );
+      }
+      return {
+        protocolVersion: PROTOCOL_VERSION,
+        requestId: request.requestId,
+        helperVersion,
+        ok: true,
+        result: { vaultRoot: configured.vaultRoot }
+      };
+    }
+
     let configuredVault: string | null;
     let allowSyntheticDns = false;
     if (options.getVault) {
@@ -161,7 +206,7 @@ export async function handleRawRequest(
   value: unknown,
   options: RequestHandlerOptions = {}
 ): Promise<HelperResponse> {
-  let request: ClipRequest;
+  let request: ProtocolRequest;
   try {
     request = validateRequest(value);
   } catch (error) {

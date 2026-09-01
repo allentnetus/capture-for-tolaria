@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>存储设置 | Capture for Tolaria</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1e293b;
+        --ink-strong: #0f172a;
+        --text-muted: #64748b;
+        --surface: #f4f7fb;
+        --card: #ffffff;
+        --field: #f8fafc;
+        --line: #d8e1ec;
+        --line-soft: #e6edf5;
+        --orange: #d97706;
+        --success: #1f7a55;
+        --success-surface: #e8f4ee;
+        --success-line: #c9e5d5;
+        --warning: #8a5a00;
+        --warning-surface: #fff6df;
+        --warning-line: #f0d99b;
+        --error: #a33a4a;
+        --error-surface: #fbeaec;
+        --error-line: #f1cbd1;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink-strong);
+        background: var(--surface);
+        font: 15px/1.5 "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      }
+
+      #app {
+        min-height: 100vh;
+        padding: clamp(20px, 6vw, 48px) 20px;
+      }
+
+      .options-shell {
+        display: grid;
+        width: min(680px, 100%);
+        gap: 16px;
+        margin: 0 auto;
+      }
+
+      .brand-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 2px 4px;
+      }
+
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 auto;
+        border-radius: 9px;
+        box-shadow: 0 4px 10px rgba(30, 41, 59, .16);
+      }
+
+      .brand-copy {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .brand-kicker,
+      .section-label {
+        color: var(--orange);
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: .12em;
+        line-height: 1.2;
+      }
+
+      .brand-title {
+        color: var(--ink-strong);
+        font-size: 16px;
+        font-weight: 750;
+        letter-spacing: -.01em;
+        line-height: 1.2;
+      }
+
+      .settings-card {
+        display: grid;
+        gap: 12px;
+        padding: clamp(20px, 4vw, 32px);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--card);
+        box-shadow: 0 12px 28px rgba(30, 41, 59, .10);
+      }
+
+      h1 {
+        margin: -2px 0 0;
+        color: var(--ink-strong);
+        font-size: clamp(24px, 4vw, 30px);
+        font-weight: 750;
+        letter-spacing: -.02em;
+        line-height: 1.2;
+        text-wrap: pretty;
+      }
+
+      .intro-copy {
+        max-width: 56ch;
+        margin: 0 0 8px;
+        color: var(--text-muted);
+        text-wrap: pretty;
+      }
+
+      .settings-form {
+        display: grid;
+        gap: 20px;
+      }
+
+      .form-field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field-label {
+        color: var(--ink-strong);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .text-input {
+        width: 100%;
+        min-height: 46px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        color: var(--ink-strong);
+        background: var(--field);
+        font: inherit;
+        transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+      }
+
+      .text-input:hover { border-color: #b8c6d6; }
+
+      .text-input:focus-visible {
+        border-color: var(--orange);
+        outline: 2px solid var(--orange);
+        outline-offset: 2px;
+        background: var(--card);
+      }
+
+      .text-input[aria-invalid="true"] {
+        border-color: var(--error);
+      }
+
+      .field-help,
+      .field-error {
+        font-size: 13px;
+        line-height: 1.45;
+        text-wrap: pretty;
+      }
+
+      .field-help { color: var(--text-muted); }
+
+      .field-error {
+        color: var(--error);
+        font-weight: 650;
+      }
+
+      .field-error[hidden] { display: none; }
+
+      .status-panel {
+        display: grid;
+        gap: 3px;
+        padding: 11px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--field);
+      }
+
+      .status-panel[hidden] { display: none; }
+
+      .status-panel[data-state="success"] {
+        border-color: var(--success-line);
+        border-left: 4px solid var(--success);
+        background: var(--success-surface);
+      }
+
+      .status-panel[data-state="warning"] {
+        border-color: var(--warning-line);
+        border-left: 4px solid var(--warning);
+        background: var(--warning-surface);
+      }
+
+      .status-panel[data-state="error"] {
+        border-color: var(--error-line);
+        border-left: 4px solid var(--error);
+        background: var(--error-surface);
+      }
+
+      .status-title {
+        color: var(--ink-strong);
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      .status-detail {
+        color: var(--text-muted);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+
+      .primary-action {
+        width: 100%;
+        min-height: 46px;
+        margin-top: 2px;
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 12px;
+        color: #f8fafc;
+        background: var(--ink);
+        box-shadow: 0 6px 12px rgba(30, 41, 59, .16);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 750;
+        transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
+      }
+
+      .primary-action:hover {
+        background: #2b3b52;
+        box-shadow: 0 8px 16px rgba(30, 41, 59, .20);
+        transform: translateY(-1px);
+      }
+
+      .primary-action:active { transform: translateY(0) scale(.98); }
+
+      .primary-action:focus-visible {
+        outline: 2px solid var(--orange);
+        outline-offset: 3px;
+      }
+
+      .primary-action:disabled {
+        cursor: wait;
+        opacity: .58;
+        box-shadow: none;
+        transform: none;
+      }
+
+      @media (max-width: 480px) {
+        #app { padding: 20px 12px; }
+        .settings-card { padding: 20px 16px; }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --ink-strong: #f8fafc;
+          --text-muted: #a8b6c7;
+          --surface: #0f172a;
+          --card: #1e293b;
+          --field: #25354a;
+          --line: #3b4a60;
+          --line-soft: #34455b;
+        }
+
+        .text-input { color: var(--ink-strong); }
+        .text-input:hover { border-color: #64748b; }
+        .primary-action { color: var(--ink); background: #f8fafc; }
+        .primary-action:hover { background: #e7eef7; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: .01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app"></main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

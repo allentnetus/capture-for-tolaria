@@ -9,6 +9,7 @@ it("公开最小化的 MV3 权限集合", () => {
   expect(REQUIRED_MV3_PERMISSIONS).toEqual([
     "activeTab",
     "scripting",
-    "nativeMessaging"
+    "nativeMessaging",
+    "storage"
   ]);
 });

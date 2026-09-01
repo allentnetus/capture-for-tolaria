@@ -84,7 +84,8 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
         }
         return { ok: true };
       },
-      connectNative: () => new MockHostPort(vault)
+      connectNative: () => new MockHostPort(vault),
+      getDefaultRelativeFolder: async () => "Inbox/Reading"
     };
 
     const first = await handleCaptureMessage(
@@ -104,6 +105,8 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
     expect(second).toMatchObject({ ok: true });
     if (first.ok && second.ok) {
       expect(second.relativePath).toContain("(2).md");
+      expect(first.relativePath).toContain("Inbox/Reading/");
+      expect(second.relativePath).toContain("Inbox/Reading/");
       expect(await readFile(join(vault, first.relativePath), "utf8")).toContain(
         "Integration article"
       );
@@ -111,7 +114,7 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
         "source_url: \"https://example.com/integration/article\""
       );
     }
-    expect(EXTENSION_VERSION).toBe("0.1.0-beta.1");
+    expect(EXTENSION_VERSION).toBe("0.1.0-beta.5");
     const resultMessages = contentMessages.filter(
       (message): message is { type: "capture.result"; status: "saved"; relativePath: string } =>
         typeof message === "object" &&

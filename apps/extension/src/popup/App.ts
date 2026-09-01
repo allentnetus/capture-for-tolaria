@@ -1,8 +1,12 @@
 import type { CaptureResponse } from "../background/messages.js";
+import { DEFAULT_RELATIVE_FOLDER } from "../background/messages.js";
+import { relativeFolderSchema } from "@capture-for-tolaria/protocol";
 
 export interface PopupRuntime {
   getActiveTab(): Promise<{ title?: string; url?: string } | null>;
   captureArticle(): Promise<CaptureResponse>;
+  getDefaultRelativeFolder?: () => Promise<string>;
+  openSettings?: () => void | Promise<void>;
 }
 
 function successDetail(response: Extract<CaptureResponse, { ok: true }>): string {
@@ -10,6 +14,14 @@ function successDetail(response: Extract<CaptureResponse, { ok: true }>): string
     return response.relativePath;
   }
   return `${response.relativePath} · Images: ${response.summary.localized} localized, ${response.summary.fallback} fallback`;
+}
+
+function safeDefaultFolder(value: unknown): string {
+  try {
+    return relativeFolderSchema.parse(value);
+  } catch {
+    return DEFAULT_RELATIVE_FOLDER;
+  }
 }
 
 export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void {
@@ -53,7 +65,10 @@ export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void 
   const meta = ownerDocument.createElement("div");
   meta.className = "capture-meta";
 
-  const createMetaRow = (labelText: string, valueText: string): HTMLElement => {
+  const createMetaRow = (
+    labelText: string,
+    valueText: string
+  ): { row: HTMLElement; value: HTMLElement } => {
     const row = ownerDocument.createElement("div");
     row.className = "meta-row";
     const label = ownerDocument.createElement("span");
@@ -63,12 +78,14 @@ export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void 
     value.className = "meta-value";
     value.textContent = valueText;
     row.append(label, value);
-    return row;
+    return { row, value };
   };
 
+  const captureModeRow = createMetaRow("Capture mode", "Article");
+  const folderRow = createMetaRow("Folder", DEFAULT_RELATIVE_FOLDER);
   meta.append(
-    createMetaRow("Capture mode", "Article"),
-    createMetaRow("Folder", "Inbox/Web")
+    captureModeRow.row,
+    folderRow.row
   );
 
   const button = ownerDocument.createElement("button");
@@ -79,6 +96,12 @@ export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void 
   buttonLabel.dataset.role = "button-label";
   buttonLabel.textContent = "Save to Tolaria";
   button.append(buttonLabel);
+
+  const settingsButton = ownerDocument.createElement("button");
+  settingsButton.type = "button";
+  settingsButton.className = "secondary-action";
+  settingsButton.dataset.role = "settings";
+  settingsButton.textContent = "Settings";
 
   const status = ownerDocument.createElement("div");
   status.className = "status-panel";
@@ -104,7 +127,7 @@ export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void 
   statusCopy.append(statusTitle, statusDetail);
   status.append(statusMark, statusCopy);
 
-  captureCard.append(pageLabel, title, meta, button, status);
+  captureCard.append(pageLabel, title, meta, button, status, settingsButton);
   shell.replaceChildren(brandHeader, captureCard);
 
   const setStatus = (
@@ -120,6 +143,36 @@ export function mountPopup(container: HTMLElement, runtime: PopupRuntime): void 
 
   void runtime.getActiveTab().then((tab) => {
     title.textContent = tab?.title?.trim() || tab?.url || "Current page";
+  });
+
+  if (runtime.getDefaultRelativeFolder) {
+    void runtime.getDefaultRelativeFolder()
+      .then((folder) => {
+        folderRow.value.textContent = safeDefaultFolder(folder);
+      })
+      .catch(() => {
+        folderRow.value.textContent = DEFAULT_RELATIVE_FOLDER;
+      });
+  }
+
+  const showSettingsError = (): void => {
+    setStatus(
+      "error",
+      "Unable to open Settings",
+      "Save to Tolaria remains available."
+    );
+  };
+
+  settingsButton.addEventListener("click", () => {
+    if (!runtime.openSettings) {
+      showSettingsError();
+      return;
+    }
+    try {
+      void Promise.resolve(runtime.openSettings()).catch(showSettingsError);
+    } catch {
+      showSettingsError();
+    }
   });
 
   button.addEventListener("click", () => {

@@ -2,7 +2,9 @@ import {
   validateRequest,
   type AssetSummary,
   type ArticlePayload,
-  type ArticleRequest
+  type ArticleRequest,
+  type VaultConfigGetRequest,
+  type VaultConfigSetRequest
 } from "@capture-for-tolaria/protocol";
 
 export const DEFAULT_RELATIVE_FOLDER = "Inbox/Web" as const;
@@ -83,7 +85,7 @@ export function validateContentPayload(value: unknown): ArticlePayload {
   const request = validateRequest({
     protocolVersion: 1,
     requestId: "content-validation",
-    extensionVersion: "0.1.0-beta.1",
+    extensionVersion: "0.1.0-beta.5",
     action: "clip.article",
     payload
   });
@@ -107,6 +109,40 @@ export function createArticleRequest(
   });
   if (request.action !== "clip.article") {
     throw new Error("无法创建 Article Capture 请求");
+  }
+  return request;
+}
+
+export function createVaultConfigGetRequest(
+  extensionVersion: string,
+  requestId: string
+): VaultConfigGetRequest {
+  const request = validateRequest({
+    protocolVersion: 1,
+    requestId,
+    extensionVersion,
+    action: "vault.config.get"
+  });
+  if (request.action !== "vault.config.get") {
+    throw new Error("无法创建 Vault 配置读取请求");
+  }
+  return request;
+}
+
+export function createVaultConfigSetRequest(
+  vaultRoot: string,
+  extensionVersion: string,
+  requestId: string
+): VaultConfigSetRequest {
+  const request = validateRequest({
+    protocolVersion: 1,
+    requestId,
+    extensionVersion,
+    action: "vault.config.set",
+    payload: { vaultRoot }
+  });
+  if (request.action !== "vault.config.set") {
+    throw new Error("无法创建 Vault 配置保存请求");
   }
   return request;
 }

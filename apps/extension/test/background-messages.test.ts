@@ -1,6 +1,8 @@
 import { expect, it, vi } from "vitest";
 import {
   createArticleRequest,
+  createVaultConfigGetRequest,
+  createVaultConfigSetRequest,
   validateCaptureArticleMessage,
   validateCaptureResponse,
   validateContentPayload
@@ -64,6 +66,26 @@ it("创建带 requestId 的 clip.article 请求并校验响应", () => {
   });
 });
 
+it("创建仅带绝对 Vault root 的配置请求", () => {
+  expect(createVaultConfigGetRequest("0.1.0-beta.3", "vault-get-1")).toEqual({
+    protocolVersion: 1,
+    requestId: "vault-get-1",
+    extensionVersion: "0.1.0-beta.3",
+    action: "vault.config.get"
+  });
+  expect(createVaultConfigSetRequest(
+    "C:\\Users\\mrvic\\Vault",
+    "0.1.0-beta.3",
+    "vault-set-1"
+  )).toEqual({
+    protocolVersion: 1,
+    requestId: "vault-set-1",
+    extensionVersion: "0.1.0-beta.3",
+    action: "vault.config.set",
+    payload: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+  });
+});
+
 class SummaryPort implements NativeMessagingPort {
   readonly onMessage = {
     addListener: (listener: (value: unknown) => void) => {
@@ -83,8 +105,10 @@ class SummaryPort implements NativeMessagingPort {
   };
   private readonly messageListeners = new Set<(value: unknown) => void>();
   private readonly disconnectListeners = new Set<() => void>();
+  readonly postedMessages: unknown[] = [];
 
   postMessage(message: unknown): void {
+    this.postedMessages.push(message);
     const requestId =
       typeof message === "object" &&
       message !== null &&
@@ -96,13 +120,13 @@ class SummaryPort implements NativeMessagingPort {
       typeof message === "object" && message !== null && "action" in message && message.action === "hello"
         ? {
             protocolVersion: 1,
-            helperVersion: "0.1.0-beta.1",
+            helperVersion: "0.1.0-beta.3",
             capabilities: ["clip.article", "direct-file"]
           }
         : {
             protocolVersion: 1,
             requestId,
-            helperVersion: "0.1.0-beta.1",
+            helperVersion: "0.1.0-beta.3",
             ok: true,
             result: {
               relativePath: "Inbox/Web/article.md",
@@ -137,6 +161,7 @@ it("转发 Helper 的图片摘要和 warning 且不泄露绝对路径", async ()
     images: [{ remoteUrl: "https://cdn.example.com/article/hero.png", altText: "Hero" }]
   };
   const contentMessages: unknown[] = [];
+  const port = new SummaryPort();
   const dependencies: CaptureDependencies = {
     getActiveTab: async () => ({ id: 1, url: "https://example.com/article" }),
     executeContentScript: vi.fn(async () => undefined),
@@ -146,7 +171,8 @@ it("转发 Helper 的图片摘要和 warning 且不泄露绝对路径", async ()
         ? { ok: true, payload: payloadWithImages }
         : { ok: true };
     }),
-    connectNative: () => new SummaryPort()
+    connectNative: () => port,
+    getDefaultRelativeFolder: async () => "Inbox/Reading"
   };
 
   const response = await handleCaptureMessage(
@@ -163,6 +189,18 @@ it("转发 Helper 的图片摘要和 warning 且不泄露绝对路径", async ()
     warnings: ["IMAGE_DOWNLOAD_FAILED"]
   });
   expect(JSON.stringify(response)).not.toContain("C:\\Users");
+  const articleRequest = port.postedMessages.find(
+    (message) =>
+      typeof message === "object" &&
+      message !== null &&
+      "action" in message &&
+      message.action === "clip.article"
+  );
+  expect(articleRequest).toMatchObject({
+    action: "clip.article",
+    payload: { relativeFolder: "Inbox/Reading" }
+  });
+  expect(JSON.stringify(articleRequest)).not.toContain("vaultRoot");
   expect(contentMessages.at(-1)).toMatchObject({
     type: "capture.result",
     status: "saved",

@@ -4,6 +4,28 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.5] - 2026-09-01
+
+- Beta.5 修复：Vault 配置成功响应与 Vault root 请求使用同一长度上限，合法的长 Vault root 不再被错误拒绝。
+- Beta.5 发布：在 Beta.4 远端发布验收基础上重新执行开发目录到发布目录的单向审计同步、用户包内容门禁和隔离安装验证。
+
+## [0.1.0-beta.4] - 2026-09-01
+
+- Beta.4 修复：真实 Service Worker 运行时依赖接入 `chrome.storage.local`，Settings 保存的默认目录会进入实际 `clip.article` 请求；读取失败或不安全时仍回退为 `Inbox/Web`。
+- Beta.4 发布：重新执行开发目录到发布目录的单向审计同步，补充发布资产来源和内容核对门禁。
+- Beta.4 发布：GitHub Release 只提供自包含 Installer ZIP，Extension ZIP、独立 Helper、源码和开发依赖不作为普通用户安装前置。
+
+## [0.1.0-beta.3] - 2026-09-01
+
+- Beta.3：面向用户的发布说明移除具体本地文件系统路径，改用当前用户范围、工作区角色和占位符表达。
+- Beta.3：保持 Beta.2 已验证的 Article Capture、正文图片受限本地化、Vault root/默认目录可配置和单一自包含 Installer ZIP 能力不变。
+
+## [0.1.0-beta.2] - 2026-09-01
+
+- Beta.2：Extension Settings 支持自定义 Vault 根目录和 Vault 内默认相对目录，保留安全校验及 `Inbox/Web` fallback。
+- Beta.2：Installer ZIP 自包含 Extension、Helper 和 Windows 安装脚本，本地用户只需下载一个安装包。
+- Beta.2：发布同步固定为开发目录 → 发布目录；GitHub Release 只公开 Installer ZIP，开发依赖和构建中间产物不作为用户包。
+
 ## [0.1.0-beta.1] - 2026-08-29
 
 - Beta.1 开发：公开 Article 图片候选提取、受限无凭据下载、`Assets/<sha256>.<ext>` 内容寻址保存和 Markdown 相对引用替换。

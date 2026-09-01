@@ -36,6 +36,15 @@ await Promise.all([
     platform: "browser",
     target: "chrome120",
     sourcemap: true
+  }),
+  build({
+    entryPoints: [join(root, "src/options/main.ts")],
+    outfile: join(dist, "options.js"),
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: "chrome120",
+    sourcemap: true
   })
 ]);
 

@@ -11,14 +11,14 @@
 | Node.js（开发构建） | `v24.15.0` |
 | pnpm | `11.19.0` |
 | PowerShell | 本轮为 `7.6.4`；Windows PowerShell `5.1.26100.9168` 脚本兼容性已验证 |
-| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 1`，MV3，协议 `1` |
-| Helper | `0.1.0-beta.1`，公开 Beta.1 Release 的 SEA x64 EXE 已下载，并与公开 `SHA256SUMS.txt` 匹配 |
+| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 5`，MV3，协议 `1` |
+| Helper | `0.1.0-beta.5`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
 | Chrome | 已检测到 Chrome，但本轮未向现有 profile 加载 Extension；具体版本未记录 |
 | Tolaria | 已检测到 Tolaria 进程，但本轮未向真实 Vault 写入或验证文件监听 |
 
 ## 已验证
 
-上表中的历史环境验证保留为 V0.1 基线。历史基线曾记录一次 Pester 5.7.1 安装器验收（9 passed、0 failed）；本轮在开发目录和发布目录均重新通过完整 `pnpm.cmd run check`、独立 Golden Test、SEA Helper/Installer 构建、10 个 Pester 测试和最终发布内容门禁，包含 root `lint`、`build`、`typecheck`、workspace 测试及 Extension/Markdown 门禁。真实 Chrome、Tolaria 文件监听、公开文章 Capture 和陌生用户完整安装链路仍未验证；这些状态不得互相替代。
+上表中的历史环境验证保留为 V0.1 基线。本轮在开发目录和发布目录均重新通过完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、15 个 Windows Pester 测试和最终发布内容门禁，包含 root `lint`、`build`、`typecheck`、workspace 测试及 Extension/Markdown 门禁。真实 Chrome、Tolaria 文件监听、公开文章 Capture 仍未验证；这些状态不得互相替代。
 
 - `pnpm run lint`
 - `pnpm.cmd run check`
@@ -34,10 +34,10 @@
 - Extension manifest 权限集合、固定 key 和 Native Host `allowed_origins` ID 一致性
 - Mock Host 的 Extension → Helper → File Channel 垂直链路
 - SEA 单文件 Helper 仅通过 `hello` 启动，Pester 测试不调用 Node.js runtime
-- SEA Helper 构建和 Beta.1 Installer ZIP 组装、发布内容自检
-- 当前 Beta.1：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 10 个 Installer/Pester 测试 `10 passed、0 failed`
+- SEA Helper 构建和 Beta.5 Installer ZIP 组装、发布内容自检
+- 当前 Beta.5：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 15 个 Installer/Pester 测试 `15 passed、0 failed`
 
-## Beta.1 当前开发验证
+## Beta.1 历史开发验证
 
 以下证据来自开发目录和发布目录的 Beta.1 图片能力实现：
 
@@ -59,13 +59,59 @@
 - GitHub API 当时确认 `v0.1.0-alpha.1` 的公开 Release 对象为 `draft=false`、`prerelease=true`，并已上传 Extension ZIP、Installer ZIP、Helper EXE、`SHA256SUMS.txt` 和 `SBOM.spdx.json` 五项资产。
 - 尚未在独立临时目录下载这些历史公开资产并将下载文件与 `SHA256SUMS.txt` 重新比对；“workflow 成功”和“下载后校验通过”仍是两个独立状态。
 
-### 当前 Beta.1 状态（截至 2026-08-29）
+### 历史 Beta.1 状态（截至 2026-08-29）
 
 - 当前源码和发布目录基线为 `v0.1.0-beta.1`；已完成开发目录到发布目录的单向同步、发布目录清理、本地质量门禁和发布目录复验。
 - PR [#11](https://github.com/allentnetus/capture-for-tolaria/pull/11) 已合并到 `main`，合并提交为 `4e206a14e91ce05e6e66614a1667ff7a20864098`；tag `v0.1.0-beta.1` 已指向该提交。
 - Release workflow `33237816354` 已成功完成；GitHub Release `v0.1.0-beta.1` 为 `draft=false`、`prerelease=true`，已上传 Extension ZIP、Installer ZIP、Helper EXE、`SHA256SUMS.txt` 和 `SBOM.spdx.json` 五项资产。
 - 公开资产下载后与 `SHA256SUMS.txt` 的哈希和大小均匹配：Extension `0905BA2758676BAF3C1FAEB102207612DBA8C6652EE06A134FCE85A641A1BD74`、Helper `3AAB4B8353552A180B5C64C86B9B7DFBFE3385C9E52E525AE6F19B02508D1CD5`、Installer `88DF9160F73BD54396C08E446D7DBE4B8171C67E6E490D04D3C9FFD37A922228`、SBOM `85C43454A371241668F0A0FE081A31573E31C6483FBD02CE699C994CADBDD270`。
 - 本轮已完成隔离临时环境的 Installer 安装、Repair、幂等重装和卸载验收；真实 Chrome、Tolaria、Vault 文件监听和公开文章 Capture 仍未验证。
+
+### Beta.2 历史发布状态（截至 2026-09-01）
+
+- 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.2`；已完成开发目录 → 发布目录的单向 SHA-256 差异同步，审核候选文件为 168 个，source-only 和 publish-only 均为 0。
+- 开发目录与发布目录的完整 `pnpm.cmd run check` 均通过：6 个 workspace、28 个测试文件、173 个测试。
+- 发布目录生成的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`，大小 34,828,897 bytes，SHA-256 为 `94C2FB9A2D8F57E7913D501124FA88B8D9281F249C57E45AE2F9C9B3184624B3`。
+- Installer ZIP 根部只包含 `extension`、`installer`、版本化 Helper、`VERSION`、安装说明、许可证和第三方声明；包内 Extension 共 68 个文件，未包含 `node_modules`、`dist`、`release`、源码 package 或锁文件。
+- 已从发布目录根部的最终 Installer ZIP 在隔离临时 `LOCALAPPDATA` 下完成解压、无 `-HelperPath` 安装、Native Host 注册、Vault root 配置、Repair、`-ClearConfig` 卸载，并确认用户 Vault 保留。
+- 2026-09-01 已通过普通非强制 HTTPS push 将发布提交 `2ea3974f6cd96246efbcca40d97d99c6ba8fc2a8` 及文档提交 `29a928f9362ab7cbfb5893e9ad1ae551b39cff6e` 上传到 GitHub 分支 `codex/release-v0.1.0-beta.1`；tag `v0.1.0-beta.2` 指向 `29a928f9362ab7cbfb5893e9ad1ae551b39cff6e`，Release workflow `33465423348` 为成功。
+- GitHub Release `v0.1.0-beta.2` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`；远端资产大小为 35,242,477 bytes，GitHub digest 为 `sha256:da92f292ab9c1caf21943a4aa294c5274b2f72ff38b27a3c14125a85ff855f1e`。
+- 该远端 Installer ZIP 下载后重新通过根目录内容审计、Extension manifest 检查和隔离临时 `LOCALAPPDATA` 下的无参数安装、Native Host 注册、Vault 配置、Repair、`-ClearConfig` 卸载及 Vault 保留验收。
+
+### 当前 Beta.3 发布状态（截至 2026-09-01）
+
+- 开发目录和发布目录的 `VERSION` 已递增为 `0.1.0-beta.3`；Beta.3 只包含已审核源码、中文用户文档和路径隐私修复，不包含开发依赖或构建中间产物。
+- 开发目录和发布目录的完整 `pnpm.cmd run check` 均通过：6 个 workspace、28 个测试文件、173 个测试。
+- 发布目录生成的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.3.zip`，大小 34,828,849 bytes，SHA-256 为 `5CEA968978F9DEBD5B60409A2CCBCA81327A799F4BB6DE6FDF6359EDAD1B122E`。
+- Installer ZIP 共 85 个文件；根部只包含 `extension`、`installer`、版本化 Helper、`VERSION`、安装说明、许可证和第三方声明，未包含 `node_modules`、`dist`、`release`、源码 `.ts`、package、锁文件或 tsconfig。
+- 发布目录 Windows Pester 门禁为 14 passed、0 failed、0 skipped；SBOM 和 `SHA256SUMS.txt` 已按 Release workflow 生成。
+- tag `v0.1.0-beta.3` 指向发布提交 `7a4485cd3c241d248d5e6122ecbd345686ba5137`；tag CI `33471473591` 和 Release workflow `33471473630` 均成功。
+- GitHub Release `v0.1.0-beta.3` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.3.zip`；远端资产大小为 35,242,452 bytes，GitHub digest 为 `sha256:ea9605adb47c16822c9ad256086341ba905406b4babf41d29f6fa26f9eacdd9a`。
+- Beta.3 本地预组装 ZIP 与远端 CI 生成的 ZIP 虽然条目数相同，但多个条目的内容哈希不同；因此本地 Beta.3 ZIP 不能作为远端发布资产的来源证明。本次 Beta.4 将单独下载远端 Installer ZIP，并逐条核对内容清单后记录结果。
+- 远端 Installer ZIP 下载后 SHA-256 与 GitHub digest 一致；下载包重新通过根目录内容、Extension manifest、开发产物排除和具体用户路径审计。
+- 已从真实远端 Installer ZIP 在隔离临时用户环境完成 Vault 配置、无 `-HelperPath` 安装、Helper 实际 Markdown 写入、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
+
+### Beta.4 发布记录（截至 2026-09-01）
+
+- 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.4`；本版本修复真实 Service Worker 运行时未注入 `chrome.storage.local` 默认目录读取器的问题，并保留缺失、读取失败或不安全时回退 `Inbox/Web` 的行为。
+- 开发目录和发布目录的完整门禁均通过：6 个 workspace、29 个测试文件、174 个测试；另行运行 Golden tests，14 个测试通过。
+- 发布目录组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.4.zip`，共 29 个条目，大小 34,505,796 bytes，SHA-256 为 `0D479228EF125FC452E6E7BBD9A620C1F6E69AD5A1C65B1CC424B1925C96E4B5`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
+- 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
+- tag `v0.1.0-beta.4` 指向发布提交 `81e8e5e30bdc97a4586f6b425cf3e6465613116f`；tag CI run `33482070086` 和 Release workflow run `33482069933` 均完成且成功。
+- GitHub Release `v0.1.0-beta.4` 已确认 `draft=false`、`prerelease=true`，只上传一个用户资产 `capture-for-tolaria-installer-v0.1.0-beta.4.zip`；远端资产大小为 34,918,840 bytes，GitHub digest 为 `sha256:fb3454784f007b3899f35070e3d0382ddb8c73748540f056709b8d79a192ac94`。
+- 远端下载包共 29 个条目，根目录、Extension manifest、开发产物排除、声明文件/源映射排除和本地路径隐私审计均通过。远端 ZIP 原始字节与本地预组装 ZIP 不相同，原因是 CI 文本换行和 CI 构建的 Helper 二进制环境不同；统一文本换行后，除版本化 Helper 二进制外其余 28 个条目逐条一致，未发现缺失或多余文件。该差异已作为发布来源差异明确记录，不把本地 ZIP 冒充为 GitHub 资产副本。
+- 已从真实远端 Installer ZIP 在全新隔离用户环境完成默认 Vault 配置、无 `-HelperPath` 使用内置 Helper 安装、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收；未发现 Node.js 作为安装前置。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
+
+### 当前 Beta.5 发布状态（截至 2026-09-01）
+
+- 开发目录已修复 Vault 配置成功响应错误使用 `MAX_RESPONSE_PATH_LENGTH` 的问题，并新增 2,048 字符 Vault root 回归测试；真实 Service Worker 默认目录读取修复继续保留。
+- 开发目录完整门禁已通过：6 个 workspace、29 个测试文件、175 个测试；另行运行 Golden tests，14 个测试通过。
+- 发布目录组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.5.zip`，共 29 个条目，大小 34,505,796 bytes，SHA-256 为 `0D540EF7D4AB7800FCBA311782325CF772742B97C48E7BC8AA73AE53E9529695`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
+- 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
+- tag `v0.1.0-beta.5` 指向发布提交 `dd8180516f6c4a983f04879ad26271f55467e5b7`；tag CI run `33485836599` 和 Release workflow run `33485836562` 均完成且成功。
+- GitHub Release `v0.1.0-beta.5` 已确认 `draft=false`、`prerelease=true`，只上传一个用户资产 `capture-for-tolaria-installer-v0.1.0-beta.5.zip`；远端资产大小为 34,918,895 bytes，GitHub digest 为 `sha256:8341b2336abd3fd131aa8e50883f59ba1812cc7240b0d0f345a05fba39feadbc`。
+- 远端下载包共 29 个条目，缺失 0、多余 0；根目录、Extension manifest、开发产物排除、声明文件/源映射排除和本地路径隐私审计均通过。远端 ZIP 原始字节与本地预组装 ZIP 不相同，原因是 CI 文本换行和 CI 构建的 Helper 二进制环境不同；统一文本换行后，除版本化 Helper 二进制外其余 28 个条目逐条一致。当前本地 Helper 为 92,101,120 bytes、SHA-256 为 `9F1FE15092B35372B71D54ED9ED8C701CDFF60F3004236785B1D54217A4C3B4C`；远端 Helper 为 93,232,128 bytes、SHA-256 为 `2489EA2A1A30863B011030B4EEC2936574330E39A99665874209CA7B87FB5F3E`。
+- 已从真实远端 Installer ZIP 在全新隔离用户环境完成默认 Vault 配置、无 `-HelperPath` 使用内置 Helper 安装、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收；未发现 Node.js 作为安装前置。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
 
 ## 未验证
 
@@ -74,7 +120,7 @@
 - Chrome `activeTab` / `scripting` 注入真实公开文章
 - Chrome Native Messaging 注册后的真实 Extension UI 往返
 - Tolaria 文件监听对新 Markdown 的实际感知
-- 无 Node.js 的陌生用户完整 Install → 加载 Extension → Capture → 检查 Markdown/Vault → Repair → Upgrade → Uninstall 流程（本轮仅验证隔离 Installer 侧链路）
+- 无 Node.js 的陌生用户完整 Install → 加载 Extension → Capture → 检查 Markdown/Vault → Repair → Upgrade → Uninstall 流程（本轮已验证隔离 Installer 侧链路，真实 Chrome/Tolaria Capture 仍未验证）
 - 真实 Tolaria 版本、构建号和兼容性矩阵
 
 Product Alpha 发布判断必须在具备这些环境后重新执行 `tests/e2e/product-alpha-checklist.md`。

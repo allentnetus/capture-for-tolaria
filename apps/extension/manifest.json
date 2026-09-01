@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Capture for Tolaria",
   "version": "0.1.0",
-  "version_name": "0.1.0 Beta 1",
+  "version_name": "0.1.0 Beta 5",
   "description": "Unofficial Web Clipper & Knowledge Intake Tool for Tolaria.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvPfyWvJTEuDIPGSi/d3yGcxNREksvJWq0i68Vz+Mkor9x1Z+jveS6ySI14JqAWmXS9tjw6svRlW2SFdY8H4bX1neZ28Gq77tQjHd/Nff5uoEObNZ1l/U4uzplbPl5fjToTJev9IbqYi1E+ejDobRN8IzS/HVNh/BLlCzGLmMwtjaF9QO+V/u/Fm5CBPZCTpPs/QGlYyn8+PzkYbKvaFE0zvqQanzUeQPUtgrawW2aQDxeCc+nlhkMutywoEURu8slNMvmQgG6vQjUB6byaJBGN7IWLMrIznV5GFWn3zXpmoaNuqJaxlbkx0kq/vO+XiRZHxgvsdx7Iy12Zp9LziTLQIDAQAB",
   "icons": {
@@ -14,8 +14,10 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "nativeMessaging"
+    "nativeMessaging",
+    "storage"
   ],
+  "options_page": "options.html",
   "background": {
     "service_worker": "background.js",
     "type": "module"

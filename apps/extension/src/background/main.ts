@@ -5,14 +5,17 @@ import {
 } from "./native-messaging.js";
 import {
   createArticleRequest,
+  DEFAULT_RELATIVE_FOLDER,
   isHttpPageUrl,
   validateCaptureArticleMessage,
   validateContentPayload,
   type CaptureResponse,
   type ContentMessage
 } from "./messages.js";
+import { getDefaultRelativeFolder } from "../settings/storage.js";
+import { relativeFolderSchema } from "@capture-for-tolaria/protocol";
 
-export const EXTENSION_VERSION = "0.1.0-beta.1";
+export const EXTENSION_VERSION = "0.1.0-beta.5";
 
 export interface ActiveTab {
   id: number;
@@ -24,10 +27,25 @@ export interface CaptureDependencies {
   executeContentScript(tabId: number): Promise<void>;
   sendContentMessage(tabId: number, message: ContentMessage): Promise<unknown>;
   connectNative: ConnectNative;
+  getDefaultRelativeFolder?: () => Promise<string>;
 }
 
 function errorResponse(code: string, message: string): CaptureResponse {
   return { ok: false, code, message };
+}
+
+async function readDefaultFolder(
+  getDefaultRelativeFolder: CaptureDependencies["getDefaultRelativeFolder"]
+): Promise<string> {
+  if (!getDefaultRelativeFolder) {
+    return DEFAULT_RELATIVE_FOLDER;
+  }
+
+  try {
+    return relativeFolderSchema.parse(await getDefaultRelativeFolder());
+  } catch {
+    return DEFAULT_RELATIVE_FOLDER;
+  }
 }
 
 export async function handleCaptureMessage(
@@ -71,8 +89,9 @@ export async function handleCaptureMessage(
     }
 
     const payload = validateContentPayload(contentResponse.payload);
+    const defaultFolder = await readDefaultFolder(dependencies.getDefaultRelativeFolder);
     const request = createArticleRequest(
-      payload,
+      { ...payload, relativeFolder: defaultFolder },
       EXTENSION_VERSION,
       crypto.randomUUID()
     );
@@ -130,7 +149,7 @@ export async function handleCaptureMessage(
   }
 }
 
-function runtimeDependencies(): CaptureDependencies {
+export function runtimeDependencies(): CaptureDependencies {
   return {
     getActiveTab: async () => {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -149,7 +168,8 @@ function runtimeDependencies(): CaptureDependencies {
     sendContentMessage: async (tabId, message) =>
       chrome.tabs.sendMessage(tabId, message),
     connectNative: (hostName) =>
-      adaptChromeNativePort(chrome.runtime.connectNative(hostName))
+      adaptChromeNativePort(chrome.runtime.connectNative(hostName)),
+    getDefaultRelativeFolder
   };
 }
 

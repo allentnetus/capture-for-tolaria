@@ -71,7 +71,7 @@ it("将 images 元数据计入完整 Native Messaging 帧长度预算", () => {
   const baseRequest = {
     protocolVersion: PROTOCOL_VERSION,
     requestId: "req-large-images",
-    extensionVersion: "0.1.0-beta.1",
+    extensionVersion: "0.1.0-beta.3",
     action: "clip.article",
     payload: {
       relativeFolder: "Inbox/Web",

@@ -96,3 +96,41 @@ it("读取显式启用的 fake-IP DNS 兼容开关", async () => {
     await rm(workspace, { recursive: true, force: true });
   }
 });
+
+it("更新 Vault root 时保留 allowSyntheticDns", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "capture-for-tolaria-config-preserve-"));
+  const firstVault = join(workspace, "first-vault");
+  const secondVault = join(workspace, "second-vault");
+  const configPath = join(workspace, "config.json");
+  const previous = process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH;
+  process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH = configPath;
+
+  try {
+    await mkdir(firstVault);
+    await mkdir(secondVault);
+    await writeFile(
+      configPath,
+      JSON.stringify({ vaultRoot: firstVault, allowSyntheticDns: true }),
+      "utf8"
+    );
+    await setConfiguredVault(secondVault);
+    await expect(getConfiguredVaultConfig()).resolves.toMatchObject({
+      vaultRoot: secondVault,
+      allowSyntheticDns: true
+    });
+  } finally {
+    if (previous === undefined) {
+      delete process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH;
+    } else {
+      process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH = previous;
+    }
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+it("拒绝相对 Vault root", async () => {
+  await expect(setConfiguredVault("relative-vault")).rejects.toMatchObject({
+    code: "VAULT_ACCESS_DENIED",
+    userMessage: "Vault 根目录必须是绝对路径"
+  });
+});

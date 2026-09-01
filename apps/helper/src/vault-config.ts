@@ -1,7 +1,7 @@
 import { access, lstat, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { assertNoReparsePoint } from "./path-sandbox.js";
 import { FileChannelError } from "./errors.js";
 
@@ -83,6 +83,10 @@ export async function getConfiguredVault(): Promise<string | null> {
 }
 
 export async function setConfiguredVault(vaultPath: string): Promise<void> {
+  if (!isAbsolute(vaultPath)) {
+    throw new FileChannelError("VAULT_ACCESS_DENIED", "Vault 根目录必须是绝对路径");
+  }
+
   const resolvedPath = resolve(vaultPath);
   const validation = await validateConfiguredVault(resolvedPath);
   if (validation !== "ready") {
@@ -95,7 +99,15 @@ export async function setConfiguredVault(vaultPath: string): Promise<void> {
   const target = configRoot();
   await mkdir(dirname(target), { recursive: true });
   const temporaryPath = `${target}.tmp-${process.pid}-${Date.now()}`;
-  const serialized = `${JSON.stringify({ vaultRoot: resolvedPath }, null, 2)}\n`;
+  const existing = await getConfiguredVaultConfig();
+  const serialized = `${JSON.stringify(
+    {
+      vaultRoot: resolvedPath,
+      ...(existing?.allowSyntheticDns === true ? { allowSyntheticDns: true } : {})
+    },
+    null,
+    2
+  )}\n`;
   try {
     await writeFile(temporaryPath, serialized, { encoding: "utf8", mode: 0o600 });
     await rename(temporaryPath, target);

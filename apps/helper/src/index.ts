@@ -1,6 +1,11 @@
 export const PACKAGE_NAME = "@capture-for-tolaria/helper" as const;
 
-export const HELPER_ACTIONS = ["hello", "clip.article"] as const;
+export const HELPER_ACTIONS = [
+  "hello",
+  "clip.article",
+  "vault.config.get",
+  "vault.config.set"
+] as const;
 
 export type HelperAction = (typeof HELPER_ACTIONS)[number];
 

@@ -49,10 +49,28 @@ if (-not (Test-Path -LiteralPath $helperPath -PathType Leaf)) {
 $stagingRoot = Join-Path $OutputDirectory ".staging-$PID"
 $extensionStage = Join-Path $stagingRoot "extension"
 $installerStage = Join-Path $stagingRoot "installer-package"
+$installerExtensionStage = Join-Path $installerStage "extension"
 try {
     Remove-Item -LiteralPath $stagingRoot -Recurse -Force -ErrorAction SilentlyContinue
-    New-Item -ItemType Directory -Path $extensionStage, (Join-Path $installerStage "installer\windows") -Force | Out-Null
-    Copy-Item -Path (Join-Path $extensionDist "*") -Destination $extensionStage -Recurse -Force
+    New-Item -ItemType Directory -Path $extensionStage, $installerExtensionStage, (Join-Path $installerStage "installer\windows") -Force | Out-Null
+    $extensionRuntimePaths = @(
+        "background.js",
+        "content.js",
+        "manifest.json",
+        "options.html",
+        "options.js",
+        "popup.html",
+        "popup.js",
+        "icons"
+    )
+    foreach ($runtimePath in $extensionRuntimePaths) {
+        $sourcePath = Join-Path $extensionDist $runtimePath
+        if (-not (Test-Path -LiteralPath $sourcePath)) {
+            throw "Extension runtime file is missing: $sourcePath"
+        }
+        Copy-Item -LiteralPath $sourcePath -Destination $extensionStage -Recurse -Force
+        Copy-Item -LiteralPath $sourcePath -Destination $installerExtensionStage -Recurse -Force
+    }
     Copy-Item -Path (Join-Path $scriptDirectory "*.ps1") -Destination (Join-Path $installerStage "installer\windows") -Force
     Copy-Item -Path (Join-Path $scriptDirectory "*.json") -Destination (Join-Path $installerStage "installer\windows") -Force
     Copy-Item -Path (Join-Path $scriptDirectory "*.in") -Destination (Join-Path $installerStage "installer\windows") -Force
@@ -83,7 +101,7 @@ try {
         Expand-Archive -LiteralPath $extensionZip -DestinationPath $extensionUnpack -Force
         $extensionManifest = Get-Content -LiteralPath (Join-Path $extensionUnpack "manifest.json") -Raw | ConvertFrom-Json
         $permissions = @($extensionManifest.permissions | Sort-Object) -join ","
-        if ($permissions -ne "activeTab,nativeMessaging,scripting" -or $null -ne $extensionManifest.host_permissions) {
+        if ($permissions -ne "activeTab,nativeMessaging,scripting,storage" -or $null -ne $extensionManifest.host_permissions -or $extensionManifest.options_page -ne "options.html") {
             throw "Extension manifest permissions are outside the V0.1 contract"
         }
         if ($extensionManifest.version -ne $chromeVersion -or $extensionManifest.version_name -ne $expectedVersionName) {
@@ -94,6 +112,10 @@ try {
         $requiredFiles = @(
             $helperName,
             "VERSION",
+            "extension\manifest.json",
+            "extension\background.js",
+            "extension\options.html",
+            "extension\popup.html",
             "installer\windows\install.ps1",
             "installer\windows\repair.ps1",
             "installer\windows\configure-vault.ps1",

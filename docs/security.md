@@ -38,7 +38,7 @@ DOM 必须先克隆，再在克隆内容上运行 Readability。结果必须经�
 4. DOM Cleanup，移除隐藏导航、Cookie Banner 和无关控件。
 5. Turndown + GFM 转换。
 
-Readability 失败时不得静默把整页 `body.innerText` 写入 Vault。Alpha.1 只保留经过协议和 URL 检查的远程图片 URL；Beta.1 对正文中识别出的公开图片执行独立的 Helper 侧受限下载。
+Readability 失败时不得静默把整页 `body.innerText` 写入 Vault。Alpha.1 只保留经过协议和 URL 检查的远程图片 URL；Beta.5 对正文中识别出的公开图片执行独立的 Helper 侧受限下载。
 
 ## 4. 文件系统安全
 
@@ -83,7 +83,7 @@ V0.1 不包含：
 - 页面凭据采集
 - 后台网络抓取
 
-保存的 Markdown 和图片 Assets 仅写入用户授权的本地 Vault。来源 URL 是用户明确剪藏文章的元数据；它不会单独触发网络请求。Beta.1 的图片请求只处理用户本次剪藏中识别到的公开图片，不携带 cookies、`Authorization` 或页面凭据；单张图片失败时正文仍保存并回退到安全远程引用。
+保存的 Markdown 和图片 Assets 仅写入用户授权的本地 Vault。来源 URL 是用户明确剪藏文章的元数据；它不会单独触发网络请求。Beta.5 的图片请求只处理用户本次剪藏中识别到的公开图片，不携带 cookies、`Authorization` 或页面凭据；单张图片失败时正文仍保存并回退到安全远程引用。
 
 ## 7. 发布前检查
 

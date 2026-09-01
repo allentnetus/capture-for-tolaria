@@ -39,7 +39,7 @@ V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境�
 
 | 配置 | 唯一存储位置 | 读取/更新方 | 约束 |
 | --- | --- | --- | --- |
-| Vault root | `%LOCALAPPDATA%\CaptureForTolaria\config.json` | Helper；Extension Settings 通过 `vault.config.get` / `vault.config.set` 间接访问 | 只接受 Windows 绝对路径；Helper 校验普通目录、读写权限和 reparse point，并原子更新配置 |
+| Vault root | 当前用户应用数据目录中的 `CaptureForTolaria` 配置文件 | Helper；Extension Settings 通过 `vault.config.get` / `vault.config.set` 间接访问 | 只接受 Windows 绝对路径；Helper 校验普通目录、读写权限和 reparse point，并原子更新配置 |
 | 默认目录 | `chrome.storage.local` 的 `defaultRelativeFolder` | Extension Service Worker、Popup、Options Page | 只接受 Vault 内安全相对目录；缺失或异常时使用 `Inbox/Web` |
 
 Extension 不缓存 Vault root，也不把它放入普通 `clip.article` 请求。旧 Helper 如果没有 `vault.config` capability，Settings 显示兼容配置提示并继续保留 `clip.article` 路径；用户可使用 `configure-vault.ps1` 配置 Vault root。
@@ -63,7 +63,7 @@ V0.1 只实现 File Channel：
 - Tolaria 未运行时仍可保存。
 - 只创建新 Markdown，不覆盖已有文件。
 - 默认目录为 `Inbox/Web`，用户可在 Extension Popup 的 `Settings` 页面改为其他安全相对目录。
-- Vault 配置存储在 `%LOCALAPPDATA%\\CaptureForTolaria\\config.json`。
+- Vault 配置存储在当前用户应用数据目录中的 `CaptureForTolaria` 配置文件。
 - 首次配置只验证 Vault 根目录，不预创建默认目录；实际写入时才按目录段逐级创建和校验。
 
 未来 MCP Channel 负责 `vault_context`、搜索、更新、UI 控制和知识增强；它不能成为 V0.1 基础保存链路的前置依赖。

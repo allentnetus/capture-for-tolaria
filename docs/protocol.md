@@ -85,12 +85,12 @@ N bytes UTF-8 JSON
   "extensionVersion": "0.1.0-beta.2",
   "action": "vault.config.set",
   "payload": {
-    "vaultRoot": "E:\\Tolaria\\infra"
+    "vaultRoot": "<VaultPath>"
   }
 }
 ```
 
-`vault.config.set` 的 `payload` 只有 `vaultRoot`，协议层要求它是非空、最长 4,096 个字符的字符串；Helper 继续执行绝对路径、普通目录、读写权限和 reparse point 校验，并通过临时文件和 atomic rename 更新 `%LOCALAPPDATA%\\CaptureForTolaria\\config.json`。更新时保留既有 `allowSyntheticDns` 等 Helper 配置字段。
+`vault.config.set` 的 `payload` 只有 `vaultRoot`，协议层要求它是非空、最长 4,096 个字符的字符串；Helper 继续执行绝对路径、普通目录、读写权限和 reparse point 校验，并通过临时文件和 atomic rename 更新当前用户应用数据目录中的 `CaptureForTolaria` 配置文件。更新时保留既有 `allowSyntheticDns` 等 Helper 配置字段。
 
 成功响应只返回 Helper 规范化后的 Vault root：
 
@@ -101,7 +101,7 @@ N bytes UTF-8 JSON
   "helperVersion": "0.1.0-beta.2",
   "ok": true,
   "result": {
-    "vaultRoot": "E:\\Tolaria\\infra"
+    "vaultRoot": "<VaultPath>"
   }
 }
 ```

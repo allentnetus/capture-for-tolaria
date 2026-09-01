@@ -96,7 +96,7 @@ V0.1 范围：
 | 文件写入语义 | Atomic + Create-only，不覆盖已有文件 |
 | 图片 | `v0.1.0-beta.2` 对公开 Article 提供受限图片本地化 MVP；失败时保留安全的远程 HTTP/HTTPS URL |
 | Tolaria 运行状态 | Tolaria 未运行时仍尽量支持保存 |
-| Vault 配置 | V0.1 配置一个用户授权的 Vault，保存到 `%LOCALAPPDATA%\CaptureForTolaria\config.json` |
+| Vault 配置 | V0.1 配置一个用户授权的 Vault，保存到当前用户应用数据目录中的 `CaptureForTolaria` 配置文件 |
 | 目录创建 | 写入时逐级 `mkdir`，每一级创建或发现后立即检查真实路径和 reparse 状态 |
 | Extension 权限 | `activeTab` + `scripting` + `nativeMessaging`，不使用 V0.1 的宽泛 `host_permissions` |
 | Helper 分发 | 单文件可执行程序；目标用户不需要安装 Node.js |
@@ -652,7 +652,7 @@ Helper 不能暴露这种通用接口：
 ```json
 {
   "action": "writeFile",
-  "path": "C:\\anything\\...",
+  "path": "<Path>",
   "content": "..."
 }
 ```
@@ -749,7 +749,7 @@ Native Host Manifest 示例：
 ```json
 {
   "name": "com.capture_for_tolaria",
-  "path": "...\\capture-for-tolaria-helper.exe",
+  "path": "<HelperPath>",
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://FIXED_EXTENSION_ID/"
@@ -1160,17 +1160,16 @@ README 应持续维护兼容性矩阵，而不是笼统写“Works with Tolaria�
 
 ### 14.1 Windows 安装
 
-V0.1 优先使用用户目录：
+V0.1 优先使用当前用户范围，不写入系统级目录：
 
 ```text
-%LOCALAPPDATA%\Programs\CaptureForTolaria\
+当前用户程序目录下的 CaptureForTolaria 安装目录
 └─ capture-for-tolaria-helper.exe
 
-%LOCALAPPDATA%\CaptureForTolaria\
-└─ native-host\
-   └─ com.capture_for_tolaria.helper.json
+当前用户应用数据目录下的 Native Host manifest
+└─ com.capture_for_tolaria.helper.json
 
-HKCU\Software\Google\Chrome\NativeMessagingHosts\com.capture_for_tolaria.helper
+当前用户注册表中的 Chrome Native Messaging 注册项
 ```
 
 Native Messaging 注册使用 `HKCU`，尽量避免管理员权限、UAC 和系统级安装。当前 V0.1 不会把 `uninstall.ps1` 安装成 `uninstall.exe`；卸载从 Installer ZIP 中的 `installer/windows/uninstall.ps1` 运行。

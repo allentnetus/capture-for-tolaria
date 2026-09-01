@@ -15,7 +15,7 @@ V0.1 不包含：
 
 来源 URL 会作为 Markdown 元数据写入本地文件。Alpha.1 的保存行为不会自动下载图片；Beta.2 仅在用户点击剪藏、且 Extractor 已识别出正文图片时，由 Helper 对公开图片 URL 执行受限本地化。
 
-存储路径设置也只在本机处理：Extension 的 `chrome.storage.local` 只保存 Vault 内默认相对目录 `defaultRelativeFolder`；Vault root 由 Helper 保存到当前用户的 `%LOCALAPPDATA%\\CaptureForTolaria\\config.json`。两者都不会上传到网络，普通 `clip.article` 请求也不携带 Vault root 绝对路径。
+存储路径设置也只在本机处理：Extension 的 `chrome.storage.local` 只保存 Vault 内默认相对目录 `defaultRelativeFolder`；Vault root 由 Helper 保存到当前用户应用数据目录中的 `CaptureForTolaria` 配置文件。两者都不会上传到网络，普通 `clip.article` 请求也不携带 Vault root 绝对路径。
 
 ## Beta.2 图片本地化边界
 
@@ -27,10 +27,10 @@ V0.1 不包含：
 
 ## 本地数据
 
-Vault 根目录可在 Extension Popup 的 `Settings` 页面配置，也可使用 `configure-vault.ps1` 作为兼容入口。Helper 只接受经过路径、权限和 reparse point 校验的用户目录，配置文件位于：
+Vault 根目录可在 Extension Popup 的 `Settings` 页面配置，也可使用 `configure-vault.ps1` 作为兼容入口。Helper 只接受经过路径、权限和 reparse point 校验的用户目录，配置文件位于当前用户应用数据目录中的 `CaptureForTolaria` 配置文件：
 
 ```text
-%LOCALAPPDATA%\CaptureForTolaria\config.json
+CaptureForTolaria/config.json
 ```
 
 Vault 内默认目录保存在 Extension 的 `chrome.storage.local` 键 `defaultRelativeFolder` 中，默认值为 `Inbox/Web`。该值只允许安全的相对目录；缺失、读取失败或不安全时回退默认值。设置页不会把 Vault root 写入 Extension storage，也不会把默认目录写入 Helper 配置。

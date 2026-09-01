@@ -43,18 +43,18 @@ Beta.2 暂不实现 MCP 9710、AI、多 Vault、Selection、Bookmark、Screensho
 5. 打开 Extension Popup，点击 `Settings`，填写 Vault root 和 Vault 内默认目录并保存。支持 `vault.config` 的 Helper 会在保存 Vault root 时验证目录、权限和链接安全。
 6. 打开公开文章，点击 Extension Popup 中的 `Save to Tolaria`。
 
-普通用户不需要单独指定 Helper；只有在本地调试或替换经过审核的 Helper 时，才显式传入 `-HelperPath <HelperExe>`。脚本只写当前用户的 `%LOCALAPPDATA%` 和 `HKCU`。
+普通用户不需要单独指定 Helper；只有在本地调试或替换经过审核的 Helper 时，才显式传入 `-HelperPath <HelperExe>`。脚本只写当前用户的应用数据范围和用户注册表范围。
 
 ## 开发目录、发布目录与用户交付
 
-- `G:\Capture for Tolaria`：本地开发、测试和问题修复的源码基准。
-- `G:\发布\Capture for Tolaria-GitHub`：独立的 GitHub 发布工作区；只接收审核后的源码和中文文档，不反向覆盖开发目录。
+- 开发工作区：本地开发、测试和问题修复的源码基准。
+- 发布工作区：独立的 GitHub 发布工作区；只接收审核后的源码和中文文档，不反向覆盖开发工作区。
 - 发布前先在开发目录通过质量门禁，再按审核清单从开发目录单向同步到发布目录；发布目录重新安装依赖并复验后，才从发布目录组装当前版本 Installer ZIP。
 - 发布目录根部最多暂存当前版本的 `capture-for-tolaria-installer-v<VERSION>.zip` 作为用户交付资产。该 ZIP 被忽略，不进入源码 commit，也不复制回开发目录；`node_modules/`、`dist/`、`release/` 和 Vault 数据不属于发布目录交付内容。
 - GitHub Release 只公开这个自包含 Installer ZIP。Extension ZIP、独立 Helper、源码压缩包、SBOM、校验文件和开发依赖不是普通用户的安装前置。
 
 ### 配置存储路径
-- `Vault root` 必须是 Windows 绝对路径，例如 `E:\Tolaria\infra`。设置页通过 Native Messaging 请求 Helper 读取或更新它；Helper 只接受存在、可读写且不是 symbolic link、junction 或其他 reparse point 的普通目录。
+- `Vault root` 必须是用户选择的 Windows 绝对路径。设置页通过 Native Messaging 请求 Helper 读取或更新它；Helper 只接受存在、可读写且不是 symbolic link、junction 或其他 reparse point 的普通目录。
 - `Default folder` 是 Vault 内的安全相对目录，例如 `Inbox/Reading`。它保存在 Extension 的 `chrome.storage.local` 键 `defaultRelativeFolder` 中，缺失、读取失败或不安全时回退为 `Inbox/Web`。
 - 设置页保存时先保存 Vault root，再保存默认目录。Vault root 验证失败时不会保存默认目录；默认目录保存失败时不会显示两项均已完成。
 - 旧 Helper 如果没有 `vault.config` capability，不会接收设置 action；请使用 `configure-vault.ps1`，Article Capture 仍可使用原有 `clip.article` 能力。
@@ -136,7 +136,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& {
 如果当前网络把公共域名解析到 fake-IP 地址，且确认该映射由本机可信网络代理提供，可以在配置 Vault 时显式启用 Beta.2 兼容模式：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath 'C:\Path\To\Vault' -AllowSyntheticDns
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath '<VaultPath>' -AllowSyntheticDns
 ```
 
 该开关只影响当前用户配置，普通配置默认保持严格的私有/保留地址拒绝策略。

@@ -33,7 +33,7 @@
 - 路径是目录而不是文件。
 - 目标目录不位于受限或不可访问位置。
 - 目标目录不是 symbolic link、junction 或其他 Windows reparse point。
-- 配置文件位于 `%LOCALAPPDATA%\\CaptureForTolaria\\config.json`。
+- 配置文件位于当前用户应用数据目录中的 `CaptureForTolaria` 配置文件。
 
 如果 Settings 显示 Helper 不可用，依次检查 Native Host 是否安装、`hello.capabilities` 是否包含 `vault.config`、当前 Extension ID 是否在 Native Host 的 `allowed_origins` 中；旧 Helper 使用 `installer/windows/configure-vault.ps1 -VaultPath <VaultRoot>` 作为兼容入口。
 
@@ -51,9 +51,9 @@
 `relativeFolder` 只接受相对目录，例如 `Inbox/Web`。以下输入必须被拒绝：
 
 ```text
-C:\\Users\\Public
-\\\\server\\share
-/absolute/path
+系统目录
+网络共享路径
+绝对路径
 ..
 Inbox/../private
 ```
@@ -77,7 +77,7 @@ V0.1 是 create-only。目标文件已存在时 Helper 会依次尝试确定性�
 如果当前网络把公网域名解析到本机代理使用的 fake-IP 映射段，可以在确认网络环境后显式开启兼容模式：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath 'C:\Path\To\Vault' -AllowSyntheticDns
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath '<VaultPath>' -AllowSyntheticDns
 ```
 
 该开关只允许 DNS 名称解析出的 `198.18.0.0/15` 和 `fdfe:dcba:9876::/48` 映射继续请求，默认关闭；直接写入 URL 的 IP、真实私有目标、回环地址和其他保留地址仍会被拒绝。重新加载当前版本 Extension 后再截取文章。

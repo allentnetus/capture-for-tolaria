@@ -22,25 +22,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\inst
 `install.ps1` 默认按以下顺序寻找同版本 Helper：Installer ZIP 根目录、`installer\windows` 目录、开发目录的 `release` 目录。单个 Installer ZIP 已经包含同版本 Helper，普通用户不需要额外下载或指定它；下载包不需要 Node.js，也不需要把 Helper 放进仓库目录。若使用自定义位置，可显式传入：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\install.ps1 -HelperPath "C:\Path\To\capture-for-tolaria-helper-0.1.0-beta.2-windows-x64.exe"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\install.ps1 -HelperPath "<HelperExe>"
 ```
 
 如需在安装前使用兼容配置入口，可运行：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath "C:\Path\To\Vault"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\configure-vault.ps1 -VaultPath "<VaultPath>"
 ```
 
 配置脚本只验证并记录 Vault 根目录，不创建 `Inbox/Web`。第一次实际剪藏时，Helper 才逐级创建 `Inbox` 和 `Web` 并检查每一级真实路径和 reparse 状态。
 
 PowerShell 默认不会从当前目录执行未加路径的 `install.ps1`；如果当前目录已经是 `installer\windows`，应输入 `.\install.ps1`。不要使用 `cmd install.ps1`，因为 `.ps1` 不是 `cmd.exe` 的批处理命令。
 
-安装位置：
+安装位置由当前用户环境决定，脚本只使用当前用户的应用数据范围和用户注册表范围，不写入系统级目录：
 
 ```text
-%LOCALAPPDATA%\Programs\CaptureForTolaria\
-%LOCALAPPDATA%\CaptureForTolaria\native-host\com.capture_for_tolaria.helper.json
-HKCU\Software\Google\Chrome\NativeMessagingHosts\com.capture_for_tolaria.helper
+当前用户程序目录下的 CaptureForTolaria 安装目录
+当前用户应用数据目录下的 Native Host manifest
+当前用户注册表中的 Chrome Native Messaging 注册项
 ```
 
 ## 扩展加载（Extension）

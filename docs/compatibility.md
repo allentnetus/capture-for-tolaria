@@ -74,7 +74,7 @@
 - 发布目录生成的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`，大小 34,828,897 bytes，SHA-256 为 `94C2FB9A2D8F57E7913D501124FA88B8D9281F249C57E45AE2F9C9B3184624B3`。
 - Installer ZIP 根部只包含 `extension`、`installer`、版本化 Helper、`VERSION`、安装说明、许可证和第三方声明；包内 Extension 共 68 个文件，未包含 `node_modules`、`dist`、`release`、源码 package 或锁文件。
 - 已从发布目录根部的最终 Installer ZIP 在隔离临时 `LOCALAPPDATA` 下完成解压、无 `-HelperPath` 安装、Native Host 注册、Vault root 配置、Repair、`-ClearConfig` 卸载，并确认用户 Vault 保留。
-- 2026-09-01 的 `gh auth status` 报告 GitHub token 无效，`git ls-remote` 也因无凭据失败；因此当前尚未执行 Beta.2 的 commit、push、tag 或 GitHub Release，远程发布状态不能写成已完成。
+- 2026-09-01 已通过普通非强制 HTTPS push 将发布提交 `2ea3974f6cd96246efbcca40d97d99c6ba8fc2a8` 上传到 GitHub 分支 `codex/release-v0.1.0-beta.1`；该分支的 tag 和 GitHub Release 尚待执行及独立核验。
 
 ## 未验证
 

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.5] - 2026-09-01
+
+- Beta.5 修复：Vault 配置成功响应与 Vault root 请求使用同一长度上限，合法的长 Vault root 不再被错误拒绝。
+- Beta.5 发布：在 Beta.4 远端发布验收基础上重新执行开发目录到发布目录的单向审计同步、用户包内容门禁和隔离安装验证。
+
 ## [0.1.0-beta.4] - 2026-09-01
 
 - Beta.4 修复：真实 Service Worker 运行时依赖接入 `chrome.storage.local`，Settings 保存的默认目录会进入实际 `clip.article` 请求；读取失败或不安全时仍回退为 `Inbox/Web`。

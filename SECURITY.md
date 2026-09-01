@@ -6,7 +6,7 @@ Capture for Tolaria 将网页 DOM、标题、来源 URL、metadata 和 Markdown 
 
 | 版本 | 支持 |
 | --- | --- |
-| 当前公开 `0.1.0-beta.4` | 是，GitHub Pre-release 已发布，唯一公开资产为自包含 Installer ZIP；真实 Chrome/Tolaria 端到端 Capture 仍需独立核验 |
+| 当前公开 `0.1.0-beta.5` | 是，GitHub Pre-release 已发布，唯一公开资产为自包含 Installer ZIP；真实 Chrome/Tolaria 端到端 Capture 仍需独立核验 |
 | 历史公开 `0.1.0-alpha.1` | 是，公开 Alpha；图片自动本地化尚未作为 Alpha 发布能力 |
 | 其他版本 | 未承诺 |
 

@@ -219,7 +219,7 @@ export const vaultConfigResponseSchema = z.union([
     ...responseBase,
     ok: z.literal(true),
     result: z.object({
-      vaultRoot: z.string().min(1).max(MAX_RESPONSE_PATH_LENGTH)
+      vaultRoot: z.string().min(1).max(MAX_VAULT_ROOT_LENGTH)
     }).strict()
   }).strict(),
   errorResponseSchema

@@ -76,6 +76,18 @@ it("校验 Vault 配置成功响应并拒绝额外字段", () => {
   })).toThrow();
 });
 
+it("接受合法的长 Vault root 成功响应", () => {
+  const vaultRoot = "V".repeat(2_048);
+
+  expect(validateVaultConfigResponse({
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "vault-response-long-root",
+    helperVersion: "0.1.0-beta.3",
+    ok: true,
+    result: { vaultRoot }
+  })).toMatchObject({ result: { vaultRoot } });
+});
+
 it("接受 Vault 配置错误响应并保持 Article 响应校验分离", () => {
   const errorResponse = {
     protocolVersion: PROTOCOL_VERSION,

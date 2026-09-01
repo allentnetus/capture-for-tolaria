@@ -11,8 +11,8 @@
 | Node.js（开发构建） | `v24.15.0` |
 | pnpm | `11.19.0` |
 | PowerShell | 本轮为 `7.6.4`；Windows PowerShell `5.1.26100.9168` 脚本兼容性已验证 |
-| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 4`，MV3，协议 `1` |
-| Helper | `0.1.0-beta.4`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
+| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 5`，MV3，协议 `1` |
+| Helper | `0.1.0-beta.5`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
 | Chrome | 已检测到 Chrome，但本轮未向现有 profile 加载 Extension；具体版本未记录 |
 | Tolaria | 已检测到 Tolaria 进程，但本轮未向真实 Vault 写入或验证文件监听 |
 
@@ -34,8 +34,8 @@
 - Extension manifest 权限集合、固定 key 和 Native Host `allowed_origins` ID 一致性
 - Mock Host 的 Extension → Helper → File Channel 垂直链路
 - SEA 单文件 Helper 仅通过 `hello` 启动，Pester 测试不调用 Node.js runtime
-- SEA Helper 构建和 Beta.4 Installer ZIP 组装、发布内容自检
-- 当前 Beta.4：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 14 个 Installer/Pester 测试 `14 passed、0 failed`
+- SEA Helper 构建和 Beta.5 Installer ZIP 组装、发布内容自检
+- 当前 Beta.5：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 15 个 Installer/Pester 测试 `15 passed、0 failed`
 
 ## Beta.1 历史开发验证
 
@@ -91,7 +91,7 @@
 - 远端 Installer ZIP 下载后 SHA-256 与 GitHub digest 一致；下载包重新通过根目录内容、Extension manifest、开发产物排除和具体用户路径审计。
 - 已从真实远端 Installer ZIP 在隔离临时用户环境完成 Vault 配置、无 `-HelperPath` 安装、Helper 实际 Markdown 写入、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
 
-### 当前 Beta.4 发布状态（截至 2026-09-01）
+### Beta.4 发布记录（截至 2026-09-01）
 
 - 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.4`；本版本修复真实 Service Worker 运行时未注入 `chrome.storage.local` 默认目录读取器的问题，并保留缺失、读取失败或不安全时回退 `Inbox/Web` 的行为。
 - 开发目录和发布目录的完整门禁均通过：6 个 workspace、29 个测试文件、174 个测试；另行运行 Golden tests，14 个测试通过。
@@ -101,6 +101,12 @@
 - GitHub Release `v0.1.0-beta.4` 已确认 `draft=false`、`prerelease=true`，只上传一个用户资产 `capture-for-tolaria-installer-v0.1.0-beta.4.zip`；远端资产大小为 34,918,840 bytes，GitHub digest 为 `sha256:fb3454784f007b3899f35070e3d0382ddb8c73748540f056709b8d79a192ac94`。
 - 远端下载包共 29 个条目，根目录、Extension manifest、开发产物排除、声明文件/源映射排除和本地路径隐私审计均通过。远端 ZIP 原始字节与本地预组装 ZIP 不相同，原因是 CI 文本换行和 CI 构建的 Helper 二进制环境不同；统一文本换行后，除版本化 Helper 二进制外其余 28 个条目逐条一致，未发现缺失或多余文件。该差异已作为发布来源差异明确记录，不把本地 ZIP 冒充为 GitHub 资产副本。
 - 已从真实远端 Installer ZIP 在全新隔离用户环境完成默认 Vault 配置、无 `-HelperPath` 使用内置 Helper 安装、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收；未发现 Node.js 作为安装前置。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
+
+### 当前 Beta.5 发布状态（截至 2026-09-01）
+
+- 开发目录已修复 Vault 配置成功响应错误使用 `MAX_RESPONSE_PATH_LENGTH` 的问题，并新增 2,048 字符 Vault root 回归测试；真实 Service Worker 默认目录读取修复继续保留。
+- 开发目录完整门禁已通过：6 个 workspace、29 个测试文件、175 个测试；另行运行 Golden tests，14 个测试通过。
+- 发布目录、Beta.5 Installer ZIP、tag、GitHub Actions、Release 资产、远端 ZIP 内容清单和隔离安装结果将在 Beta.5 发布后补入本节；未完成状态不得以 Beta.4 证据替代。
 
 ## 未验证
 

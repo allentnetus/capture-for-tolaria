@@ -85,7 +85,7 @@ export function validateContentPayload(value: unknown): ArticlePayload {
   const request = validateRequest({
     protocolVersion: 1,
     requestId: "content-validation",
-    extensionVersion: "0.1.0-beta.4",
+    extensionVersion: "0.1.0-beta.5",
     action: "clip.article",
     payload
   });

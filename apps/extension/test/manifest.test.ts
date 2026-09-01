@@ -29,7 +29,7 @@ function extensionIdFromPublicKey(publicKey: string): string {
 
 it("声明设置页所需的最小权限", () => {
   expect(manifest.version).toBe("0.1.0");
-  expect(manifest.version_name).toBe("0.1.0 Beta 4");
+  expect(manifest.version_name).toBe("0.1.0 Beta 5");
   expect(manifest.permissions).toEqual([
     "activeTab",
     "scripting",

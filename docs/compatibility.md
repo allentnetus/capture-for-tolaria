@@ -54,14 +54,14 @@
 
 ### 历史 Alpha.1 快照（2026-08-22）
 
-- 历史 Alpha.1 发布快照中的 `main`、`origin/main` 和 tag `v0.1.0-alpha.1` 指向 `6bd5c499dd724b05d72467cd6476b52bf4b2bce3`，当时发布目录工作区干净；这不代表当前 Beta.1 发布目录状态。
+- 历史 Alpha.1 发布快照中的 `main`、`origin/main` 和 tag `v0.1.0-alpha.1` 指向 `6bd5c499dd724b05d72467cd6476b52bf4b2bce3`，当时发布目录工作区干净；这不代表当前 Beta.5 发布目录状态。
 - 该历史提交对应的远程 `CI`（`32576718709`）、`Release`（`32576718735`）和 `CodeQL`（`32576696865`）workflow 均为 `completed / success`。
 - GitHub API 当时确认 `v0.1.0-alpha.1` 的公开 Release 对象为 `draft=false`、`prerelease=true`，并已上传 Extension ZIP、Installer ZIP、Helper EXE、`SHA256SUMS.txt` 和 `SBOM.spdx.json` 五项资产。
 - 尚未在独立临时目录下载这些历史公开资产并将下载文件与 `SHA256SUMS.txt` 重新比对；“workflow 成功”和“下载后校验通过”仍是两个独立状态。
 
 ### 历史 Beta.1 状态（截至 2026-08-29）
 
-- 当前源码和发布目录基线为 `v0.1.0-beta.1`；已完成开发目录到发布目录的单向同步、发布目录清理、本地质量门禁和发布目录复验。
+- 当时源码和发布目录基线为 `v0.1.0-beta.1`；已完成开发目录到发布目录的单向同步、发布目录清理、本地质量门禁和发布目录复验。
 - PR [#11](https://github.com/allentnetus/capture-for-tolaria/pull/11) 已合并到 `main`，合并提交为 `4e206a14e91ce05e6e66614a1667ff7a20864098`；tag `v0.1.0-beta.1` 已指向该提交。
 - Release workflow `33237816354` 已成功完成；GitHub Release `v0.1.0-beta.1` 为 `draft=false`、`prerelease=true`，已上传 Extension ZIP、Installer ZIP、Helper EXE、`SHA256SUMS.txt` 和 `SBOM.spdx.json` 五项资产。
 - 公开资产下载后与 `SHA256SUMS.txt` 的哈希和大小均匹配：Extension `0905BA2758676BAF3C1FAEB102207612DBA8C6652EE06A134FCE85A641A1BD74`、Helper `3AAB4B8353552A180B5C64C86B9B7DFBFE3385C9E52E525AE6F19B02508D1CD5`、Installer `88DF9160F73BD54396C08E446D7DBE4B8171C67E6E490D04D3C9FFD37A922228`、SBOM `85C43454A371241668F0A0FE081A31573E31C6483FBD02CE699C994CADBDD270`。
@@ -78,7 +78,7 @@
 - GitHub Release `v0.1.0-beta.2` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`；远端资产大小为 35,242,477 bytes，GitHub digest 为 `sha256:da92f292ab9c1caf21943a4aa294c5274b2f72ff38b27a3c14125a85ff855f1e`。
 - 该远端 Installer ZIP 下载后重新通过根目录内容审计、Extension manifest 检查和隔离临时 `LOCALAPPDATA` 下的无参数安装、Native Host 注册、Vault 配置、Repair、`-ClearConfig` 卸载及 Vault 保留验收。
 
-### 当前 Beta.3 发布状态（截至 2026-09-01）
+### Beta.3 历史发布状态（截至 2026-09-01）
 
 - 开发目录和发布目录的 `VERSION` 已递增为 `0.1.0-beta.3`；Beta.3 只包含已审核源码、中文用户文档和路径隐私修复，不包含开发依赖或构建中间产物。
 - 开发目录和发布目录的完整 `pnpm.cmd run check` 均通过：6 个 workspace、28 个测试文件、173 个测试。

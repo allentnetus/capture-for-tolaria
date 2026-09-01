@@ -6,7 +6,7 @@
 
 当前交付目标是 `v0.1.0-beta.2`：Windows + Chrome + Article Capture + Direct File Channel。用户在公开文章页面点击 Capture，Extension 提取并清理正文，Native Messaging Helper 将普通 Markdown 和成功本地化的图片原子地写入用户授权的 Tolaria Vault。
 
-当前源码基线：`v0.1.0-beta.2`。`v0.1.0-alpha.1` 和 `v0.1.0-beta.1` 是已公开的历史预览版；Beta.2 的远程 Release、CI 和用户下载资产以发布目录及 GitHub 实际状态为准，尚未提交 Chrome Web Store。
+当前源码基线：`v0.1.0-beta.2`。`v0.1.0-alpha.1` 和 `v0.1.0-beta.1` 是已公开的历史预览版；Beta.2 已作为 [GitHub Pre-release](https://github.com/allentnetus/capture-for-tolaria/releases/tag/v0.1.0-beta.2) 发布，尚未提交 Chrome Web Store。
 
 当前 Beta.2 能力：对公开 Article 正文中识别到的图片执行本地化，将成功下载的图片以 `Assets/<sha256>.<ext>` 保存到文章目录；下载失败时保留远程引用并显示回退摘要。
 

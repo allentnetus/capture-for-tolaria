@@ -74,7 +74,9 @@
 - 发布目录生成的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`，大小 34,828,897 bytes，SHA-256 为 `94C2FB9A2D8F57E7913D501124FA88B8D9281F249C57E45AE2F9C9B3184624B3`。
 - Installer ZIP 根部只包含 `extension`、`installer`、版本化 Helper、`VERSION`、安装说明、许可证和第三方声明；包内 Extension 共 68 个文件，未包含 `node_modules`、`dist`、`release`、源码 package 或锁文件。
 - 已从发布目录根部的最终 Installer ZIP 在隔离临时 `LOCALAPPDATA` 下完成解压、无 `-HelperPath` 安装、Native Host 注册、Vault root 配置、Repair、`-ClearConfig` 卸载，并确认用户 Vault 保留。
-- 2026-09-01 已通过普通非强制 HTTPS push 将发布提交 `2ea3974f6cd96246efbcca40d97d99c6ba8fc2a8` 上传到 GitHub 分支 `codex/release-v0.1.0-beta.1`；该分支的 tag 和 GitHub Release 尚待执行及独立核验。
+- 2026-09-01 已通过普通非强制 HTTPS push 将发布提交 `2ea3974f6cd96246efbcca40d97d99c6ba8fc2a8` 及文档提交 `29a928f9362ab7cbfb5893e9ad1ae551b39cff6e` 上传到 GitHub 分支 `codex/release-v0.1.0-beta.1`；tag `v0.1.0-beta.2` 指向 `29a928f9362ab7cbfb5893e9ad1ae551b39cff6e`，Release workflow `33465423348` 为成功。
+- GitHub Release `v0.1.0-beta.2` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`；远端资产大小为 35,242,477 bytes，GitHub digest 为 `sha256:da92f292ab9c1caf21943a4aa294c5274b2f72ff38b27a3c14125a85ff855f1e`。
+- 该远端 Installer ZIP 下载后重新通过根目录内容审计、Extension manifest 检查和隔离临时 `LOCALAPPDATA` 下的无参数安装、Native Host 注册、Vault 配置、Repair、`-ClearConfig` 卸载及 Vault 保留验收。
 
 ## 未验证
 

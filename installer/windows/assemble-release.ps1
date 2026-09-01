@@ -53,8 +53,24 @@ $installerExtensionStage = Join-Path $installerStage "extension"
 try {
     Remove-Item -LiteralPath $stagingRoot -Recurse -Force -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Path $extensionStage, $installerExtensionStage, (Join-Path $installerStage "installer\windows") -Force | Out-Null
-    Copy-Item -Path (Join-Path $extensionDist "*") -Destination $extensionStage -Recurse -Force
-    Copy-Item -Path (Join-Path $extensionDist "*") -Destination $installerExtensionStage -Recurse -Force
+    $extensionRuntimePaths = @(
+        "background.js",
+        "content.js",
+        "manifest.json",
+        "options.html",
+        "options.js",
+        "popup.html",
+        "popup.js",
+        "icons"
+    )
+    foreach ($runtimePath in $extensionRuntimePaths) {
+        $sourcePath = Join-Path $extensionDist $runtimePath
+        if (-not (Test-Path -LiteralPath $sourcePath)) {
+            throw "Extension runtime file is missing: $sourcePath"
+        }
+        Copy-Item -LiteralPath $sourcePath -Destination $extensionStage -Recurse -Force
+        Copy-Item -LiteralPath $sourcePath -Destination $installerExtensionStage -Recurse -Force
+    }
     Copy-Item -Path (Join-Path $scriptDirectory "*.ps1") -Destination (Join-Path $installerStage "installer\windows") -Force
     Copy-Item -Path (Join-Path $scriptDirectory "*.json") -Destination (Join-Path $installerStage "installer\windows") -Force
     Copy-Item -Path (Join-Path $scriptDirectory "*.in") -Destination (Join-Path $installerStage "installer\windows") -Force

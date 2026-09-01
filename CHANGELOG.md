@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.4] - 2026-09-01
+
+- Beta.4 修复：真实 Service Worker 运行时依赖接入 `chrome.storage.local`，Settings 保存的默认目录会进入实际 `clip.article` 请求；读取失败或不安全时仍回退为 `Inbox/Web`。
+- Beta.4 发布：重新执行开发目录到发布目录的单向审计同步，补充发布资产来源和内容核对门禁。
+- Beta.4 发布：GitHub Release 只提供自包含 Installer ZIP，Extension ZIP、独立 Helper、源码和开发依赖不作为普通用户安装前置。
+
 ## [0.1.0-beta.3] - 2026-09-01
 
 - Beta.3：面向用户的发布说明移除具体本地文件系统路径，改用当前用户范围、工作区角色和占位符表达。

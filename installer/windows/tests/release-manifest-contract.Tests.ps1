@@ -41,4 +41,9 @@ Describe "Release Extension manifest contract" {
             $workflow | Should -Match ('"{0}"' -f $escapedFile)
         }
     }
+
+    It "stages only runnable Extension files and excludes compiler metadata" {
+        $assembler | Should -Match '\$extensionRuntimePaths\s*=\s*@\('
+        $assembler | Should -Not -Match 'Copy-Item -Path \(Join-Path \$extensionDist "\*"\)'
+    }
 }

@@ -1,6 +1,6 @@
 # Capture for Tolaria —— 最终产品与技术方案
 
-> 文档状态：`v0.1.0-beta.3` 当前方案基线（实现已完成，真实 Chrome/Tolaria 验收待完成）
+> 文档状态：`v0.1.0-beta.4` 当前方案基线（实现已完成，真实 Chrome/Tolaria 验收待完成）
 >
 > 项目名称：Capture for Tolaria
 >
@@ -94,7 +94,7 @@ V0.1 范围：
 | Tolaria 写入方式 | Direct File Channel |
 | 默认目录 | `Inbox/Web`（Settings 可自定义 Vault 内默认相对目录） |
 | 文件写入语义 | Atomic + Create-only，不覆盖已有文件 |
-| 图片 | `v0.1.0-beta.3` 对公开 Article 提供受限图片本地化 MVP；失败时保留安全的远程 HTTP/HTTPS URL |
+| 图片 | `v0.1.0-beta.4` 对公开 Article 提供受限图片本地化 MVP；失败时保留安全的远程 HTTP/HTTPS URL |
 | Tolaria 运行状态 | Tolaria 未运行时仍尽量支持保存 |
 | Vault 配置 | V0.1 配置一个用户授权的 Vault，保存到当前用户应用数据目录中的 `CaptureForTolaria` 配置文件 |
 | 目录创建 | 写入时逐级 `mkdir`，每一级创建或发现后立即检查真实路径和 reparse 状态 |
@@ -114,7 +114,7 @@ V0.1 的 Article Capture 由用户点击触发，Extension 使用 `activeTab`、
 - Selection、Bookmark、Screenshot 和右键菜单的完整体验
 - MCP 9710 集成
 - 多 Vault 和 Vault Context
-- 当前 `v0.1.0-beta.3` 已包含公开 Article 图片本地化 MVP；完整的 Assets 管理、资源复用和模板能力继续排入后续版本
+- 当前 `v0.1.0-beta.4` 已包含公开 Article 图片本地化 MVP；完整的 Assets 管理、资源复用和模板能力继续排入后续版本
 - AI 摘要、标签、类型推荐和知识关联
 - Edge、macOS、Linux
 - 云同步、账号系统和自建云服务
@@ -140,7 +140,7 @@ Native Messaging Helper
 File Channel
 ```
 
-V0.2+ 的路线图再评估 Edge Extension 和 MCP Channel；它们不是当前 Beta.3 的已实现能力。两个 Channel 的职责必须分离：
+V0.2+ 的路线图再评估 Edge Extension 和 MCP Channel；它们不是当前 Beta.4 的已实现能力。两个 Channel 的职责必须分离：
 
 ```text
 基础 Capture
@@ -204,7 +204,7 @@ V0.2+ 的路线图再评估 Edge Extension 和 MCP Channel；它们不是当前 
 | Tolaria 未启动时保存 | 支持 | 不依赖其实现 |
 | 9710 未运行时保存 | 支持 | 不支持 |
 | 创建 Markdown | 支持 | 支持 |
-| 保存 Assets | `v0.1.0-beta.3` 提供 Article 图片本地化 MVP；`v0.2.5-beta.1` 扩展高级资源管理 | 视 Tolaria 能力而定 |
+| 保存 Assets | `v0.1.0-beta.4` 提供 Article 图片本地化 MVP；`v0.2.5-beta.1` 扩展高级资源管理 | 视 Tolaria 能力而定 |
 | Vault Context | 不支持 | 支持 |
 | 搜索已有知识 | 不支持 | 支持 |
 | 更新已有笔记 | 有限 | 支持 |
@@ -246,7 +246,7 @@ Native Helper
 Tolaria Vault / Inbox/Web/*.md
 ```
 
-V0.2+ 如果启用 MCP，才评估以下可选路径；它不属于当前 Beta.3 验收链路：
+V0.2+ 如果启用 MCP，才评估以下可选路径；它不属于当前 Beta.4 验收链路：
 
 ```text
 Chrome / Edge
@@ -670,7 +670,7 @@ vault.context
 
 ### 8.3 图片策略
 
-当前 `v0.1.0-beta.3` 对公开 Article 图片执行受限本地化；下载失败时仍保留经过检查的远程 URL：
+当前 `v0.1.0-beta.4` 对公开 Article 图片执行受限本地化；下载失败时仍保留经过检查的远程 URL：
 
 ```markdown
 ![](https://cdn.example.com/image.png)
@@ -682,7 +682,7 @@ vault.context
 ![](Assets/<sha256>.png)
 ```
 
-`v0.1.0-beta.3` 已实现公众号 Article 的图片本地化 MVP；`v0.2.5-beta.1` 再扩展完整的 Assets 管理、资源复用和模板能力：
+`v0.1.0-beta.4` 已实现公众号 Article 的图片本地化 MVP；`v0.2.5-beta.1` 再扩展完整的 Assets 管理、资源复用和模板能力：
 
 ```text
 Remote Image
@@ -797,7 +797,7 @@ Request：
 {
   "protocolVersion": 1,
   "requestId": "uuid",
-  "extensionVersion": "0.1.0-beta.3",
+  "extensionVersion": "0.1.0-beta.4",
   "action": "clip.article",
   "payload": {
     "relativeFolder": "Inbox/Web",
@@ -818,7 +818,7 @@ Response：
 {
   "protocolVersion": 1,
   "requestId": "uuid",
-  "helperVersion": "0.1.0-beta.3",
+  "helperVersion": "0.1.0-beta.4",
   "ok": true,
   "result": {
     "relativePath": "Inbox/Web/article.md"
@@ -1174,7 +1174,7 @@ V0.1 优先使用当前用户范围，不写入系统级目录：
 
 Native Messaging 注册使用 `HKCU`，尽量避免管理员权限、UAC 和系统级安装。当前 V0.1 不会把 `uninstall.ps1` 安装成 `uninstall.exe`；卸载从 Installer ZIP 中的 `installer/windows/uninstall.ps1` 运行。
 
-`v0.1.0-beta.3` 的 Extension 交付包含在自包含 Installer ZIP 的 `extension` 目录中，并通过 Chrome 开发者模式加载；安装说明明确 Extension ID 与 Native Host Manifest 的对应关系。Chrome Web Store 发布仍放到后续版本。
+`v0.1.0-beta.4` 的 Extension 交付包含在自包含 Installer ZIP 的 `extension` 目录中，并通过 Chrome 开发者模式加载；安装说明明确 Extension ID 与 Native Host Manifest 的对应关系。Chrome Web Store 发布仍放到后续版本。
 
 安装器必须幂等地支持：
 
@@ -1192,7 +1192,7 @@ Uninstall
 GitHub Release 面向普通用户只公开一个自包含 Installer ZIP：
 
 ```text
-capture-for-tolaria-installer-v0.1.0-beta.3.zip
+    capture-for-tolaria-installer-v0.1.0-beta.4.zip
 ```
 
 该 ZIP 自包含当前版本的 Extension、Helper、Windows 安装脚本、安装说明、`VERSION` 和许可证文件。CI 可以生成 Extension ZIP、独立 Helper、SBOM 和校验文件作为内部验证中间产物，但这些文件不作为用户下载资产，也不是用户安装前置。
@@ -1203,7 +1203,7 @@ capture-for-tolaria-installer-v0.1.0-beta.3.zip
 v0.1.0-alpha.1（历史 Alpha）
 v0.1.0-beta.1（历史 Beta）
 v0.1.0-beta.2（历史 Beta）
-v0.1.0-beta.3（当前发布目标）
+v0.1.0-beta.4（当前发布目标）
 v0.1.1
 v0.2.0
 ```
@@ -1214,7 +1214,7 @@ v0.2.0
 
 | 阶段 | 建议 |
 | --- | --- |
-| `v0.1.0-beta.1`、`v0.1.0-beta.2`、`v0.1.0-beta.3` | 可以暂时 unsigned |
+| `v0.1.0-beta.1`、`v0.1.0-beta.2`、`v0.1.0-beta.3`、`v0.1.0-beta.4` | 可以暂时 unsigned |
 | V0.2 Public Beta | 开始 Windows Code Signing |
 | V1.0 | 签名发布作为必需条件 |
 
@@ -1357,7 +1357,7 @@ Knowledge Linking
 
 无论后续增加多少 AI 能力，原始网页内容都必须保留为事实层。
 
-## 18. `v0.1.0-beta.3` 验收标准
+## 18. `v0.1.0-beta.4` 验收标准
 
 验收对象不是开发者自己的机器，而是陌生 Windows 用户。
 
@@ -1402,7 +1402,7 @@ Native Host、Helper 和注册信息清理干净
 只有完整通过这条链路，才算完成：
 
 ```text
-Capture for Tolaria v0.1.0-beta.3
+Capture for Tolaria v0.1.0-beta.4
 ```
 
 ## 19. 最终方案定版

@@ -12,9 +12,10 @@ import {
   type CaptureResponse,
   type ContentMessage
 } from "./messages.js";
+import { getDefaultRelativeFolder } from "../settings/storage.js";
 import { relativeFolderSchema } from "@capture-for-tolaria/protocol";
 
-export const EXTENSION_VERSION = "0.1.0-beta.3";
+export const EXTENSION_VERSION = "0.1.0-beta.4";
 
 export interface ActiveTab {
   id: number;
@@ -148,7 +149,7 @@ export async function handleCaptureMessage(
   }
 }
 
-function runtimeDependencies(): CaptureDependencies {
+export function runtimeDependencies(): CaptureDependencies {
   return {
     getActiveTab: async () => {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -167,7 +168,8 @@ function runtimeDependencies(): CaptureDependencies {
     sendContentMessage: async (tabId, message) =>
       chrome.tabs.sendMessage(tabId, message),
     connectNative: (hostName) =>
-      adaptChromeNativePort(chrome.runtime.connectNative(hostName))
+      adaptChromeNativePort(chrome.runtime.connectNative(hostName)),
+    getDefaultRelativeFolder
   };
 }
 

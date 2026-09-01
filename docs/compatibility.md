@@ -11,8 +11,8 @@
 | Node.js（开发构建） | `v24.15.0` |
 | pnpm | `11.19.0` |
 | PowerShell | 本轮为 `7.6.4`；Windows PowerShell `5.1.26100.9168` 脚本兼容性已验证 |
-| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 3`，MV3，协议 `1` |
-| Helper | `0.1.0-beta.3`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
+| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 4`，MV3，协议 `1` |
+| Helper | `0.1.0-beta.4`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
 | Chrome | 已检测到 Chrome，但本轮未向现有 profile 加载 Extension；具体版本未记录 |
 | Tolaria | 已检测到 Tolaria 进程，但本轮未向真实 Vault 写入或验证文件监听 |
 
@@ -34,8 +34,8 @@
 - Extension manifest 权限集合、固定 key 和 Native Host `allowed_origins` ID 一致性
 - Mock Host 的 Extension → Helper → File Channel 垂直链路
 - SEA 单文件 Helper 仅通过 `hello` 启动，Pester 测试不调用 Node.js runtime
-- SEA Helper 构建和 Beta.3 Installer ZIP 组装、发布内容自检
-- 当前 Beta.3：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 14 个 Installer/Pester 测试 `14 passed、0 failed`
+- SEA Helper 构建和 Beta.4 Installer ZIP 组装、发布内容自检
+- 当前 Beta.4：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 14 个 Installer/Pester 测试 `14 passed、0 failed`
 
 ## Beta.1 历史开发验证
 
@@ -87,8 +87,17 @@
 - 发布目录 Windows Pester 门禁为 14 passed、0 failed、0 skipped；SBOM 和 `SHA256SUMS.txt` 已按 Release workflow 生成。
 - tag `v0.1.0-beta.3` 指向发布提交 `7a4485cd3c241d248d5e6122ecbd345686ba5137`；tag CI `33471473591` 和 Release workflow `33471473630` 均成功。
 - GitHub Release `v0.1.0-beta.3` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.3.zip`；远端资产大小为 35,242,452 bytes，GitHub digest 为 `sha256:ea9605adb47c16822c9ad256086341ba905406b4babf41d29f6fa26f9eacdd9a`。
+- Beta.3 本地预组装 ZIP 与远端 CI 生成的 ZIP 虽然条目数相同，但多个条目的内容哈希不同；因此本地 Beta.3 ZIP 不能作为远端发布资产的来源证明。本次 Beta.4 将单独下载远端 Installer ZIP，并逐条核对内容清单后记录结果。
 - 远端 Installer ZIP 下载后 SHA-256 与 GitHub digest 一致；下载包重新通过根目录内容、Extension manifest、开发产物排除和具体用户路径审计。
 - 已从真实远端 Installer ZIP 在隔离临时用户环境完成 Vault 配置、无 `-HelperPath` 安装、Helper 实际 Markdown 写入、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
+
+### 当前 Beta.4 发布状态（截至 2026-09-01）
+
+- 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.4`；本版本修复真实 Service Worker 运行时未注入 `chrome.storage.local` 默认目录读取器的问题，并保留缺失、读取失败或不安全时回退 `Inbox/Web` 的行为。
+- 开发目录完整门禁通过：6 个 workspace、29 个测试文件、174 个测试；另行运行 Golden tests，14 个测试通过。发布目录将在单向同步后重新执行同一组门禁。
+- 发布目录组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.4.zip`，共 29 个条目，大小 34,505,796 bytes，SHA-256 为 `0D479228EF125FC452E6E7BBD9A620C1F6E69AD5A1C65B1CC424B1925C96E4B5`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
+- 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
+- tag、GitHub Actions、Release 资产和远端 ZIP 内容清单核对结果将在 Beta.4 远程发布后补入本节；未完成的状态不得以 Beta.3 证据替代。
 
 ## 未验证
 

@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 架构
 
-> 状态：`v0.1.0-beta.3` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化与可配置 Vault 路径
+> 状态：`v0.1.0-beta.4` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化与可配置 Vault 路径
 >
 > 本文与 `docs/final-solution.md` 配套，冻结第一条可验证的 Article Capture 主链路。
 
@@ -18,7 +18,7 @@ Helper
 Tolaria Vault / <defaultRelativeFolder>/*.md + Assets/<sha256>.<ext>
 ```
 
-V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.3 的图片本地化仍由用户触发并在 Helper 内完成，Vault root 和默认相对目录可由 Settings 配置；MCP Channel、AI、多 Vault 和跨平台支持不属于本版本。
+V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.4 的图片本地化仍由用户触发并在 Helper 内完成，Vault root 和默认相对目录可由 Settings 配置；MCP Channel、AI、多 Vault 和跨平台支持不属于本版本。
 
 ## 2. 组件职责
 

@@ -42,6 +42,9 @@ jobs:
       - name: Run release gate
         run: pnpm.cmd run check
 
+      - name: Run Golden tests
+        run: pnpm.cmd run test:golden
+
       - name: Build single-file Helper
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1

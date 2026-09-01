@@ -94,10 +94,13 @@
 ### 当前 Beta.4 发布状态（截至 2026-09-01）
 
 - 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.4`；本版本修复真实 Service Worker 运行时未注入 `chrome.storage.local` 默认目录读取器的问题，并保留缺失、读取失败或不安全时回退 `Inbox/Web` 的行为。
-- 开发目录完整门禁通过：6 个 workspace、29 个测试文件、174 个测试；另行运行 Golden tests，14 个测试通过。发布目录将在单向同步后重新执行同一组门禁。
+- 开发目录和发布目录的完整门禁均通过：6 个 workspace、29 个测试文件、174 个测试；另行运行 Golden tests，14 个测试通过。
 - 发布目录组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.4.zip`，共 29 个条目，大小 34,505,796 bytes，SHA-256 为 `0D479228EF125FC452E6E7BBD9A620C1F6E69AD5A1C65B1CC424B1925C96E4B5`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
 - 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
-- tag、GitHub Actions、Release 资产和远端 ZIP 内容清单核对结果将在 Beta.4 远程发布后补入本节；未完成的状态不得以 Beta.3 证据替代。
+- tag `v0.1.0-beta.4` 指向发布提交 `81e8e5e30bdc97a4586f6b425cf3e6465613116f`；tag CI run `33482070086` 和 Release workflow run `33482069933` 均完成且成功。
+- GitHub Release `v0.1.0-beta.4` 已确认 `draft=false`、`prerelease=true`，只上传一个用户资产 `capture-for-tolaria-installer-v0.1.0-beta.4.zip`；远端资产大小为 34,918,840 bytes，GitHub digest 为 `sha256:fb3454784f007b3899f35070e3d0382ddb8c73748540f056709b8d79a192ac94`。
+- 远端下载包共 29 个条目，根目录、Extension manifest、开发产物排除、声明文件/源映射排除和本地路径隐私审计均通过。远端 ZIP 原始字节与本地预组装 ZIP 不相同，原因是 CI 文本换行和 CI 构建的 Helper 二进制环境不同；统一文本换行后，除版本化 Helper 二进制外其余 28 个条目逐条一致，未发现缺失或多余文件。该差异已作为发布来源差异明确记录，不把本地 ZIP 冒充为 GitHub 资产副本。
+- 已从真实远端 Installer ZIP 在全新隔离用户环境完成默认 Vault 配置、无 `-HelperPath` 使用内置 Helper 安装、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收；未发现 Node.js 作为安装前置。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
 
 ## 未验证
 

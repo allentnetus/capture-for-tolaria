@@ -78,13 +78,17 @@
 - GitHub Release `v0.1.0-beta.2` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`；远端资产大小为 35,242,477 bytes，GitHub digest 为 `sha256:da92f292ab9c1caf21943a4aa294c5274b2f72ff38b27a3c14125a85ff855f1e`。
 - 该远端 Installer ZIP 下载后重新通过根目录内容审计、Extension manifest 检查和隔离临时 `LOCALAPPDATA` 下的无参数安装、Native Host 注册、Vault 配置、Repair、`-ClearConfig` 卸载及 Vault 保留验收。
 
-### 当前 Beta.3 发布候选状态（截至 2026-09-01）
+### 当前 Beta.3 发布状态（截至 2026-09-01）
 
 - 开发目录和发布目录的 `VERSION` 已递增为 `0.1.0-beta.3`；Beta.3 只包含已审核源码、中文用户文档和路径隐私修复，不包含开发依赖或构建中间产物。
 - 开发目录和发布目录的完整 `pnpm.cmd run check` 均通过：6 个 workspace、28 个测试文件、173 个测试。
 - 发布目录生成的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.3.zip`，大小 34,828,849 bytes，SHA-256 为 `5CEA968978F9DEBD5B60409A2CCBCA81327A799F4BB6DE6FDF6359EDAD1B122E`。
 - Installer ZIP 共 85 个文件；根部只包含 `extension`、`installer`、版本化 Helper、`VERSION`、安装说明、许可证和第三方声明，未包含 `node_modules`、`dist`、`release`、源码 `.ts`、package、锁文件或 tsconfig。
-- 发布目录 Windows Pester 门禁为 14 passed、0 failed、0 skipped；SBOM 和 `SHA256SUMS.txt` 已按 Release workflow 生成。GitHub Release、远程下载和干净安装复验将在本轮发布后补录。
+- 发布目录 Windows Pester 门禁为 14 passed、0 failed、0 skipped；SBOM 和 `SHA256SUMS.txt` 已按 Release workflow 生成。
+- tag `v0.1.0-beta.3` 指向发布提交 `7a4485cd3c241d248d5e6122ecbd345686ba5137`；tag CI `33471473591` 和 Release workflow `33471473630` 均成功。
+- GitHub Release `v0.1.0-beta.3` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.3.zip`；远端资产大小为 35,242,452 bytes，GitHub digest 为 `sha256:ea9605adb47c16822c9ad256086341ba905406b4babf41d29f6fa26f9eacdd9a`。
+- 远端 Installer ZIP 下载后 SHA-256 与 GitHub digest 一致；下载包重新通过根目录内容、Extension manifest、开发产物排除和具体用户路径审计。
+- 已从真实远端 Installer ZIP 在隔离临时用户环境完成 Vault 配置、无 `-HelperPath` 安装、Helper 实际 Markdown 写入、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
 
 ## 未验证
 

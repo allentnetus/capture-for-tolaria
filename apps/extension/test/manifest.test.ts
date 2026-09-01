@@ -27,14 +27,16 @@ function extensionIdFromPublicKey(publicKey: string): string {
   ).join("");
 }
 
-it("只申请 V0.1 三项最小权限", () => {
+it("声明设置页所需的最小权限", () => {
   expect(manifest.version).toBe("0.1.0");
-  expect(manifest.version_name).toBe("0.1.0 Beta 1");
+  expect(manifest.version_name).toBe("0.1.0 Beta 2");
   expect(manifest.permissions).toEqual([
     "activeTab",
     "scripting",
-    "nativeMessaging"
+    "nativeMessaging",
+    "storage"
   ]);
+  expect(manifest.options_page).toBe("options.html");
   expect(manifest.host_permissions).toBeUndefined();
   expect(manifest).not.toHaveProperty("cookies");
   expect(manifest).not.toHaveProperty("history");

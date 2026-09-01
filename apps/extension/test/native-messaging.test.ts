@@ -3,15 +3,18 @@ import {
   NATIVE_HOST_NAME,
   NativeMessagingClientError,
   captureViaNativeMessaging,
+  requestVaultConfig,
   type NativeMessagingPort
 } from "../src/background/native-messaging.js";
-import type { ClipRequest } from "@capture-for-tolaria/protocol";
+import type { ClipRequest, VaultConfigRequest } from "@capture-for-tolaria/protocol";
 
 class FakePort implements NativeMessagingPort {
   readonly messages: unknown[] = [];
   disconnected = false;
   responseRequestId = "req-1";
   responseDelayMs = 0;
+  capabilities = ["clip.article", "direct-file"];
+  vaultConfigResponse: unknown = undefined;
   private readonly messageListeners = new Set<(value: unknown) => void>();
   private readonly disconnectListeners = new Set<() => void>();
   readonly onMessage = {
@@ -42,8 +45,12 @@ class FakePort implements NativeMessagingPort {
       this.emit({
         protocolVersion: 1,
         helperVersion: "0.1.0-alpha.1",
-        capabilities: ["clip.article", "direct-file"]
+        capabilities: this.capabilities
       });
+      return;
+    }
+    if (this.vaultConfigResponse !== undefined) {
+      this.emit(this.vaultConfigResponse);
       return;
     }
     const response = {
@@ -132,4 +139,89 @@ it("等待超过旧 10 秒的文章响应，避免图片处理完成后误报超
   } finally {
     vi.useRealTimers();
   }
+});
+
+it("发送真实 Vault 配置请求并保留 Helper 的业务错误", async () => {
+  const getPort = new FakePort();
+  getPort.capabilities = ["clip.article", "direct-file", "vault.config"];
+  getPort.vaultConfigResponse = {
+    protocolVersion: 1,
+    requestId: "vault-get-1",
+    helperVersion: "0.1.0-alpha.1",
+    ok: true,
+    result: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+  };
+  const getRequest: VaultConfigRequest = {
+    protocolVersion: 1,
+    requestId: "vault-get-1",
+    extensionVersion: "0.1.0-alpha.1",
+    action: "vault.config.get"
+  };
+  await expect(requestVaultConfig(getRequest, () => getPort)).resolves.toEqual(
+    getPort.vaultConfigResponse
+  );
+  expect(getPort.messages).toEqual([
+    expect.objectContaining({ action: "hello" }),
+    getRequest
+  ]);
+
+  const setPort = new FakePort();
+  setPort.capabilities = ["clip.article", "direct-file", "vault.config"];
+  setPort.vaultConfigResponse = {
+    protocolVersion: 1,
+    requestId: "vault-set-1",
+    helperVersion: "0.1.0-alpha.1",
+    ok: false,
+    error: { code: "VAULT_ACCESS_DENIED", message: "Vault root 不可访问" }
+  };
+  const setRequest: VaultConfigRequest = {
+    protocolVersion: 1,
+    requestId: "vault-set-1",
+    extensionVersion: "0.1.0-alpha.1",
+    action: "vault.config.set",
+    payload: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+  };
+  await expect(requestVaultConfig(setRequest, () => setPort)).resolves.toEqual(
+    setPort.vaultConfigResponse
+  );
+  expect(setPort.messages).toEqual([
+    expect.objectContaining({ action: "hello" }),
+    setRequest
+  ]);
+});
+
+it("缺少 vault.config capability 时不发送配置请求，Article client 仍兼容旧 Helper", async () => {
+  const port = new FakePort();
+  const configRequest: VaultConfigRequest = {
+    protocolVersion: 1,
+    requestId: "vault-set-1",
+    extensionVersion: "0.1.0-alpha.1",
+    action: "vault.config.set",
+    payload: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+  };
+
+  await expect(requestVaultConfig(configRequest, () => port)).rejects.toMatchObject({
+    code: "INCOMPATIBLE_HELPER"
+  });
+  expect(port.messages).toEqual([expect.objectContaining({ action: "hello" })]);
+
+  const articlePort = new FakePort();
+  await expect(captureViaNativeMessaging(request, () => articlePort)).resolves.toMatchObject({
+    ok: true,
+    requestId: "req-1"
+  });
+  expect(articlePort.messages).toEqual([
+    expect.objectContaining({ action: "hello" }),
+    request
+  ]);
+  expect(
+    articlePort.messages.some(
+      (message) =>
+        typeof message === "object" &&
+        message !== null &&
+        "action" in message &&
+        (message.action === "vault.config.get" ||
+          message.action === "vault.config.set")
+    )
+  ).toBe(false);
 });

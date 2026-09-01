@@ -12,7 +12,8 @@ import {
 import {
   MAX_MARKDOWN_CHARACTERS,
   PROTOCOL_VERSION,
-  type ClipRequest
+  type ClipRequest,
+  type ProtocolRequest
 } from "@capture-for-tolaria/protocol";
 
 const request: ClipRequest = {
@@ -39,8 +40,93 @@ it("处理 hello 并返回能力声明", async () => {
 
   expect(response).toMatchObject({
     protocolVersion: PROTOCOL_VERSION,
-    helperVersion: "0.1.0-beta.1",
-    capabilities: ["clip.article", "direct-file"]
+    helperVersion: "0.1.0-beta.2",
+    capabilities: ["clip.article", "direct-file", "vault.config"]
+  });
+});
+
+it("读取已配置 Vault 时返回 canonical root", async () => {
+  const response = await handleRequest(
+    {
+      protocolVersion: PROTOCOL_VERSION,
+      requestId: "req-vault-get",
+      extensionVersion: "0.1.0-alpha.1",
+      action: "vault.config.get"
+    },
+    { getVaultConfig: async () => ({ vaultRoot: "C:\\canonical-vault" }) }
+  );
+
+  expect(response).toMatchObject({
+    ok: true,
+    requestId: "req-vault-get",
+    result: { vaultRoot: "C:\\canonical-vault" }
+  });
+});
+
+it("未配置 Vault 时配置读取返回稳定错误", async () => {
+  const response = await handleRequest(
+    {
+      protocolVersion: PROTOCOL_VERSION,
+      requestId: "req-vault-unconfigured",
+      extensionVersion: "0.1.0-alpha.1",
+      action: "vault.config.get"
+    },
+    { getVaultConfig: async () => null }
+  );
+
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-vault-unconfigured",
+    error: { code: "VAULT_NOT_CONFIGURED", message: "尚未配置 Tolaria Vault" }
+  });
+});
+
+it("保存 Vault 后返回同一配置读取器的 canonical root", async () => {
+  let configuredRoot = "C:\\initial-vault";
+  const request: ProtocolRequest = {
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "req-vault-set",
+    extensionVersion: "0.1.0-alpha.1",
+    action: "vault.config.set",
+    payload: { vaultRoot: "C:\\requested-vault" }
+  };
+  const savedRoots: string[] = [];
+  const response = await handleRequest(request, {
+    getVaultConfig: async () => ({ vaultRoot: configuredRoot }),
+    setVault: async (vaultRoot) => {
+      savedRoots.push(vaultRoot);
+      configuredRoot = "C:\\canonical-vault";
+    }
+  });
+
+  expect(response).toMatchObject({
+    ok: true,
+    requestId: "req-vault-set",
+    result: { vaultRoot: "C:\\canonical-vault" }
+  });
+  expect(savedRoots).toEqual(["C:\\requested-vault"]);
+});
+
+it("配置保存的非法 root 返回稳定错误", async () => {
+  const response = await handleRequest(
+    {
+      protocolVersion: PROTOCOL_VERSION,
+      requestId: "req-vault-invalid",
+      extensionVersion: "0.1.0-alpha.1",
+      action: "vault.config.set",
+      payload: { vaultRoot: "C:\\invalid-vault" }
+    },
+    {
+      setVault: async () => {
+        throw new FileChannelError("VAULT_ACCESS_DENIED", "Vault 根目录不存在或不可访问");
+      }
+    }
+  );
+
+  expect(response).toMatchObject({
+    ok: false,
+    requestId: "req-vault-invalid",
+    error: { code: "VAULT_ACCESS_DENIED", message: "Vault 根目录不存在或不可访问" }
   });
 });
 

@@ -1,6 +1,6 @@
 export const PROTOCOL_VERSION = 1 as const;
 
-export const SUPPORTED_ACTIONS = ["hello", "clip.article"] as const;
+export const SUPPORTED_ACTIONS = ["hello", "clip.article", "vault.config.get", "vault.config.set"] as const;
 
 export type CaptureAction = (typeof SUPPORTED_ACTIONS)[number];
 
@@ -55,6 +55,24 @@ export interface ArticleRequest {
 
 export type ClipRequest = HelloRequest | ArticleRequest;
 
+export interface VaultConfigGetRequest {
+  protocolVersion: typeof PROTOCOL_VERSION;
+  requestId: string;
+  extensionVersion: string;
+  action: "vault.config.get";
+}
+
+export interface VaultConfigSetRequest {
+  protocolVersion: typeof PROTOCOL_VERSION;
+  requestId: string;
+  extensionVersion: string;
+  action: "vault.config.set";
+  payload: { vaultRoot: string };
+}
+
+export type VaultConfigRequest = VaultConfigGetRequest | VaultConfigSetRequest;
+export type ProtocolRequest = ClipRequest | VaultConfigRequest;
+
 export interface ClipSuccessResponse {
   protocolVersion: typeof PROTOCOL_VERSION;
   requestId: string;
@@ -72,6 +90,16 @@ export interface ClipErrorResponse {
 }
 
 export type ClipResponse = ClipSuccessResponse | ClipErrorResponse;
+
+export interface VaultConfigSuccessResponse {
+  protocolVersion: typeof PROTOCOL_VERSION;
+  requestId: string;
+  helperVersion: string;
+  ok: true;
+  result: { vaultRoot: string };
+}
+
+export type VaultConfigResponse = VaultConfigSuccessResponse | ClipErrorResponse;
 
 export interface HelloResponse {
   protocolVersion: typeof PROTOCOL_VERSION;

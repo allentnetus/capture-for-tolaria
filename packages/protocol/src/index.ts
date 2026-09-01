@@ -17,7 +17,13 @@ export type {
   HelloRequest,
   HelloResponse,
   ImageCandidate,
-  LocalizedAsset
+  LocalizedAsset,
+  ProtocolRequest,
+  VaultConfigGetRequest,
+  VaultConfigRequest,
+  VaultConfigResponse,
+  VaultConfigSetRequest,
+  VaultConfigSuccessResponse
 } from "./types.js";
 
 export {
@@ -32,6 +38,7 @@ export {
   MAX_SOURCE_URL_LENGTH,
   MAX_TITLE_LENGTH,
   MAX_VERSION_LENGTH,
+  MAX_VAULT_ROOT_LENGTH,
   articlePayloadSchema,
   articleRequestSchema,
   errorResponseSchema,
@@ -39,7 +46,11 @@ export {
   helloResponseSchema,
   requestSchema,
   responseSchema,
-  successResponseSchema
+  successResponseSchema,
+  relativeFolderSchema,
+  vaultConfigGetRequestSchema,
+  vaultConfigSetRequestSchema,
+  vaultConfigResponseSchema
 } from "./schema.js";
 export {
   classifyRequestValidationError,
@@ -50,17 +61,23 @@ export {
 import {
   helloResponseSchema,
   requestSchema,
-  responseSchema
+  responseSchema,
+  vaultConfigResponseSchema
 } from "./schema.js";
 import {
   PROTOCOL_VERSION,
-  type ClipRequest,
+  type ProtocolRequest,
   type ClipResponse,
-  type HelloResponse
+  type HelloResponse,
+  type VaultConfigResponse
 } from "./types.js";
 
-export function validateRequest(value: unknown): ClipRequest {
-  return requestSchema.parse(value) as ClipRequest;
+export function validateRequest(value: unknown): ProtocolRequest {
+  return requestSchema.parse(value) as ProtocolRequest;
+}
+
+export function validateVaultConfigResponse(value: unknown): VaultConfigResponse {
+  return vaultConfigResponseSchema.parse(value) as VaultConfigResponse;
 }
 
 export function validateResponse(value: unknown): ClipResponse {

@@ -11,14 +11,14 @@
 | Node.js（开发构建） | `v24.15.0` |
 | pnpm | `11.19.0` |
 | PowerShell | 本轮为 `7.6.4`；Windows PowerShell `5.1.26100.9168` 脚本兼容性已验证 |
-| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 1`，MV3，协议 `1` |
-| Helper | `0.1.0-beta.1`，公开 Beta.1 Release 的 SEA x64 EXE 已下载，并与公开 `SHA256SUMS.txt` 匹配 |
+| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 2`，MV3，协议 `1` |
+| Helper | `0.1.0-beta.2`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
 | Chrome | 已检测到 Chrome，但本轮未向现有 profile 加载 Extension；具体版本未记录 |
 | Tolaria | 已检测到 Tolaria 进程，但本轮未向真实 Vault 写入或验证文件监听 |
 
 ## 已验证
 
-上表中的历史环境验证保留为 V0.1 基线。历史基线曾记录一次 Pester 5.7.1 安装器验收（9 passed、0 failed）；本轮在开发目录和发布目录均重新通过完整 `pnpm.cmd run check`、独立 Golden Test、SEA Helper/Installer 构建、10 个 Pester 测试和最终发布内容门禁，包含 root `lint`、`build`、`typecheck`、workspace 测试及 Extension/Markdown 门禁。真实 Chrome、Tolaria 文件监听、公开文章 Capture 和陌生用户完整安装链路仍未验证；这些状态不得互相替代。
+上表中的历史环境验证保留为 V0.1 基线。本轮在开发目录和发布目录均重新通过完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、14 个 Windows Pester 测试和最终发布内容门禁，包含 root `lint`、`build`、`typecheck`、workspace 测试及 Extension/Markdown 门禁。真实 Chrome、Tolaria 文件监听、公开文章 Capture 仍未验证；这些状态不得互相替代。
 
 - `pnpm run lint`
 - `pnpm.cmd run check`
@@ -34,10 +34,10 @@
 - Extension manifest 权限集合、固定 key 和 Native Host `allowed_origins` ID 一致性
 - Mock Host 的 Extension → Helper → File Channel 垂直链路
 - SEA 单文件 Helper 仅通过 `hello` 启动，Pester 测试不调用 Node.js runtime
-- SEA Helper 构建和 Beta.1 Installer ZIP 组装、发布内容自检
-- 当前 Beta.1：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 10 个 Installer/Pester 测试 `10 passed、0 failed`
+- SEA Helper 构建和 Beta.2 Installer ZIP 组装、发布内容自检
+- 当前 Beta.2：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 14 个 Installer/Pester 测试 `14 passed、0 failed`
 
-## Beta.1 当前开发验证
+## Beta.1 历史开发验证
 
 以下证据来自开发目录和发布目录的 Beta.1 图片能力实现：
 
@@ -59,13 +59,22 @@
 - GitHub API 当时确认 `v0.1.0-alpha.1` 的公开 Release 对象为 `draft=false`、`prerelease=true`，并已上传 Extension ZIP、Installer ZIP、Helper EXE、`SHA256SUMS.txt` 和 `SBOM.spdx.json` 五项资产。
 - 尚未在独立临时目录下载这些历史公开资产并将下载文件与 `SHA256SUMS.txt` 重新比对；“workflow 成功”和“下载后校验通过”仍是两个独立状态。
 
-### 当前 Beta.1 状态（截至 2026-08-29）
+### 历史 Beta.1 状态（截至 2026-08-29）
 
 - 当前源码和发布目录基线为 `v0.1.0-beta.1`；已完成开发目录到发布目录的单向同步、发布目录清理、本地质量门禁和发布目录复验。
 - PR [#11](https://github.com/allentnetus/capture-for-tolaria/pull/11) 已合并到 `main`，合并提交为 `4e206a14e91ce05e6e66614a1667ff7a20864098`；tag `v0.1.0-beta.1` 已指向该提交。
 - Release workflow `33237816354` 已成功完成；GitHub Release `v0.1.0-beta.1` 为 `draft=false`、`prerelease=true`，已上传 Extension ZIP、Installer ZIP、Helper EXE、`SHA256SUMS.txt` 和 `SBOM.spdx.json` 五项资产。
 - 公开资产下载后与 `SHA256SUMS.txt` 的哈希和大小均匹配：Extension `0905BA2758676BAF3C1FAEB102207612DBA8C6652EE06A134FCE85A641A1BD74`、Helper `3AAB4B8353552A180B5C64C86B9B7DFBFE3385C9E52E525AE6F19B02508D1CD5`、Installer `88DF9160F73BD54396C08E446D7DBE4B8171C67E6E490D04D3C9FFD37A922228`、SBOM `85C43454A371241668F0A0FE081A31573E31C6483FBD02CE699C994CADBDD270`。
 - 本轮已完成隔离临时环境的 Installer 安装、Repair、幂等重装和卸载验收；真实 Chrome、Tolaria、Vault 文件监听和公开文章 Capture 仍未验证。
+
+### 当前 Beta.2 发布候选状态（截至 2026-09-01）
+
+- 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.2`；已完成开发目录 → 发布目录的单向 SHA-256 差异同步，审核候选文件为 168 个，source-only 和 publish-only 均为 0。
+- 开发目录与发布目录的完整 `pnpm.cmd run check` 均通过：6 个 workspace、28 个测试文件、173 个测试。
+- 发布目录生成的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`，大小 34,828,897 bytes，SHA-256 为 `94C2FB9A2D8F57E7913D501124FA88B8D9281F249C57E45AE2F9C9B3184624B3`。
+- Installer ZIP 根部只包含 `extension`、`installer`、版本化 Helper、`VERSION`、安装说明、许可证和第三方声明；包内 Extension 共 68 个文件，未包含 `node_modules`、`dist`、`release`、源码 package 或锁文件。
+- 已从发布目录根部的最终 Installer ZIP 在隔离临时 `LOCALAPPDATA` 下完成解压、无 `-HelperPath` 安装、Native Host 注册、Vault root 配置、Repair、`-ClearConfig` 卸载，并确认用户 Vault 保留。
+- 2026-09-01 的 `gh auth status` 报告 GitHub token 无效，`git ls-remote` 也因无凭据失败；因此当前尚未执行 Beta.2 的 commit、push、tag 或 GitHub Release，远程发布状态不能写成已完成。
 
 ## 未验证
 
@@ -74,7 +83,7 @@
 - Chrome `activeTab` / `scripting` 注入真实公开文章
 - Chrome Native Messaging 注册后的真实 Extension UI 往返
 - Tolaria 文件监听对新 Markdown 的实际感知
-- 无 Node.js 的陌生用户完整 Install → 加载 Extension → Capture → 检查 Markdown/Vault → Repair → Upgrade → Uninstall 流程（本轮仅验证隔离 Installer 侧链路）
+- 无 Node.js 的陌生用户完整 Install → 加载 Extension → Capture → 检查 Markdown/Vault → Repair → Upgrade → Uninstall 流程（本轮已验证隔离 Installer 侧链路，真实 Chrome/Tolaria Capture 仍未验证）
 - 真实 Tolaria 版本、构建号和兼容性矩阵
 
 Product Alpha 发布判断必须在具备这些环境后重新执行 `tests/e2e/product-alpha-checklist.md`。

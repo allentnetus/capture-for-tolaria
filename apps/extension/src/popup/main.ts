@@ -2,6 +2,7 @@ import {
   validateCaptureResponse,
   type CaptureResponse
 } from "../background/messages.js";
+import { getDefaultRelativeFolder } from "../settings/storage.js";
 import { mountPopup, type PopupRuntime } from "./App.js";
 
 function runtime(): PopupRuntime {
@@ -26,6 +27,13 @@ function runtime(): PopupRuntime {
         type: "capture.article"
       });
       return validateCaptureResponse(response);
+    },
+    getDefaultRelativeFolder,
+    openSettings: async () => {
+      if (typeof chrome.runtime?.openOptionsPage !== "function") {
+        throw new Error("Settings page is unavailable");
+      }
+      await chrome.runtime.openOptionsPage();
     }
   };
 }

@@ -1,9 +1,11 @@
 import { expect, it } from "vitest";
 import {
   PROTOCOL_VERSION,
+  classifyRequestValidationError,
   createHelloResponse,
   validateHelloResponse,
   validateRequest,
+  validateVaultConfigResponse,
   validateResponse
 } from "../src/index.js";
 
@@ -20,6 +22,118 @@ const validArticleRequest = {
     metadata: {}
   }
 } as const;
+
+const validVaultConfigGetRequest = {
+  protocolVersion: 1,
+  requestId: "vault-get-1",
+  extensionVersion: "0.1.0-beta.2",
+  action: "vault.config.get"
+};
+
+const validVaultConfigSetRequest = {
+  protocolVersion: 1,
+  requestId: "vault-set-1",
+  extensionVersion: "0.1.0-beta.2",
+  action: "vault.config.set",
+  payload: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+};
+
+it("接受 Vault 配置读取和保存请求", () => {
+  expect(validateRequest(validVaultConfigGetRequest).action).toBe("vault.config.get");
+  expect(validateRequest(validVaultConfigSetRequest).action).toBe("vault.config.set");
+});
+
+it("拒绝没有 vaultRoot 的配置保存请求", () => {
+  expect(() => validateRequest({
+    ...validVaultConfigSetRequest,
+    payload: {}
+  })).toThrow();
+});
+
+it("校验 Vault 配置成功响应并拒绝额外字段", () => {
+  expect(validateVaultConfigResponse({
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "vault-response-1",
+    helperVersion: "0.1.0-beta.2",
+    ok: true,
+    result: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+  })).toMatchObject({ result: { vaultRoot: "C:\\Users\\mrvic\\Vault" } });
+
+  expect(() => validateVaultConfigResponse({
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "vault-response-2",
+    helperVersion: "0.1.0-beta.2",
+    ok: true,
+    extra: true,
+    result: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+  })).toThrow();
+  expect(() => validateVaultConfigResponse({
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "vault-response-3",
+    helperVersion: "0.1.0-beta.2",
+    ok: true,
+    result: { vaultRoot: "C:\\Users\\mrvic\\Vault", extra: true }
+  })).toThrow();
+});
+
+it("接受 Vault 配置错误响应并保持 Article 响应校验分离", () => {
+  const errorResponse = {
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "vault-error-1",
+    helperVersion: "0.1.0-beta.2",
+    ok: false,
+    error: { code: "VAULT_NOT_CONFIGURED", message: "Vault 尚未配置" }
+  };
+
+  expect(validateVaultConfigResponse(errorResponse)).toEqual(errorResponse);
+  expect(() => validateResponse({
+    protocolVersion: PROTOCOL_VERSION,
+    requestId: "vault-response-4",
+    helperVersion: "0.1.0-beta.2",
+    ok: true,
+    result: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
+  })).toThrow();
+});
+
+it("为配置请求返回稳定且不泄露内部异常的校验错误", () => {
+  const cases = [
+    {
+      value: { ...validVaultConfigSetRequest, payload: {} },
+      code: "INVALID_PATH",
+      message: "vaultRoot 无效或超出长度限制"
+    },
+    {
+      value: { ...validVaultConfigSetRequest, payload: { vaultRoot: "x".repeat(4097) } },
+      code: "INVALID_PATH",
+      message: "vaultRoot 无效或超出长度限制"
+    },
+    {
+      value: { ...validVaultConfigGetRequest, action: "vault.config.unknown" },
+      code: "INVALID_REQUEST",
+      message: "请求格式无效"
+    },
+    {
+      value: { ...validVaultConfigGetRequest, protocolVersion: 2 },
+      code: "UNSUPPORTED_PROTOCOL",
+      message: "不支持的协议版本"
+    }
+  ] as const;
+
+  for (const testCase of cases) {
+    let error: unknown;
+    try {
+      validateRequest(testCase.value);
+    } catch (caught) {
+      error = caught;
+    }
+
+    const classified = classifyRequestValidationError(testCase.value, error);
+    expect(classified).toEqual({ code: testCase.code, message: testCase.message });
+    expect(classified).not.toHaveProperty("issues");
+    expect(classified).not.toHaveProperty("stack");
+    expect(JSON.stringify(classified)).not.toContain("Zod");
+  }
+});
 
 it("接受带版本的文章请求", () => {
   expect(validateRequest(validArticleRequest).action).toBe("clip.article");
@@ -166,7 +280,7 @@ it("接受带图片本地化摘要的成功响应", () => {
   const response = validateResponse({
     protocolVersion: PROTOCOL_VERSION,
     requestId: "req-images",
-    helperVersion: "0.1.0-beta.1",
+    helperVersion: "0.1.0-beta.2",
     ok: true,
     result: {
       relativePath: "Inbox/Web/20260821 - Article.md",

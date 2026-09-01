@@ -10,13 +10,14 @@ export const MAX_SOURCE_URL_LENGTH = 2_048;
 export const MAX_METADATA_KEY_LENGTH = 64;
 export const MAX_METADATA_VALUE_LENGTH = 512;
 export const MAX_RESPONSE_PATH_LENGTH = 1_024;
+export const MAX_VAULT_ROOT_LENGTH = 4_096;
 export const MAX_IMAGE_CANDIDATES = 128;
 export const MAX_IMAGE_ALT_TEXT_LENGTH = 512;
 
 const boundedIdentifier = (label: string, max: number) =>
   z.string().trim().min(1, `${label} 不能为空`).max(max, `${label} 超出长度限制`);
 
-const safeRelativeFolder = z
+export const relativeFolderSchema = z
   .string()
   .trim()
   .min(1, "relativeFolder 不能为空")
@@ -78,7 +79,7 @@ const metadataSchema = z
 
 export const articlePayloadSchema = z
   .object({
-    relativeFolder: safeRelativeFolder,
+    relativeFolder: relativeFolderSchema,
     title: boundedIdentifier("title", MAX_TITLE_LENGTH),
     markdown: z
       .string()
@@ -112,9 +113,30 @@ export const articleRequestSchema = z
   })
   .strict();
 
+const requestBase = {
+  protocolVersion: z.literal(PROTOCOL_VERSION),
+  requestId: boundedIdentifier("requestId", MAX_REQUEST_ID_LENGTH),
+  extensionVersion: boundedIdentifier("extensionVersion", MAX_VERSION_LENGTH)
+};
+
+export const vaultConfigGetRequestSchema = z.object({
+  ...requestBase,
+  action: z.literal("vault.config.get")
+}).strict();
+
+export const vaultConfigSetRequestSchema = z.object({
+  ...requestBase,
+  action: z.literal("vault.config.set"),
+  payload: z.object({
+    vaultRoot: z.string().trim().min(1, "vaultRoot 不能为空").max(MAX_VAULT_ROOT_LENGTH, "vaultRoot 超出长度限制")
+  }).strict()
+}).strict();
+
 export const requestSchema = z.discriminatedUnion("action", [
   helloRequestSchema,
-  articleRequestSchema
+  articleRequestSchema,
+  vaultConfigGetRequestSchema,
+  vaultConfigSetRequestSchema
 ]);
 
 export const helloResponseSchema = z
@@ -191,3 +213,14 @@ export const errorResponseSchema = z
   .strict();
 
 export const responseSchema = z.union([successResponseSchema, errorResponseSchema]);
+
+export const vaultConfigResponseSchema = z.union([
+  z.object({
+    ...responseBase,
+    ok: z.literal(true),
+    result: z.object({
+      vaultRoot: z.string().min(1).max(MAX_RESPONSE_PATH_LENGTH)
+    }).strict()
+  }).strict(),
+  errorResponseSchema
+]);

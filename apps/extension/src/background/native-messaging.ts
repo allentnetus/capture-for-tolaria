@@ -2,8 +2,11 @@ import {
   PROTOCOL_VERSION,
   validateHelloResponse,
   validateResponse,
+  validateVaultConfigResponse,
   type ClipRequest,
-  type ClipResponse
+  type ClipResponse,
+  type VaultConfigRequest,
+  type VaultConfigResponse
 } from "@capture-for-tolaria/protocol";
 
 export const NATIVE_HOST_NAME = "com.capture_for_tolaria.helper" as const;
@@ -111,11 +114,15 @@ function waitForMessage(
   });
 }
 
-export async function captureViaNativeMessaging(
-  request: ClipRequest,
+async function requestViaNativeMessaging<TResponse extends { requestId: string }>(
+  request: ClipRequest | VaultConfigRequest,
   connectNative: ConnectNative,
-  hostName = NATIVE_HOST_NAME
-): Promise<ClipResponse> {
+  requiredCapability: string,
+  responseTimeoutMs: number,
+  validate: (value: unknown) => TResponse,
+  incompatibleMessage: string,
+  hostName: string
+): Promise<TResponse> {
   let port: NativeMessagingPort;
   try {
     port = connectNative(hostName);
@@ -134,17 +141,17 @@ export async function captureViaNativeMessaging(
     const hello = validateHelloResponse(await helloPromise);
     if (
       hello.protocolVersion !== PROTOCOL_VERSION ||
-      !hello.capabilities.includes("clip.article")
+      !hello.capabilities.includes(requiredCapability)
     ) {
       throw new NativeMessagingClientError(
         "INCOMPATIBLE_HELPER",
-        "Helper 不支持当前协议或 Article Capture"
+        incompatibleMessage
       );
     }
 
-    const responsePromise = waitForMessage(port, NATIVE_CAPTURE_TIMEOUT_MS);
+    const responsePromise = waitForMessage(port, responseTimeoutMs);
     port.postMessage(request);
-    const response = validateResponse(await responsePromise);
+    const response = validate(await responsePromise);
     if (response.requestId !== request.requestId) {
       throw new NativeMessagingClientError(
         "INVALID_RESPONSE",
@@ -160,4 +167,36 @@ export async function captureViaNativeMessaging(
   } finally {
     port.disconnect();
   }
+}
+
+export async function captureViaNativeMessaging(
+  request: ClipRequest,
+  connectNative: ConnectNative,
+  hostName = NATIVE_HOST_NAME
+): Promise<ClipResponse> {
+  return requestViaNativeMessaging(
+    request,
+    connectNative,
+    "clip.article",
+    NATIVE_CAPTURE_TIMEOUT_MS,
+    validateResponse,
+    "Helper 不支持当前协议或 Article Capture",
+    hostName
+  );
+}
+
+export async function requestVaultConfig(
+  request: VaultConfigRequest,
+  connectNative: ConnectNative,
+  hostName = NATIVE_HOST_NAME
+): Promise<VaultConfigResponse> {
+  return requestViaNativeMessaging(
+    request,
+    connectNative,
+    "vault.config",
+    NATIVE_MESSAGE_TIMEOUT_MS,
+    validateVaultConfigResponse,
+    "Helper 不支持当前协议或 Vault 配置",
+    hostName
+  );
 }

@@ -46,7 +46,7 @@ jobs:
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-helper.ps1
 
-      - name: Assemble Release ZIPs
+      - name: Assemble Release Package
         shell: pwsh
         run: |
           powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/assemble-release.ps1 -ReleaseTag $env:GITHUB_REF_NAME
@@ -93,7 +93,7 @@ jobs:
             Expand-Archive -LiteralPath $extensionZip -DestinationPath $extensionUnpack -Force
             $extensionManifest = Get-Content (Join-Path $extensionUnpack "manifest.json") -Raw | ConvertFrom-Json
             $permissions = @($extensionManifest.permissions | Sort-Object) -join ","
-            if ($permissions -ne "activeTab,nativeMessaging,scripting" -or $null -ne $extensionManifest.host_permissions) {
+            if ($permissions -ne "activeTab,nativeMessaging,scripting,storage" -or $null -ne $extensionManifest.host_permissions -or $extensionManifest.options_page -ne "options.html") {
               throw "Extension manifest permissions are outside the V0.1 contract"
             }
             if ($extensionManifest.version -ne $chromeVersion -or $extensionManifest.version_name -ne $expectedVersionName) {
@@ -104,6 +104,10 @@ jobs:
             $requiredFiles = @(
               "capture-for-tolaria-helper-$version-windows-x64.exe",
               "VERSION",
+              "extension\manifest.json",
+              "extension\background.js",
+              "extension\options.html",
+              "extension\popup.html",
               "installer\windows\install.ps1",
               "installer\windows\repair.ps1",
               "installer\windows\configure-vault.ps1",
@@ -129,20 +133,16 @@ jobs:
           powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/generate-sbom.ps1
           powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/generate-checksums.ps1
 
-      - name: Upload release bundle
+      - name: Upload installer package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: capture-for-tolaria-${{ github.ref_name }}
-          path: release
+          name: capture-for-tolaria-installer-${{ github.ref_name }}
+          path: release/capture-for-tolaria-installer-${{ github.ref_name }}.zip
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release/capture-for-tolaria-extension-${{ github.ref_name }}.zip
             release/capture-for-tolaria-installer-${{ github.ref_name }}.zip
-            release/capture-for-tolaria-helper-${{ steps.release_version.outputs.version }}-windows-x64.exe
-            release/SHA256SUMS.txt
-            release/SBOM.spdx.json
           generate_release_notes: true
           prerelease: true

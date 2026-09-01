@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.2] - 2026-09-01
+
+- Beta.2：Extension Settings 支持自定义 Vault 根目录和 Vault 内默认相对目录，保留安全校验及 `Inbox/Web` fallback。
+- Beta.2：Installer ZIP 自包含 Extension、Helper 和 Windows 安装脚本，本地用户只需下载一个安装包。
+- Beta.2：发布同步固定为开发目录 → 发布目录；GitHub Release 只公开 Installer ZIP，开发依赖和构建中间产物不作为用户包。
+
 ## [0.1.0-beta.1] - 2026-08-29
 
 - Beta.1 开发：公开 Article 图片候选提取、受限无凭据下载、`Assets/<sha256>.<ext>` 内容寻址保存和 Markdown 相对引用替换。

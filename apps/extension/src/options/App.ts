@@ -110,7 +110,7 @@ export function mountOptions(
   const vaultField = createField(
     "vault-root",
     "Vault root（必填）",
-    "Windows 绝对路径，例如 E:\\Tolaria\\infra。Helper 会检查目录、权限和链接安全。",
+    "请选择一个本地 Vault 目录。Helper 会检查目录、权限和链接安全。",
     "text"
   );
   vaultField.input.setAttribute("aria-required", "true");

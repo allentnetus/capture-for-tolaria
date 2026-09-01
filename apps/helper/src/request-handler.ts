@@ -41,7 +41,7 @@ export interface RequestHandlerOptions {
   assetFetcher?: AssetFetcher;
 }
 
-const DEFAULT_HELPER_VERSION = "0.1.0-beta.2";
+const DEFAULT_HELPER_VERSION = "0.1.0-beta.3";
 const DEFAULT_CAPABILITIES = ["clip.article", "direct-file", "vault.config"];
 
 function errorResponse(

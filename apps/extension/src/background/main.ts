@@ -14,7 +14,7 @@ import {
 } from "./messages.js";
 import { relativeFolderSchema } from "@capture-for-tolaria/protocol";
 
-export const EXTENSION_VERSION = "0.1.0-beta.2";
+export const EXTENSION_VERSION = "0.1.0-beta.3";
 
 export interface ActiveTab {
   id: number;

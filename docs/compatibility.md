@@ -11,8 +11,8 @@
 | Node.js（开发构建） | `v24.15.0` |
 | pnpm | `11.19.0` |
 | PowerShell | 本轮为 `7.6.4`；Windows PowerShell `5.1.26100.9168` 脚本兼容性已验证 |
-| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 2`，MV3，协议 `1` |
-| Helper | `0.1.0-beta.2`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
+| Extension | `0.1.0`，`version_name` 为 `0.1.0 Beta 3`，MV3，协议 `1` |
+| Helper | `0.1.0-beta.3`，本轮从发布目录构建 SEA x64 EXE，并通过无 Node.js 启动验收 |
 | Chrome | 已检测到 Chrome，但本轮未向现有 profile 加载 Extension；具体版本未记录 |
 | Tolaria | 已检测到 Tolaria 进程，但本轮未向真实 Vault 写入或验证文件监听 |
 
@@ -34,8 +34,8 @@
 - Extension manifest 权限集合、固定 key 和 Native Host `allowed_origins` ID 一致性
 - Mock Host 的 Extension → Helper → File Channel 垂直链路
 - SEA 单文件 Helper 仅通过 `hello` 启动，Pester 测试不调用 Node.js runtime
-- SEA Helper 构建和 Beta.2 Installer ZIP 组装、发布内容自检
-- 当前 Beta.2：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 14 个 Installer/Pester 测试 `14 passed、0 failed`
+- SEA Helper 构建和 Beta.3 Installer ZIP 组装、发布内容自检
+- 当前 Beta.3：Windows PowerShell `5.1.26100.9168` / Pester `5.7.1` 下的 14 个 Installer/Pester 测试 `14 passed、0 failed`
 
 ## Beta.1 历史开发验证
 
@@ -67,7 +67,7 @@
 - 公开资产下载后与 `SHA256SUMS.txt` 的哈希和大小均匹配：Extension `0905BA2758676BAF3C1FAEB102207612DBA8C6652EE06A134FCE85A641A1BD74`、Helper `3AAB4B8353552A180B5C64C86B9B7DFBFE3385C9E52E525AE6F19B02508D1CD5`、Installer `88DF9160F73BD54396C08E446D7DBE4B8171C67E6E490D04D3C9FFD37A922228`、SBOM `85C43454A371241668F0A0FE081A31573E31C6483FBD02CE699C994CADBDD270`。
 - 本轮已完成隔离临时环境的 Installer 安装、Repair、幂等重装和卸载验收；真实 Chrome、Tolaria、Vault 文件监听和公开文章 Capture 仍未验证。
 
-### 当前 Beta.2 发布候选状态（截至 2026-09-01）
+### Beta.2 历史发布状态（截至 2026-09-01）
 
 - 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.2`；已完成开发目录 → 发布目录的单向 SHA-256 差异同步，审核候选文件为 168 个，source-only 和 publish-only 均为 0。
 - 开发目录与发布目录的完整 `pnpm.cmd run check` 均通过：6 个 workspace、28 个测试文件、173 个测试。
@@ -77,6 +77,14 @@
 - 2026-09-01 已通过普通非强制 HTTPS push 将发布提交 `2ea3974f6cd96246efbcca40d97d99c6ba8fc2a8` 及文档提交 `29a928f9362ab7cbfb5893e9ad1ae551b39cff6e` 上传到 GitHub 分支 `codex/release-v0.1.0-beta.1`；tag `v0.1.0-beta.2` 指向 `29a928f9362ab7cbfb5893e9ad1ae551b39cff6e`，Release workflow `33465423348` 为成功。
 - GitHub Release `v0.1.0-beta.2` 已确认 `draft=false`、`prerelease=true`，且只公开 `capture-for-tolaria-installer-v0.1.0-beta.2.zip`；远端资产大小为 35,242,477 bytes，GitHub digest 为 `sha256:da92f292ab9c1caf21943a4aa294c5274b2f72ff38b27a3c14125a85ff855f1e`。
 - 该远端 Installer ZIP 下载后重新通过根目录内容审计、Extension manifest 检查和隔离临时 `LOCALAPPDATA` 下的无参数安装、Native Host 注册、Vault 配置、Repair、`-ClearConfig` 卸载及 Vault 保留验收。
+
+### 当前 Beta.3 发布候选状态（截至 2026-09-01）
+
+- 开发目录和发布目录的 `VERSION` 已递增为 `0.1.0-beta.3`；Beta.3 只包含已审核源码、中文用户文档和路径隐私修复，不包含开发依赖或构建中间产物。
+- 开发目录和发布目录的完整 `pnpm.cmd run check` 均通过：6 个 workspace、28 个测试文件、173 个测试。
+- 发布目录生成的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.3.zip`，大小 34,828,849 bytes，SHA-256 为 `5CEA968978F9DEBD5B60409A2CCBCA81327A799F4BB6DE6FDF6359EDAD1B122E`。
+- Installer ZIP 共 85 个文件；根部只包含 `extension`、`installer`、版本化 Helper、`VERSION`、安装说明、许可证和第三方声明，未包含 `node_modules`、`dist`、`release`、源码 `.ts`、package、锁文件或 tsconfig。
+- 发布目录 Windows Pester 门禁为 14 passed、0 failed、0 skipped；SBOM 和 `SHA256SUMS.txt` 已按 Release workflow 生成。GitHub Release、远程下载和干净安装复验将在本轮发布后补录。
 
 ## 未验证
 

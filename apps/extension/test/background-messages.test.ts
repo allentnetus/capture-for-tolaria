@@ -67,20 +67,20 @@ it("创建带 requestId 的 clip.article 请求并校验响应", () => {
 });
 
 it("创建仅带绝对 Vault root 的配置请求", () => {
-  expect(createVaultConfigGetRequest("0.1.0-beta.2", "vault-get-1")).toEqual({
+  expect(createVaultConfigGetRequest("0.1.0-beta.3", "vault-get-1")).toEqual({
     protocolVersion: 1,
     requestId: "vault-get-1",
-    extensionVersion: "0.1.0-beta.2",
+    extensionVersion: "0.1.0-beta.3",
     action: "vault.config.get"
   });
   expect(createVaultConfigSetRequest(
     "C:\\Users\\mrvic\\Vault",
-    "0.1.0-beta.2",
+    "0.1.0-beta.3",
     "vault-set-1"
   )).toEqual({
     protocolVersion: 1,
     requestId: "vault-set-1",
-    extensionVersion: "0.1.0-beta.2",
+    extensionVersion: "0.1.0-beta.3",
     action: "vault.config.set",
     payload: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
   });
@@ -120,13 +120,13 @@ class SummaryPort implements NativeMessagingPort {
       typeof message === "object" && message !== null && "action" in message && message.action === "hello"
         ? {
             protocolVersion: 1,
-            helperVersion: "0.1.0-beta.2",
+            helperVersion: "0.1.0-beta.3",
             capabilities: ["clip.article", "direct-file"]
           }
         : {
             protocolVersion: 1,
             requestId,
-            helperVersion: "0.1.0-beta.2",
+            helperVersion: "0.1.0-beta.3",
             ok: true,
             result: {
               relativePath: "Inbox/Web/article.md",

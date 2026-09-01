@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 故障排查
 
-> 当前文档记录 `v0.1.0-beta.2` 的用户可见错误边界。开发目录和发布目录的完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、Windows Pester/Installer 门禁、GitHub Release 唯一资产和最终 Installer ZIP 隔离安装链路均已通过；真实 Chrome、Tolaria、Vault 文件监听和公开文章 Capture 用户链路仍需独立验收，不能用代码级或 Installer 门禁替代这些证据。
+> 当前文档记录 `v0.1.0-beta.3` 的用户可见错误边界。开发目录和发布目录的完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、Windows Pester/Installer 门禁、GitHub Release 唯一资产和最终 Installer ZIP 隔离安装链路均已通过；真实 Chrome、Tolaria、Vault 文件监听和公开文章 Capture 用户链路仍需独立验收，不能用代码级或 Installer 门禁替代这些证据。
 
 ## 1. Capture 按钮不可用
 

@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 协议
 
-> 状态：V0.1 wire contract 基线；Beta.2 图片字段和 Vault 配置 action 保持 `protocolVersion=1`
+> 状态：V0.1 wire contract 基线；Beta.3 图片字段和 Vault 配置 action 保持 `protocolVersion=1`
 >
 > 传输使用 Chrome Native Messaging。业务 action 只允许 `hello`、`clip.article`、`vault.config.get` 和 `vault.config.set`；协议校验由 `@capture-for-tolaria/protocol` 实现。
 
@@ -23,7 +23,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-01H...",
-  "extensionVersion": "0.1.0-beta.2",
+  "extensionVersion": "0.1.0-beta.3",
   "action": "hello"
 }
 ```
@@ -44,7 +44,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-hello",
-  "extensionVersion": "0.1.0-beta.2",
+  "extensionVersion": "0.1.0-beta.3",
   "action": "hello"
 }
 ```
@@ -54,7 +54,7 @@ N bytes UTF-8 JSON
 ```json
 {
   "protocolVersion": 1,
-  "helperVersion": "0.1.0-beta.2",
+  "helperVersion": "0.1.0-beta.3",
   "capabilities": ["clip.article", "direct-file"]
 }
 ```
@@ -71,7 +71,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-vault-get-01",
-  "extensionVersion": "0.1.0-beta.2",
+  "extensionVersion": "0.1.0-beta.3",
   "action": "vault.config.get"
 }
 ```
@@ -82,7 +82,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-vault-set-01",
-  "extensionVersion": "0.1.0-beta.2",
+  "extensionVersion": "0.1.0-beta.3",
   "action": "vault.config.set",
   "payload": {
     "vaultRoot": "<VaultPath>"
@@ -98,7 +98,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-vault-set-01",
-  "helperVersion": "0.1.0-beta.2",
+  "helperVersion": "0.1.0-beta.3",
   "ok": true,
   "result": {
     "vaultRoot": "<VaultPath>"
@@ -116,7 +116,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "extensionVersion": "0.1.0-beta.2",
+  "extensionVersion": "0.1.0-beta.3",
   "action": "clip.article",
   "payload": {
     "relativeFolder": "Inbox/Web",
@@ -154,7 +154,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "helperVersion": "0.1.0-beta.2",
+  "helperVersion": "0.1.0-beta.3",
   "ok": true,
   "result": {
     "relativePath": "Inbox/Web/20260821 - Article title.md",
@@ -186,7 +186,7 @@ Helper 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `im
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "helperVersion": "0.1.0-beta.2",
+  "helperVersion": "0.1.0-beta.3",
   "ok": false,
   "error": {
     "code": "INVALID_PATH",

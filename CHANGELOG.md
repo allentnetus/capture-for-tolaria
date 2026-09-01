@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.3] - 2026-09-01
+
+- Beta.3：面向用户的发布说明移除具体本地文件系统路径，改用当前用户范围、工作区角色和占位符表达。
+- Beta.3：保持 Beta.2 已验证的 Article Capture、正文图片受限本地化、Vault root/默认目录可配置和单一自包含 Installer ZIP 能力不变。
+
 ## [0.1.0-beta.2] - 2026-09-01
 
 - Beta.2：Extension Settings 支持自定义 Vault 根目录和 Vault 内默认相对目录，保留安全校验及 `Inbox/Web` fallback。

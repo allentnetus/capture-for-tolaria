@@ -26,14 +26,14 @@ const validArticleRequest = {
 const validVaultConfigGetRequest = {
   protocolVersion: 1,
   requestId: "vault-get-1",
-  extensionVersion: "0.1.0-beta.2",
+  extensionVersion: "0.1.0-beta.3",
   action: "vault.config.get"
 };
 
 const validVaultConfigSetRequest = {
   protocolVersion: 1,
   requestId: "vault-set-1",
-  extensionVersion: "0.1.0-beta.2",
+  extensionVersion: "0.1.0-beta.3",
   action: "vault.config.set",
   payload: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
 };
@@ -54,7 +54,7 @@ it("校验 Vault 配置成功响应并拒绝额外字段", () => {
   expect(validateVaultConfigResponse({
     protocolVersion: PROTOCOL_VERSION,
     requestId: "vault-response-1",
-    helperVersion: "0.1.0-beta.2",
+    helperVersion: "0.1.0-beta.3",
     ok: true,
     result: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
   })).toMatchObject({ result: { vaultRoot: "C:\\Users\\mrvic\\Vault" } });
@@ -62,7 +62,7 @@ it("校验 Vault 配置成功响应并拒绝额外字段", () => {
   expect(() => validateVaultConfigResponse({
     protocolVersion: PROTOCOL_VERSION,
     requestId: "vault-response-2",
-    helperVersion: "0.1.0-beta.2",
+    helperVersion: "0.1.0-beta.3",
     ok: true,
     extra: true,
     result: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
@@ -70,7 +70,7 @@ it("校验 Vault 配置成功响应并拒绝额外字段", () => {
   expect(() => validateVaultConfigResponse({
     protocolVersion: PROTOCOL_VERSION,
     requestId: "vault-response-3",
-    helperVersion: "0.1.0-beta.2",
+    helperVersion: "0.1.0-beta.3",
     ok: true,
     result: { vaultRoot: "C:\\Users\\mrvic\\Vault", extra: true }
   })).toThrow();
@@ -80,7 +80,7 @@ it("接受 Vault 配置错误响应并保持 Article 响应校验分离", () => 
   const errorResponse = {
     protocolVersion: PROTOCOL_VERSION,
     requestId: "vault-error-1",
-    helperVersion: "0.1.0-beta.2",
+    helperVersion: "0.1.0-beta.3",
     ok: false,
     error: { code: "VAULT_NOT_CONFIGURED", message: "Vault 尚未配置" }
   };
@@ -89,7 +89,7 @@ it("接受 Vault 配置错误响应并保持 Article 响应校验分离", () => 
   expect(() => validateResponse({
     protocolVersion: PROTOCOL_VERSION,
     requestId: "vault-response-4",
-    helperVersion: "0.1.0-beta.2",
+    helperVersion: "0.1.0-beta.3",
     ok: true,
     result: { vaultRoot: "C:\\Users\\mrvic\\Vault" }
   })).toThrow();
@@ -280,7 +280,7 @@ it("接受带图片本地化摘要的成功响应", () => {
   const response = validateResponse({
     protocolVersion: PROTOCOL_VERSION,
     requestId: "req-images",
-    helperVersion: "0.1.0-beta.2",
+    helperVersion: "0.1.0-beta.3",
     ok: true,
     result: {
       relativePath: "Inbox/Web/20260821 - Article.md",

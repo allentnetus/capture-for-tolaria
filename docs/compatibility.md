@@ -18,7 +18,7 @@
 
 ## 已验证
 
-上表中的历史环境验证保留为 V0.1 基线。本轮在开发目录和发布目录均重新通过完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、14 个 Windows Pester 测试和最终发布内容门禁，包含 root `lint`、`build`、`typecheck`、workspace 测试及 Extension/Markdown 门禁。真实 Chrome、Tolaria 文件监听、公开文章 Capture 仍未验证；这些状态不得互相替代。
+上表中的历史环境验证保留为 V0.1 基线。本轮在开发目录和发布目录均重新通过完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、15 个 Windows Pester 测试和最终发布内容门禁，包含 root `lint`、`build`、`typecheck`、workspace 测试及 Extension/Markdown 门禁。真实 Chrome、Tolaria 文件监听、公开文章 Capture 仍未验证；这些状态不得互相替代。
 
 - `pnpm run lint`
 - `pnpm.cmd run check`
@@ -106,7 +106,12 @@
 
 - 开发目录已修复 Vault 配置成功响应错误使用 `MAX_RESPONSE_PATH_LENGTH` 的问题，并新增 2,048 字符 Vault root 回归测试；真实 Service Worker 默认目录读取修复继续保留。
 - 开发目录完整门禁已通过：6 个 workspace、29 个测试文件、175 个测试；另行运行 Golden tests，14 个测试通过。
-- 发布目录、Beta.5 Installer ZIP、tag、GitHub Actions、Release 资产、远端 ZIP 内容清单和隔离安装结果将在 Beta.5 发布后补入本节；未完成状态不得以 Beta.4 证据替代。
+- 发布目录组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.5.zip`，共 29 个条目，大小 34,505,796 bytes，SHA-256 为 `0D540EF7D4AB7800FCBA311782325CF772742B97C48E7BC8AA73AE53E9529695`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
+- 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
+- tag `v0.1.0-beta.5` 指向发布提交 `dd8180516f6c4a983f04879ad26271f55467e5b7`；tag CI run `33485836599` 和 Release workflow run `33485836562` 均完成且成功。
+- GitHub Release `v0.1.0-beta.5` 已确认 `draft=false`、`prerelease=true`，只上传一个用户资产 `capture-for-tolaria-installer-v0.1.0-beta.5.zip`；远端资产大小为 34,918,895 bytes，GitHub digest 为 `sha256:8341b2336abd3fd131aa8e50883f59ba1812cc7240b0d0f345a05fba39feadbc`。
+- 远端下载包共 29 个条目，缺失 0、多余 0；根目录、Extension manifest、开发产物排除、声明文件/源映射排除和本地路径隐私审计均通过。远端 ZIP 原始字节与本地预组装 ZIP 不相同，原因是 CI 文本换行和 CI 构建的 Helper 二进制环境不同；统一文本换行后，除版本化 Helper 二进制外其余 28 个条目逐条一致。当前本地 Helper 为 92,101,120 bytes、SHA-256 为 `9F1FE15092B35372B71D54ED9ED8C701CDFF60F3004236785B1D54217A4C3B4C`；远端 Helper 为 93,232,128 bytes、SHA-256 为 `2489EA2A1A30863B011030B4EEC2936574330E39A99665874209CA7B87FB5F3E`。
+- 已从真实远端 Installer ZIP 在全新隔离用户环境完成默认 Vault 配置、无 `-HelperPath` 使用内置 Helper 安装、Native Host 注册、Repair、`-ClearConfig` 卸载和 Vault 内容保留验收；未发现 Node.js 作为安装前置。真实 Chrome/Tolaria UI 往返和 Tolaria 文件监听仍未验证。
 
 ## 未验证
 

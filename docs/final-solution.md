@@ -1225,9 +1225,10 @@ v0.2.0
 
 | 阶段 | 建议 |
 | --- | --- |
-| `v0.1.0-beta.1`、`v0.1.0-beta.2`、`v0.1.0-beta.3`、`v0.1.0-beta.4`、`v0.1.0-beta.5`、`v0.1.0-beta.6` | 可以暂时 unsigned |
+| `v0.1.0-beta.1`、`v0.1.0-beta.2`、`v0.1.0-beta.3`、`v0.1.0-beta.4`、`v0.1.0-beta.5`、`v0.1.0-beta.6` | Windows 版本可以暂时 unsigned |
+| `v0.1.0-beta.7` | macOS 用户包必须使用 Developer ID、Hardened Runtime、Notarization 并完成 stapling；Windows 签名策略不因 macOS 适配提前改变 |
 | V0.2 Public Beta | 开始 Windows Code Signing |
-| V1.0 | 签名发布作为必需条件 |
+| V1.0 | 所有支持平台均以签名发布作为必需条件 |
 
 公开发布未签名的 `helper.exe` 容易触发 SmartScreen 和 Unknown Publisher，必须纳入发布计划。
 
@@ -1345,10 +1346,13 @@ docs/adr/
 | --- | --- |
 | V0.1 | Windows + Chrome + Article + Direct File Capture |
 | V0.1.0-beta.1 | 公众号优先的 Article 图片本地化 MVP |
+| V0.1.0-beta.6 | Windows + Chrome + Article + Direct File；图片本地化、Vault 路径配置、连接复用与断线恢复 |
+| V0.1.0-beta.7 | macOS + Chrome + Article + Direct File；自包含 Installer、用户级 Native Host、签名/公证 |
+| V0.1.0-beta.8（建议） | Feishu DOCX 官方 Word 导出 → 本地 Markdown + Assets |
 | V0.1.5 Beta（目标发布版 `v0.1.5-beta.1`） | Selection + Bookmark + Right Click + Deep Link |
 | V0.2 | MCP 9710 + `vault_context` + `list_vaults` + Multi Vault + `open_note` + Write Retry Store |
 | V0.2.5 Beta（目标发布版 `v0.2.5-beta.1`） | 高级 Assets 管理 + 资源复用 + Templates + Shortcuts |
-| V0.3 | Edge + macOS + Linux + 完整 Installer |
+| V0.3 | Edge + Linux + 完整 Installer（macOS 已在 Beta.7 交付） |
 | V0.4 | AI Summary + Tags + Type + Related Notes + Knowledge Linking |
 | V1.0 | 稳定跨平台版本 + 签名安装 + 完整兼容/升级体系 |
 

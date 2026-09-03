@@ -1,10 +1,11 @@
 import {
   adaptChromeNativePort,
+  createNativeMessagingClient,
   NativeMessagingClientError,
-  NATIVE_HOST_NAME,
-  requestVaultConfig,
-  type ConnectNative
+  type ConnectNative,
+  type NativeMessagingClient
 } from "../background/native-messaging.js";
+import type { VaultConfigResponse } from "@capture-for-tolaria/protocol";
 import {
   createVaultConfigGetRequest,
   createVaultConfigSetRequest
@@ -15,7 +16,7 @@ import {
 } from "../settings/storage.js";
 import type { OptionsRuntime } from "./App.js";
 
-const EXTENSION_VERSION = "0.1.0-beta.5";
+const EXTENSION_VERSION = "0.1.0-beta.6";
 
 export class OptionsError extends Error {
   readonly code: string;
@@ -55,7 +56,7 @@ function toOptionsError(error: unknown, fallbackMessage: string): OptionsError {
 }
 
 function throwConfigError(
-  response: Extract<Awaited<ReturnType<typeof requestVaultConfig>>, { ok: false }>,
+  response: Extract<VaultConfigResponse, { ok: false }>,
   actionLabel: string
 ): never {
   throw new OptionsError(
@@ -65,7 +66,8 @@ function throwConfigError(
 }
 
 export function createOptionsRuntime(
-  connectNative: ConnectNative = defaultConnectNative
+  connectNative: ConnectNative = defaultConnectNative,
+  nativeMessagingClient: NativeMessagingClient = createNativeMessagingClient(connectNative)
 ): OptionsRuntime {
   return {
     async getVaultRoot(): Promise<string | null> {
@@ -74,11 +76,7 @@ export function createOptionsRuntime(
           EXTENSION_VERSION,
           crypto.randomUUID()
         );
-        const response = await requestVaultConfig(
-          request,
-          connectNative,
-          NATIVE_HOST_NAME
-        );
+        const response = await nativeMessagingClient.requestVaultConfig(request);
         if (!response.ok) {
           if (response.error.code === "VAULT_NOT_CONFIGURED") {
             return null;
@@ -98,11 +96,7 @@ export function createOptionsRuntime(
           EXTENSION_VERSION,
           crypto.randomUUID()
         );
-        const response = await requestVaultConfig(
-          request,
-          connectNative,
-          NATIVE_HOST_NAME
-        );
+        const response = await nativeMessagingClient.requestVaultConfig(request);
         if (!response.ok) {
           throwConfigError(response, "保存 Vault root");
         }

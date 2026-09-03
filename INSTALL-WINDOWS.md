@@ -1,6 +1,6 @@
 # Windows 安装、修复、升级和卸载
 
-`v0.1.0-beta.5` 安装到当前用户目录，不需要管理员权限，不写入 `Program Files`，不注册系统级 Native Host。目标用户不需要安装 Node.js。
+`v0.1.0-beta.6` 安装到当前用户目录，不需要管理员权限，不写入 `Program Files`，不注册系统级 Native Host。目标用户不需要安装 Node.js。
 
 ## 前置条件
 
@@ -8,8 +8,8 @@
 - Chrome MV3
 - 一个用户有写权限的 Tolaria Vault
 - Vault 所在文件系统支持同一卷 hard link；V0.1 的 atomic create-only 写入不在不支持该能力的文件系统上降级为覆盖写入
-- `v0.1.0-beta.5` 的单个 Installer ZIP：`capture-for-tolaria-installer-v0.1.0-beta.5.zip`
-- 解压后的 Installer ZIP 根目录应同时存在 `VERSION`、`extension`、`installer` 和 `capture-for-tolaria-helper-0.1.0-beta.5-windows-x64.exe`
+- `v0.1.0-beta.6` 的单个 Installer ZIP：`capture-for-tolaria-installer-v0.1.0-beta.6.zip`
+- 解压后的 Installer ZIP 根目录应同时存在 `VERSION`、`extension`、`installer` 和 `capture-for-tolaria-helper-0.1.0-beta.6-windows-x64.exe`
 
 ## 安装
 
@@ -42,6 +42,8 @@ PowerShell 默认不会从当前目录执行未加路径的 `install.ps1`；如�
 当前用户应用数据目录下的 Native Host manifest
 当前用户注册表中的 Chrome Native Messaging 注册项
 ```
+
+安装完成后不需要手动启动 Helper。第一次使用 Extension 时，Chrome 会按需启动 Native Messaging Helper；连续剪藏复用同一连接，连接空闲 30 秒后主动释放。若连接异常或空闲释放，下一次 Capture 会自动重新连接并握手；当前不确定是否已写入的文章不会被透明重放。
 
 ## 扩展加载（Extension）
 
@@ -77,8 +79,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\windows\unin
 
 卸载后还需要在 `chrome://extensions` 手动移除已加载的 Extension。
 
-## Beta.5 限制
+## Beta.6 限制
 
-`v0.1.0-beta.5` 构建未签名，Installer ZIP 中的 `extension` 通过 Chrome 开发者模式加载。当前支持 Windows + Chrome + MV3 Article Capture + Direct File Channel，以及正文图片的受限本地化；仍不支持 MCP、AI、Selection、Bookmark、Screenshot、Edge、macOS 或 Linux。不要把私钥、用户配置或 Vault 数据放进 ZIP。
+`v0.1.0-beta.6` 构建未签名，Installer ZIP 中的 `extension` 通过 Chrome 开发者模式加载。当前支持 Windows + Chrome + MV3 Article Capture + Direct File Channel，以及正文图片的受限本地化；仍不支持 MCP、AI、Selection、Bookmark、Screenshot、Edge、macOS 或 Linux。不要把私钥、用户配置或 Vault 数据放进 ZIP。
 
 验收顺序为：`configure-vault → install → 加载 Extension → 打开公开文章并 Capture → 检查 Markdown/Vault → Repair → Upgrade → Uninstall`。卸载不删除 Vault、Markdown、Assets 或配置文件。

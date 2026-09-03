@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 协议
 
-> 状态：V0.1 wire contract 基线；Beta.5 图片字段和 Vault 配置 action 保持 `protocolVersion=1`
+> 状态：V0.1 wire contract 基线；Beta.6 图片字段、Vault 配置 action 和 Native Messaging 连接复用保持 `protocolVersion=1`
 >
 > 传输使用 Chrome Native Messaging。业务 action 只允许 `hello`、`clip.article`、`vault.config.get` 和 `vault.config.set`；协议校验由 `@capture-for-tolaria/protocol` 实现。
 
@@ -15,6 +15,8 @@ N bytes UTF-8 JSON
 
 一个进程可以连续收发多条消息。读取必须支持分段读取，并拒绝超过统一 payload 上限的长度、非法 UTF-8、非法 JSON 和截断帧。Helper 的 stdout 只能承载 framing 后的协议消息；日志、诊断和调试输出必须写入 stderr。
 
+Beta6 的 Extension 在每个运行上下文中复用一个 `connectNative()` 端口，并在同一端口上按 FIFO 顺序发送多条业务消息；每条新连接只发送一次 `hello`。成功响应后 30 秒无新请求时主动释放端口；端口断开时当前等待中的请求失败，下一次请求重新建立连接和握手；`clip.article` 不因响应丢失而自动重放。
+
 ## 2. 通用请求字段
 
 所有请求都必须包含：
@@ -23,7 +25,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-01H...",
-  "extensionVersion": "0.1.0-beta.5",
+  "extensionVersion": "0.1.0-beta.6",
   "action": "hello"
 }
 ```
@@ -44,7 +46,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-hello",
-  "extensionVersion": "0.1.0-beta.5",
+  "extensionVersion": "0.1.0-beta.6",
   "action": "hello"
 }
 ```
@@ -54,7 +56,7 @@ N bytes UTF-8 JSON
 ```json
 {
   "protocolVersion": 1,
-  "helperVersion": "0.1.0-beta.5",
+  "helperVersion": "0.1.0-beta.6",
   "capabilities": ["clip.article", "direct-file"]
 }
 ```
@@ -71,7 +73,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-vault-get-01",
-  "extensionVersion": "0.1.0-beta.5",
+  "extensionVersion": "0.1.0-beta.6",
   "action": "vault.config.get"
 }
 ```
@@ -82,7 +84,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-vault-set-01",
-  "extensionVersion": "0.1.0-beta.5",
+  "extensionVersion": "0.1.0-beta.6",
   "action": "vault.config.set",
   "payload": {
     "vaultRoot": "<VaultPath>"
@@ -98,7 +100,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-vault-set-01",
-  "helperVersion": "0.1.0-beta.5",
+  "helperVersion": "0.1.0-beta.6",
   "ok": true,
   "result": {
     "vaultRoot": "<VaultPath>"
@@ -116,7 +118,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "extensionVersion": "0.1.0-beta.5",
+  "extensionVersion": "0.1.0-beta.6",
   "action": "clip.article",
   "payload": {
     "relativeFolder": "Inbox/Web",
@@ -154,7 +156,7 @@ N bytes UTF-8 JSON
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "helperVersion": "0.1.0-beta.5",
+  "helperVersion": "0.1.0-beta.6",
   "ok": true,
   "result": {
     "relativePath": "Inbox/Web/20260821 - Article title.md",
@@ -186,7 +188,7 @@ Helper 只允许 `image/jpeg`、`image/png`、`image/gif`、`image/webp` 和 `im
 {
   "protocolVersion": 1,
   "requestId": "req-clip-01",
-  "helperVersion": "0.1.0-beta.5",
+  "helperVersion": "0.1.0-beta.6",
   "ok": false,
   "error": {
     "code": "INVALID_PATH",

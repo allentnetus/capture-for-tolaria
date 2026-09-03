@@ -8,7 +8,10 @@ import {
   validateContentPayload
 } from "../src/background/messages.js";
 import { handleCaptureMessage, type CaptureDependencies } from "../src/background/main.js";
-import type { NativeMessagingPort } from "../src/background/native-messaging.js";
+import {
+  createNativeMessagingClient,
+  type NativeMessagingPort
+} from "../src/background/native-messaging.js";
 
 const payload = {
   relativeFolder: "Inbox/Web",
@@ -162,6 +165,7 @@ it("转发 Helper 的图片摘要和 warning 且不泄露绝对路径", async ()
   };
   const contentMessages: unknown[] = [];
   const port = new SummaryPort();
+  const nativeMessagingClient = createNativeMessagingClient(() => port);
   const dependencies: CaptureDependencies = {
     getActiveTab: async () => ({ id: 1, url: "https://example.com/article" }),
     executeContentScript: vi.fn(async () => undefined),
@@ -172,6 +176,7 @@ it("转发 Helper 的图片摘要和 warning 且不泄露绝对路径", async ()
         : { ok: true };
     }),
     connectNative: () => port,
+    nativeMessagingClient,
     getDefaultRelativeFolder: async () => "Inbox/Reading"
   };
 

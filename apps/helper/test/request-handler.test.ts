@@ -40,7 +40,7 @@ it("处理 hello 并返回能力声明", async () => {
 
   expect(response).toMatchObject({
     protocolVersion: PROTOCOL_VERSION,
-    helperVersion: "0.1.0-beta.5",
+    helperVersion: "0.1.0-beta.6",
     capabilities: ["clip.article", "direct-file", "vault.config"]
   });
 });

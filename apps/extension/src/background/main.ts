@@ -1,7 +1,9 @@
 import {
   adaptChromeNativePort,
+  createNativeMessagingClient,
   captureViaNativeMessaging,
-  type ConnectNative
+  type ConnectNative,
+  type NativeMessagingClient
 } from "./native-messaging.js";
 import {
   createArticleRequest,
@@ -15,7 +17,7 @@ import {
 import { getDefaultRelativeFolder } from "../settings/storage.js";
 import { relativeFolderSchema } from "@capture-for-tolaria/protocol";
 
-export const EXTENSION_VERSION = "0.1.0-beta.5";
+export const EXTENSION_VERSION = "0.1.0-beta.6";
 
 export interface ActiveTab {
   id: number;
@@ -27,6 +29,7 @@ export interface CaptureDependencies {
   executeContentScript(tabId: number): Promise<void>;
   sendContentMessage(tabId: number, message: ContentMessage): Promise<unknown>;
   connectNative: ConnectNative;
+  nativeMessagingClient?: NativeMessagingClient;
   getDefaultRelativeFolder?: () => Promise<string>;
 }
 
@@ -95,10 +98,9 @@ export async function handleCaptureMessage(
       EXTENSION_VERSION,
       crypto.randomUUID()
     );
-    const response = await captureViaNativeMessaging(
-      request,
-      dependencies.connectNative
-    );
+    const response = dependencies.nativeMessagingClient
+      ? await dependencies.nativeMessagingClient.capture(request)
+      : await captureViaNativeMessaging(request, dependencies.connectNative);
     const captureResponse: CaptureResponse = response.ok
       ? {
           ok: true,
@@ -149,6 +151,10 @@ export async function handleCaptureMessage(
   }
 }
 
+const runtimeConnectNative: ConnectNative = (hostName) =>
+  adaptChromeNativePort(chrome.runtime.connectNative(hostName));
+const runtimeNativeMessagingClient = createNativeMessagingClient(runtimeConnectNative);
+
 export function runtimeDependencies(): CaptureDependencies {
   return {
     getActiveTab: async () => {
@@ -167,8 +173,8 @@ export function runtimeDependencies(): CaptureDependencies {
     },
     sendContentMessage: async (tabId, message) =>
       chrome.tabs.sendMessage(tabId, message),
-    connectNative: (hostName) =>
-      adaptChromeNativePort(chrome.runtime.connectNative(hostName)),
+    connectNative: runtimeConnectNative,
+    nativeMessagingClient: runtimeNativeMessagingClient,
     getDefaultRelativeFolder
   };
 }

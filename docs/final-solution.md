@@ -61,9 +61,9 @@ Tolaria Knowledge Base
 
 ## 2. 产品边界
 
-### 2.1 V0.1 目标
+### 2.1 V0.1 当前交付基线（Beta.6）
 
-V0.1 只解决一条可靠、可离线、可验证的主链路：
+当前 `V0.1.0-beta.6` 交付基线只解决一条可靠、可离线、可验证的主链路：
 
 ```text
 打开网页
@@ -79,11 +79,13 @@ V0.1 只解决一条可靠、可离线、可验证的主链路：
 Tolaria 通过文件监听感知新文件
 ```
 
-V0.1 范围：
+这里的“当前交付基线”限定为 Beta.6 的已实现范围；后续 `V0.1.0` Beta 版本可以继续增加平台或能力，但不改变 Beta.6 的支持边界。
 
-| 能力 | V0.1 目标 |
+Beta.6 当前交付范围：
+
+| 能力 | V0.1.0-beta.6 当前交付 |
 | --- | --- |
-| 操作系统 | Windows |
+| 操作系统 | Windows（Beta.6 当前交付） |
 | 浏览器 | Chrome |
 | Capture 模式 | Article |
 | 正文提取 | Mozilla Readability |
@@ -105,18 +107,18 @@ V0.1 范围：
 
 Vault 配置采用单 Vault、per-user 配置。首次配置只记录并验证 Vault 根目录，不预创建 `Inbox/Web`；`Inbox/Web` 在第一次实际写入时按目录段逐级创建并校验。
 
-V0.1 的 Article Capture 由用户点击触发，Extension 使用 `activeTab`、`scripting` 和 `nativeMessaging` 完成当前页面读取与 Helper 通信，不申请宽泛的站点访问权限。
+Beta.6 的 Article Capture 由用户点击触发，Extension 使用 `activeTab`、`scripting` 和 `nativeMessaging` 完成当前页面读取与 Helper 通信，不申请宽泛的站点访问权限。
 
-### 2.2 明确不属于 V0.1
+### 2.2 当前 Beta.6 明确不包含
 
-以下能力放入后续版本，不作为 V0.1 的隐性承诺：
+以下能力不属于当前 Beta.6 交付，不作为已实现能力承诺；后续版本安排以第 17 节路线图为准：
 
 - Selection、Bookmark、Screenshot 和右键菜单的完整体验
 - MCP 9710 集成
 - 多 Vault 和 Vault Context
 - 当前 `v0.1.0-beta.6` 已包含公开 Article 图片本地化 MVP；完整的 Assets 管理、资源复用和模板能力继续排入后续版本
 - AI 摘要、标签、类型推荐和知识关联
-- Edge、macOS、Linux
+- Edge、Linux；macOS 不属于当前 Beta.6，已安排到 Beta.7
 - 云同步、账号系统和自建云服务
 - 完整 Read-it-later 服务
 - RSS Reader
@@ -1225,9 +1227,10 @@ v0.2.0
 
 | 阶段 | 建议 |
 | --- | --- |
-| `v0.1.0-beta.1`、`v0.1.0-beta.2`、`v0.1.0-beta.3`、`v0.1.0-beta.4`、`v0.1.0-beta.5`、`v0.1.0-beta.6` | 可以暂时 unsigned |
+| `v0.1.0-beta.1`、`v0.1.0-beta.2`、`v0.1.0-beta.3`、`v0.1.0-beta.4`、`v0.1.0-beta.5`、`v0.1.0-beta.6` | Windows 版本可以暂时 unsigned |
+| `v0.1.0-beta.7` | macOS 用户包必须使用 Developer ID、Hardened Runtime、Notarization 并完成 stapling；Windows 签名策略不因 macOS 适配提前改变 |
 | V0.2 Public Beta | 开始 Windows Code Signing |
-| V1.0 | 签名发布作为必需条件 |
+| V1.0 | 所有支持平台均以签名发布作为必需条件 |
 
 公开发布未签名的 `helper.exe` 容易触发 SmartScreen 和 Unknown Publisher，必须纳入发布计划。
 
@@ -1343,12 +1346,15 @@ docs/adr/
 
 | 版本 | 核心能力 |
 | --- | --- |
-| V0.1 | Windows + Chrome + Article + Direct File Capture |
+| V0.1 当前交付基线（Beta.6） | Windows + Chrome + Article + Direct File Capture |
 | V0.1.0-beta.1 | 公众号优先的 Article 图片本地化 MVP |
+| V0.1.0-beta.6 | Windows + Chrome + Article + Direct File；图片本地化、Vault 路径配置、连接复用与断线恢复 |
+| V0.1.0-beta.7 | macOS + Chrome + Article + Direct File；自包含 Installer、用户级 Native Host、签名/公证 |
+| V0.1.0-beta.8（建议） | Feishu DOCX 官方 Word 导出 → 本地 Markdown + Assets |
 | V0.1.5 Beta（目标发布版 `v0.1.5-beta.1`） | Selection + Bookmark + Right Click + Deep Link |
 | V0.2 | MCP 9710 + `vault_context` + `list_vaults` + Multi Vault + `open_note` + Write Retry Store |
 | V0.2.5 Beta（目标发布版 `v0.2.5-beta.1`） | 高级 Assets 管理 + 资源复用 + Templates + Shortcuts |
-| V0.3 | Edge + macOS + Linux + 完整 Installer |
+| V0.3 | Edge + Linux + 完整 Installer（macOS 已在 Beta.7 交付） |
 | V0.4 | AI Summary + Tags + Type + Related Notes + Knowledge Linking |
 | V1.0 | 稳定跨平台版本 + 签名安装 + 完整兼容/升级体系 |
 

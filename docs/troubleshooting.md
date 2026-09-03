@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 故障排查
 
-> 当前文档记录 `v0.1.0-beta.5` 的用户可见错误边界。开发目录和发布目录的完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、Windows Pester/Installer 门禁、GitHub Release 唯一资产和最终 Installer ZIP 隔离安装链路均已通过；真实 Chrome、Tolaria、Vault 文件监听和公开文章 Capture 用户链路仍需独立验收，不能用代码级或 Installer 门禁替代这些证据。
+> 当前文档记录 `v0.1.0-beta.6` 的用户可见错误边界。开发目录和发布目录的完整 `pnpm.cmd run check`、SEA Helper/Installer 构建、Windows Pester/Installer 门禁、GitHub Release 唯一资产和最终 Installer ZIP 隔离安装链路均已通过；真实 Chrome、Tolaria、Vault 文件监听和公开文章 Capture 用户链路仍需独立验收，不能用代码级或 Installer 门禁替代这些证据。
 
 ## 1. Capture 按钮不可用
 
@@ -15,6 +15,8 @@
 
 ## 2. 无法连接 Helper
 
+普通用户不需要手动启动 Helper。第一次 Capture 时 Chrome 会按需启动 Native Messaging Helper；连续 Capture 复用同一连接。连接在空闲期间或 Helper 异常退出后，下一次 Capture 会自动重新连接并重新执行 `hello`。
+
 检查：
 
 - Native Host 注册是否位于当前用户配置范围。
@@ -22,6 +24,8 @@
 - Helper 可执行文件路径是否存在且可执行。
 - Helper 的 stdout 是否被日志或调试输出污染；日志必须写入 stderr。
 - Extension 与 Helper 的协议版本是否兼容。
+
+如果出现 `CAPTURE_FAILED: Helper 已断开连接`，先确认本次文章是否已经写入 Vault，再决定是否重试；应用不会自动重放连接断开时状态不确定的 `clip.article` 请求，以避免重复文章。若下一次 Capture 仍然失败，再检查 Native Host 注册、Helper 文件和 Extension ID。
 
 先执行 `hello`，确认 capabilities 包含 `clip.article`，再发送文章请求。打开 Popup 的 `Settings` 还需要 `vault.config` capability；旧 Helper 没有该 capability 时不要手工发送未知配置 action，改用 `configure-vault.ps1`。
 

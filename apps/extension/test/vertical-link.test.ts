@@ -13,7 +13,10 @@ import {
   captureArticleFromDocument,
   type CapturedArticlePayload
 } from "../src/content/capture-article.js";
-import type { NativeMessagingPort } from "../src/background/native-messaging.js";
+import {
+  createNativeMessagingClient,
+  type NativeMessagingPort
+} from "../src/background/native-messaging.js";
 
 class MockHostPort implements NativeMessagingPort {
   readonly messages: unknown[] = [];
@@ -60,6 +63,8 @@ class MockHostPort implements NativeMessagingPort {
 
 it("完成当前文章到 Helper File Channel 的真实垂直链路", async () => {
   const vault = await mkdtemp(join(tmpdir(), "capture-for-tolaria-integration-"));
+  const port = new MockHostPort(vault);
+  const nativeMessagingClient = createNativeMessagingClient(() => port);
   try {
     const sourceUrl = "https://example.com/integration/article";
     const document = new JSDOM(`
@@ -84,7 +89,8 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
         }
         return { ok: true };
       },
-      connectNative: () => new MockHostPort(vault),
+      connectNative: () => port,
+      nativeMessagingClient,
       getDefaultRelativeFolder: async () => "Inbox/Reading"
     };
 
@@ -103,6 +109,18 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
 
     expect(first).toMatchObject({ ok: true });
     expect(second).toMatchObject({ ok: true });
+    expect(port.messages.filter((message) =>
+      typeof message === "object" &&
+      message !== null &&
+      "action" in message &&
+      message.action === "hello"
+    )).toHaveLength(1);
+    expect(port.messages.filter((message) =>
+      typeof message === "object" &&
+      message !== null &&
+      "action" in message &&
+      message.action === "clip.article"
+    )).toHaveLength(2);
     if (first.ok && second.ok) {
       expect(second.relativePath).toContain("(2).md");
       expect(first.relativePath).toContain("Inbox/Reading/");
@@ -114,7 +132,7 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
         "source_url: \"https://example.com/integration/article\""
       );
     }
-    expect(EXTENSION_VERSION).toBe("0.1.0-beta.5");
+    expect(EXTENSION_VERSION).toBe("0.1.0-beta.6");
     const resultMessages = contentMessages.filter(
       (message): message is { type: "capture.result"; status: "saved"; relativePath: string } =>
         typeof message === "object" &&
@@ -128,6 +146,7 @@ it("完成当前文章到 Helper File Channel 的真实垂直链路", async () =
     expect(resultMessages[0]?.relativePath).toBe(first.ok ? first.relativePath : "");
     expect(resultMessages[1]?.relativePath).toBe(second.ok ? second.relativePath : "");
   } finally {
+    nativeMessagingClient.close();
     await rm(vault, { recursive: true, force: true });
   }
 }, 15_000);

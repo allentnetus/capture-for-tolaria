@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.6] - 2026-09-03
+
+- Beta.6：Extension 在同一运行上下文中复用 `connectNative()` 连接，连续剪藏不再为每次请求重复启动 Helper。
+- Beta.6：Native Messaging 连接断开后清除失效状态，下一次用户操作按需重新连接并重新握手；当前不确定是否已提交的文章请求不会自动重放。
+- Beta.6：Helper 仍由 Chrome 按需启动，普通用户不需要手动运行 Helper，也不引入 Windows 常驻服务或 localhost IPC。
+
 ## [0.1.0-beta.5] - 2026-09-01
 
 - Beta.5 修复：Vault 配置成功响应与 Vault root 请求使用同一长度上限，合法的长 Vault root 不再被错误拒绝。

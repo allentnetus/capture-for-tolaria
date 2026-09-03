@@ -2,6 +2,7 @@ import { expect, it, vi } from "vitest";
 
 interface RuntimeDependencies {
   getDefaultRelativeFolder?: () => Promise<string>;
+  nativeMessagingClient?: object;
 }
 
 it("真实运行时依赖读取 Extension storage 中的默认目录", async () => {
@@ -26,6 +27,7 @@ it("真实运行时依赖读取 Extension storage 中的默认目录", async () 
 
     const dependencies = extensionModule.runtimeDependencies();
     expect(typeof dependencies.getDefaultRelativeFolder).toBe("function");
+    expect(typeof dependencies.nativeMessagingClient).toBe("object");
     if (!dependencies.getDefaultRelativeFolder) {
       return;
     }

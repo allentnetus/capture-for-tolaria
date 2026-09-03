@@ -1,6 +1,6 @@
 # Capture for Tolaria V0.1 架构
 
-> 状态：`v0.1.0-beta.5` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化与可配置 Vault 路径
+> 状态：`v0.1.0-beta.6` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化、可配置 Vault 路径和 Native Messaging 连接复用
 >
 > 本文与 `docs/final-solution.md` 配套，冻结第一条可验证的 Article Capture 主链路。
 
@@ -18,7 +18,7 @@ Helper
 Tolaria Vault / <defaultRelativeFolder>/*.md + Assets/<sha256>.<ext>
 ```
 
-V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.5 的图片本地化仍由用户触发并在 Helper 内完成，Vault root 和默认相对目录可由 Settings 配置；MCP Channel、AI、多 Vault 和跨平台支持不属于本版本。
+V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.6 的图片本地化仍由用户触发并在 Helper 内完成，Vault root 和默认相对目录可由 Settings 配置；Native Messaging Helper 由 Chrome 按需启动并在同一运行上下文中复用连接；MCP Channel、AI、多 Vault 和跨平台支持不属于本版本。
 
 ## 2. 组件职责
 
@@ -55,6 +55,12 @@ Extension 不缓存 Vault root，也不把它放入普通 `clip.article` 请求�
 7. Helper 校验协议、请求大小、来源 URL、相对目录和标题；对存在于正文且不在 fenced code 中的图片，使用无 cookies/`Authorization` 的受限 HTTP(S) 下载，拒绝私有目标、危险重定向、超限响应和 SVG；实际连接固定到已检查的 DNS 地址，同时保留原始主机名用于 Host 和 TLS SNI。
 8. Helper 在当前文章目录的 `Assets/` 中以 SHA-256 内容寻址资源，使用 create-only Bundle 语义先提交资源再提交 Markdown；成功资源替换为 `Assets/<sha256>.<ext>`，已有同名 Asset 复用前校验大小和 SHA-256，失败资源保留远程引用。
 9. Helper 返回带校验后规范化 `requestId` 的成功或稳定错误响应；图片成功数、回退数和 warning 通过可选结果字段传回 Popup。握手仍使用 10 秒等待，包含图片处理的完整 `clip.article` 响应使用 60 秒等待；单图下载安全超时仍为 10 秒，整次图片本地化预算为 45 秒。
+
+### 3.1 Native Messaging 连接生命周期
+
+Beta.6 的 Service Worker 和 Options Page 各自在本运行上下文中持有一个惰性的 Native Messaging client。第一次业务请求才调用 `connectNative()` 并完成 `hello`；后续请求复用同一端口，并按 FIFO 顺序串行发送。端口空闲断开或 Helper 崩溃时只清除连接状态，下一次业务请求自动重新建立连接和 capability negotiation，不在空闲时主动启动 Helper。
+
+等待响应时发生断线的当前请求会安全失败，不自动重放 `clip.article`，因为 Helper 可能已经提交文件而响应尚未到达。普通文章请求仍只携带 Vault 内相对目录；Vault root、路径安全校验和 create-only 写入语义不因连接复用改变。
 
 ## 4. File Channel 与 MCP Channel
 

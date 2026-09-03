@@ -58,7 +58,7 @@ Extension 不缓存 Vault root，也不把它放入普通 `clip.article` 请求�
 
 ### 3.1 Native Messaging 连接生命周期
 
-Beta.6 的 Service Worker 和 Options Page 各自在本运行上下文中持有一个惰性的 Native Messaging client。第一次业务请求才调用 `connectNative()` 并完成 `hello`；后续请求复用同一端口，并按 FIFO 顺序串行发送。端口空闲断开或 Helper 崩溃时只清除连接状态，下一次业务请求自动重新建立连接和 capability negotiation，不在空闲时主动启动 Helper。
+Beta.6 的 Service Worker 和 Options Page 各自在本运行上下文中持有一个惰性的 Native Messaging client。第一次业务请求才调用 `connectNative()` 并完成 `hello`；后续请求复用同一端口，并按 FIFO 顺序串行发送。成功响应后启动 30 秒空闲计时器；计时器到期主动断开端口，新的业务请求会取消计时器并继续复用连接。端口空闲断开或 Helper 崩溃时只清除连接状态，下一次业务请求自动重新建立连接和 capability negotiation，不在空闲时主动启动 Helper。
 
 等待响应时发生断线的当前请求会安全失败，不自动重放 `clip.article`，因为 Helper 可能已经提交文件而响应尚未到达。普通文章请求仍只携带 Vault 内相对目录；Vault root、路径安全校验和 create-only 写入语义不因连接复用改变。
 

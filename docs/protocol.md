@@ -15,7 +15,7 @@ N bytes UTF-8 JSON
 
 一个进程可以连续收发多条消息。读取必须支持分段读取，并拒绝超过统一 payload 上限的长度、非法 UTF-8、非法 JSON 和截断帧。Helper 的 stdout 只能承载 framing 后的协议消息；日志、诊断和调试输出必须写入 stderr。
 
-Beta6 的 Extension 在每个运行上下文中复用一个 `connectNative()` 端口，并在同一端口上按 FIFO 顺序发送多条业务消息；每条新连接只发送一次 `hello`。端口断开时当前等待中的请求失败，下一次请求重新建立连接和握手；`clip.article` 不因响应丢失而自动重放。
+Beta6 的 Extension 在每个运行上下文中复用一个 `connectNative()` 端口，并在同一端口上按 FIFO 顺序发送多条业务消息；每条新连接只发送一次 `hello`。成功响应后 30 秒无新请求时主动释放端口；端口断开时当前等待中的请求失败，下一次请求重新建立连接和握手；`clip.article` 不因响应丢失而自动重放。
 
 ## 2. 通用请求字段
 

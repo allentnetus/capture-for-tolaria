@@ -12,6 +12,7 @@ import {
 export const NATIVE_HOST_NAME = "com.capture_for_tolaria.helper" as const;
 export const NATIVE_MESSAGE_TIMEOUT_MS = 10_000;
 export const NATIVE_CAPTURE_TIMEOUT_MS = 60_000;
+export const NATIVE_IDLE_TIMEOUT_MS = 30_000;
 
 interface Listener<T> {
   addListener(listener: (value: T) => void): void;
@@ -187,6 +188,7 @@ class NativeMessagingClientImpl implements NativeMessagingClient {
   private port: NativeMessagingPort | null = null;
   private capabilities: string[] | null = null;
   private disconnectListener: (() => void) | null = null;
+  private idleTimer: ReturnType<typeof setTimeout> | null = null;
   private queue: Promise<void> = Promise.resolve();
 
   constructor(
@@ -219,6 +221,7 @@ class NativeMessagingClientImpl implements NativeMessagingClient {
   }
 
   close(): void {
+    this.clearIdleTimer();
     const port = this.port;
     if (!port) {
       return;
@@ -247,6 +250,7 @@ class NativeMessagingClientImpl implements NativeMessagingClient {
           "Helper 响应 requestId 不匹配"
         );
       }
+      this.scheduleIdleDisconnect(port);
       return response;
     } catch (error) {
       this.disconnectIfCurrent(port);
@@ -267,6 +271,7 @@ class NativeMessagingClientImpl implements NativeMessagingClient {
           options.incompatibleMessage
         );
       }
+      this.clearIdleTimer();
       return this.port;
     }
 
@@ -317,10 +322,37 @@ class NativeMessagingClientImpl implements NativeMessagingClient {
     if (this.port !== port) {
       return;
     }
-    port.onDisconnect.removeListener?.(this.disconnectListener ?? (() => undefined));
+    const disconnectListener = this.disconnectListener;
+    if (disconnectListener) {
+      port.onDisconnect.removeListener?.(disconnectListener);
+    }
+    this.clearIdleTimer();
     this.port = null;
     this.capabilities = null;
     this.disconnectListener = null;
+  }
+
+  private scheduleIdleDisconnect(port: NativeMessagingPort): void {
+    if (this.port !== port || !this.capabilities) {
+      return;
+    }
+    this.clearIdleTimer();
+    this.idleTimer = setTimeout(() => {
+      this.idleTimer = null;
+      if (this.port !== port) {
+        return;
+      }
+      this.clearConnection(port);
+      port.disconnect();
+    }, NATIVE_IDLE_TIMEOUT_MS);
+  }
+
+  private clearIdleTimer(): void {
+    if (this.idleTimer === null) {
+      return;
+    }
+    clearTimeout(this.idleTimer);
+    this.idleTimer = null;
   }
 
   private disconnectIfCurrent(port: NativeMessagingPort): void {

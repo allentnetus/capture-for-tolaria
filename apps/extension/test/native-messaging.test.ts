@@ -1,6 +1,7 @@
 import { expect, it, vi } from "vitest";
 import {
   NATIVE_HOST_NAME,
+  NATIVE_IDLE_TIMEOUT_MS,
   NativeMessagingClientError,
   createNativeMessagingClient,
   captureViaNativeMessaging,
@@ -269,12 +270,16 @@ it("连续业务请求复用同一个 Native Messaging 端口并只握手一次"
   const connectNative = vi.fn(() => firstPort);
   const client = createNativeMessagingClient(connectNative);
 
-  await client.capture(request);
-  await client.capture({ ...request, requestId: "req-2" });
+  try {
+    await client.capture(request);
+    await client.capture({ ...request, requestId: "req-2" });
 
-  expect(connectNative).toHaveBeenCalledTimes(1);
-  expect(firstPort.messages.filter(isHelloMessage)).toHaveLength(1);
-  expect(firstPort.messages.filter(isClipArticleMessage)).toHaveLength(2);
+    expect(connectNative).toHaveBeenCalledTimes(1);
+    expect(firstPort.messages.filter(isHelloMessage)).toHaveLength(1);
+    expect(firstPort.messages.filter(isClipArticleMessage)).toHaveLength(2);
+  } finally {
+    client.close();
+  }
 });
 
 it("端口断开后当前请求失败且下一次请求自动建立新连接", async () => {
@@ -286,17 +291,21 @@ it("端口断开后当前请求失败且下一次请求自动建立新连接", a
     .mockReturnValueOnce(secondPort);
   const client = createNativeMessagingClient(connectNative);
 
-  await expect(client.capture(request)).rejects.toMatchObject({
-    code: "CONNECT_FAILED"
-  });
-  await expect(client.capture({ ...request, requestId: "req-2" })).resolves.toMatchObject({
-    ok: true,
-    requestId: "req-2"
-  });
+  try {
+    await expect(client.capture(request)).rejects.toMatchObject({
+      code: "CONNECT_FAILED"
+    });
+    await expect(client.capture({ ...request, requestId: "req-2" })).resolves.toMatchObject({
+      ok: true,
+      requestId: "req-2"
+    });
 
-  expect(connectNative).toHaveBeenCalledTimes(2);
-  expect(firstPort.messages.filter(isClipArticleMessage)).toHaveLength(1);
-  expect(secondPort.messages.filter(isHelloMessage)).toHaveLength(1);
+    expect(connectNative).toHaveBeenCalledTimes(2);
+    expect(firstPort.messages.filter(isClipArticleMessage)).toHaveLength(1);
+    expect(secondPort.messages.filter(isHelloMessage)).toHaveLength(1);
+  } finally {
+    client.close();
+  }
 });
 
 it("排队请求保持顺序且不重放断线前已经发送的文章", async () => {
@@ -308,11 +317,69 @@ it("排队请求保持顺序且不重放断线前已经发送的文章", async (
     .mockReturnValueOnce(secondPort);
   const client = createNativeMessagingClient(connectNative);
 
-  const first = client.capture(request);
-  const second = client.capture({ ...request, requestId: "req-2" });
+  try {
+    const first = client.capture(request);
+    const second = client.capture({ ...request, requestId: "req-2" });
 
-  await expect(first).rejects.toMatchObject({ code: "CONNECT_FAILED" });
-  await expect(second).resolves.toMatchObject({ requestId: "req-2" });
-  expect(firstPort.messages.filter(isClipArticleMessage)).toHaveLength(1);
-  expect(secondPort.messages.filter(isClipArticleMessage)).toHaveLength(1);
+    await expect(first).rejects.toMatchObject({ code: "CONNECT_FAILED" });
+    await expect(second).resolves.toMatchObject({ requestId: "req-2" });
+    expect(firstPort.messages.filter(isClipArticleMessage)).toHaveLength(1);
+    expect(secondPort.messages.filter(isClipArticleMessage)).toHaveLength(1);
+  } finally {
+    client.close();
+  }
+});
+
+it("空闲连接超时后主动断开，下一次请求重新连接", async () => {
+  vi.useFakeTimers();
+  try {
+    const firstPort = new FakePort();
+    const secondPort = new FakePort();
+    const connectNative = vi
+      .fn()
+      .mockReturnValueOnce(firstPort)
+      .mockReturnValueOnce(secondPort);
+    const client = createNativeMessagingClient(connectNative);
+
+    await client.capture(request);
+    await vi.advanceTimersByTimeAsync(NATIVE_IDLE_TIMEOUT_MS - 1);
+    expect(firstPort.disconnected).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(firstPort.disconnected).toBe(true);
+
+    await expect(client.capture({ ...request, requestId: "req-2" })).resolves.toMatchObject({
+      ok: true,
+      requestId: "req-2"
+    });
+    expect(connectNative).toHaveBeenCalledTimes(2);
+    expect(secondPort.messages.filter(isHelloMessage)).toHaveLength(1);
+    client.close();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("新请求进行中不会被上一轮空闲计时器断开", async () => {
+  vi.useFakeTimers();
+  try {
+    const port = new FakePort();
+    const connectNative = vi.fn(() => port);
+    const client = createNativeMessagingClient(connectNative);
+
+    await client.capture(request);
+    port.responseDelayMs = NATIVE_IDLE_TIMEOUT_MS + 5_000;
+    const second = client.capture({ ...request, requestId: "req-2" });
+
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(NATIVE_IDLE_TIMEOUT_MS);
+    expect(port.disconnected).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    await expect(second).resolves.toMatchObject({ requestId: "req-2" });
+    expect(connectNative).toHaveBeenCalledTimes(1);
+    client.close();
+  } finally {
+    vi.useRealTimers();
+  }
 });

@@ -789,7 +789,7 @@ hello（每条新连接一次）
 下一次请求自动重新连接
 ```
 
-Helper 不需要用户手动启动，也不需要 V0.1 引入 Windows Service、launchd daemon 或 systemd daemon。连接只在 Extension 有业务请求时按需建立；Chrome 或 Helper 终止连接后，下一次请求负责恢复。
+Helper 不需要用户手动启动，也不需要 V0.1 引入 Windows Service、launchd daemon 或 systemd daemon。连接只在 Extension 有业务请求时按需建立；每次成功响应后 30 秒无新请求会主动释放连接，Chrome 或 Helper 终止连接后，下一次请求负责恢复。
 
 ### 9.3 Extension ↔ Helper 协议
 
@@ -877,6 +877,7 @@ UTF-8 JSON
 - Beta5 历史行为是短事务：connect → request → response → disconnect
 - Beta6 当前行为是按需 connect、同一运行上下文复用端口，并以 FIFO 顺序串行发送请求
 - `hello` 和 capability negotiation 每条新连接只执行一次；端口断开后下一次请求自动重新连接
+- 每次成功响应后 30 秒无新请求主动释放端口；新的业务请求会取消空闲计时器并复用当前连接
 - 等待文章响应时发生断线，当前 `clip.article` 不自动重放，避免文件已经提交但响应丢失时产生重复文章
 - `hello` 握手等待 10 秒；完整 `clip.article` 响应等待 60 秒，以覆盖图片顺序处理和文件提交时间
 - Beta6 不引入 Windows 常驻服务或 localhost IPC；Helper 仍由 Chrome Native Messaging 按需启动

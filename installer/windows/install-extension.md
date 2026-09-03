@@ -25,4 +25,4 @@ Extension manifest 中的公开 `key` 只用于固定 ID。Release 私钥不提�
 
 关闭正在进行的剪藏，替换解压后的 Extension 目录，在 `chrome://extensions` 点击 Extension 的刷新按钮。Helper 通过 `hello` 检查协议版本和 capabilities；协议不兼容时不会写入 Vault。
 
-V0.1.x 不自动下载或执行新 Helper。Beta.6 构建未签名，用户应只从项目 Release 页面获取当前版本的自包含 Installer ZIP。Helper 由 Chrome 在第一次 Native Messaging 连接时按需启动，用户不需要手动运行。
+V0.1.x 不自动下载或执行新 Helper。Beta.6 构建未签名，用户应只从项目 Release 页面获取当前版本的自包含 Installer ZIP。Helper 由 Chrome 在第一次 Native Messaging 连接时按需启动，用户不需要手动运行；业务请求完成后连接空闲 30 秒会主动释放，下一次请求自动重新连接。

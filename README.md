@@ -12,7 +12,7 @@
 
 当前 Beta.6 还提供 Extension 的 `Settings` 页面，可自定义 Vault 根目录和 Vault 内默认目录。默认目录仍为 `Inbox/Web`；Extension Service Worker 已在真实运行时依赖中读取该设置，真实 Chrome/Tolaria 用户链路仍需单独验收。
 
-Beta.6 使用按需连接：第一次 Capture 时 Chrome 自动启动 Helper，同一 Extension 运行上下文中的后续 Capture 复用连接；连接异常时下一次 Capture 自动重连。用户不需要手动启动 Helper，也不会因为空闲而保持 Windows 常驻进程。
+Beta.6 使用按需连接：第一次 Capture 时 Chrome 自动启动 Helper，同一 Extension 运行上下文中的后续 Capture 复用连接；每次业务请求完成后，若 30 秒内没有新请求，连接会主动释放；连接异常或空闲释放后，下一次 Capture 自动重连。用户不需要手动启动 Helper，也不会因为空闲而保持 Windows 常驻进程。
 
 ## 当前能力
 
@@ -45,7 +45,7 @@ Beta.6 暂不实现 MCP 9710、AI、多 Vault、Selection、Bookmark、Screensho
 5. 打开 Extension Popup，点击 `Settings`，填写 Vault root 和 Vault 内默认目录并保存。支持 `vault.config` 的 Helper 会在保存 Vault root 时验证目录、权限和链接安全。
 6. 打开公开文章，点击 Extension Popup 中的 `Save to Tolaria`。
 
-普通用户不需要单独指定或手动启动 Helper；只有在本地调试或替换经过审核的 Helper 时，才显式传入 `-HelperPath <HelperExe>`。Chrome 会在 Extension 第一次连接时按需启动 Helper，后续请求复用连接。脚本只写当前用户的应用数据范围和用户注册表范围。
+普通用户不需要单独指定或手动启动 Helper；只有在本地调试或替换经过审核的 Helper 时，才显式传入 `-HelperPath <HelperExe>`。Chrome 会在 Extension 第一次连接时按需启动 Helper，后续请求复用连接；连接空闲 30 秒后自动释放，下一次请求再按需建立。脚本只写当前用户的应用数据范围和用户注册表范围。
 
 ## 开发目录、发布目录与用户交付
 

@@ -43,7 +43,7 @@ PowerShell 默认不会从当前目录执行未加路径的 `install.ps1`；如�
 当前用户注册表中的 Chrome Native Messaging 注册项
 ```
 
-安装完成后不需要手动启动 Helper。第一次使用 Extension 时，Chrome 会按需启动 Native Messaging Helper；连续剪藏复用同一连接。若连接异常，下一次 Capture 会自动重新连接并握手；当前不确定是否已写入的文章不会被透明重放。
+安装完成后不需要手动启动 Helper。第一次使用 Extension 时，Chrome 会按需启动 Native Messaging Helper；连续剪藏复用同一连接，连接空闲 30 秒后主动释放。若连接异常或空闲释放，下一次 Capture 会自动重新连接并握手；当前不确定是否已写入的文章不会被透明重放。
 
 ## 扩展加载（Extension）
 

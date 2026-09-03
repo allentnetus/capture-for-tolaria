@@ -15,7 +15,7 @@
 
 ## 2. 无法连接 Helper
 
-普通用户不需要手动启动 Helper。第一次 Capture 时 Chrome 会按需启动 Native Messaging Helper；连续 Capture 复用同一连接。连接在空闲期间或 Helper 异常退出后，下一次 Capture 会自动重新连接并重新执行 `hello`。
+普通用户不需要手动启动 Helper。第一次 Capture 时 Chrome 会按需启动 Native Messaging Helper；连续 Capture 复用同一连接。连接空闲 30 秒后主动释放，或 Helper 异常退出后，下一次 Capture 会自动重新连接并重新执行 `hello`。
 
 检查：
 

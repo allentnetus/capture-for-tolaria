@@ -96,7 +96,7 @@
 ### Beta.4 发布记录（截至 2026-09-01）
 
 - 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.4`；本版本修复真实 Service Worker 运行时未注入 `chrome.storage.local` 默认目录读取器的问题，并保留缺失、读取失败或不安全时回退 `Inbox/Web` 的行为。
-- 开发目录和发布目录的完整门禁均通过：6 个 workspace、29 个测试文件、174 个测试；另行运行 Golden tests，14 个测试通过。
+- 开发目录和发布目录的完整门禁均通过：6 个 workspace、29 个测试文件、174 个测试；另行运行 Golden 门禁命令，报告 3 个测试文件、14 个测试通过，其中 `golden.test.ts` 为 8 个测试。
 - 发布目录组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.4.zip`，共 29 个条目，大小 34,505,796 bytes，SHA-256 为 `0D479228EF125FC452E6E7BBD9A620C1F6E69AD5A1C65B1CC424B1925C96E4B5`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
 - 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
 - tag `v0.1.0-beta.4` 指向发布提交 `81e8e5e30bdc97a4586f6b425cf3e6465613116f`；tag CI run `33482070086` 和 Release workflow run `33482069933` 均完成且成功。
@@ -107,7 +107,7 @@
 ### 当前 Beta.6 发布状态（截至 2026-09-03）
 
 - Beta.6 实现 Native Messaging 连接复用、FIFO 串行请求、断线后的下一请求自动重连和响应安全校验；成功响应后 30 秒无新请求主动释放端口，等待响应期间发生断线的 `clip.article` 不自动重放。
-- 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.6`；完整门禁均通过：6 个 workspace、30 个测试文件、181 个测试；另行运行 Golden tests，14 个测试通过。
+- 开发目录和发布目录的 `VERSION` 均为 `0.1.0-beta.6`；完整门禁均通过：6 个 workspace、30 个测试文件、181 个测试；另行运行 Golden 门禁命令，报告 3 个测试文件、14 个测试通过，其中 `golden.test.ts` 为 8 个测试。
 - 发布目录本地预组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.6.zip`，共 29 个条目，大小 34,507,562 bytes，SHA-256 为 `9495B357D84B15DBDB1E629490F83B5F52618F6303501D0A6DAD05F3B617A74F`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
 - 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
 - PR [#15](https://github.com/allentnetus/capture-for-tolaria/pull/15) 已合并到 `main`，Beta6 tag `v0.1.0-beta.6` 指向合并提交 `9c5d31d2cc0dc9bd60bba694cbe79b9ab01af2c8`；Beta5 tag 仍指向 `dd8180516f6c4a983f04879ad26271f55467e5b7`。
@@ -117,7 +117,7 @@
 ### Beta.5 历史发布状态（截至 2026-09-01）
 
 - 开发目录已修复 Vault 配置成功响应错误使用 `MAX_RESPONSE_PATH_LENGTH` 的问题，并新增 2,048 字符 Vault root 回归测试；真实 Service Worker 默认目录读取修复继续保留。
-- 开发目录完整门禁已通过：6 个 workspace、29 个测试文件、175 个测试；另行运行 Golden tests，14 个测试通过。
+- 开发目录完整门禁已通过：6 个 workspace、29 个测试文件、175 个测试；另行运行 Golden 门禁命令，报告 3 个测试文件、14 个测试通过，其中 `golden.test.ts` 为 8 个测试。
 - 发布目录组装的唯一用户包为 `capture-for-tolaria-installer-v0.1.0-beta.5.zip`，共 29 个条目，大小 34,505,796 bytes，SHA-256 为 `0D540EF7D4AB7800FCBA311782325CF772742B97C48E7BC8AA73AE53E9529695`；包内已排除 `node_modules`、`dist`、`release`、源映射、声明文件、源码和 package/lock 文件。
 - 发布目录 Windows Pester 门禁为 15 passed、0 failed、0 skipped，包含内置 Helper 的 Install、Repair、Uninstall 和用户包内容契约。
 - tag `v0.1.0-beta.5` 指向发布提交 `dd8180516f6c4a983f04879ad26271f55467e5b7`；tag CI run `33485836599` 和 Release workflow run `33485836562` 均完成且成功。

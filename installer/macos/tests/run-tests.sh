@@ -120,7 +120,11 @@ printf '%s\n' "macOS installer lifecycle tests"
 [ -f "$extension_target/background.js" ]
 [ -f "$manifest_path" ]
 plutil -lint "$manifest_path" >/dev/null
-[ "$(plutil -extract name raw -o - "$manifest_path")" = "com.capture_for_tolaria.helper" ]
+manifest_name="$(plutil -extract name raw -o - "$manifest_path")"
+[ "$manifest_name" = "com.capture_for_tolaria.helper" ] || {
+  printf 'unexpected Native Host manifest name: <%s>\n' "$manifest_name" >&2
+  exit 1
+}
 [ "$(plutil -extract type raw -o - "$manifest_path")" = "stdio" ]
 [ "$(plutil -extract allowed_origins.0 raw -o - "$manifest_path")" = "chrome-extension://ncjeeembmcgkfjipkfhganbdnadbhdcl/" ]
 [ "$(plutil -extract path raw -o - "$manifest_path")" = "$helper_target" ]

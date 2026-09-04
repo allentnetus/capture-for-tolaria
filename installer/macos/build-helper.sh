@@ -142,7 +142,13 @@ child.stdout.on("data", (chunk) => {
   const length = output.readUInt32LE(0);
   if (output.length < length + 4) return;
   const response = JSON.parse(output.subarray(4, length + 4).toString("utf8"));
-  if (response.protocolVersion !== 1 || response.requestId !== "sea-build-hello") {
+  if (
+    response.protocolVersion !== 1 ||
+    response.helperVersion !== process.env.CAPTURE_HELPER_VERSION ||
+    !Array.isArray(response.capabilities) ||
+    !response.capabilities.includes("clip.article") ||
+    !response.capabilities.includes("direct-file")
+  ) {
     fail("SEA Helper hello response is invalid");
   }
   settled = true;

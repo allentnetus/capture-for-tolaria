@@ -9,7 +9,9 @@ fi
 
 script_dir="$(cd "$(dirname "$0")" && pwd -P)"
 macos_installer_dir="$(cd "$script_dir/.." && pwd -P)"
-test_root="$(mktemp -d "${TMPDIR:-/tmp}/capture-for-tolaria-macos-tests.XXXXXX")"
+temp_base="${TMPDIR:-/tmp}"
+temp_base="${temp_base%/}"
+test_root="$(mktemp -d "$temp_base/capture-for-tolaria-macos-tests.XXXXXX")"
 
 for required_script in build-helper.sh assemble-release.sh sign-and-notarize.sh; do
   [ -f "$macos_installer_dir/$required_script" ] || {

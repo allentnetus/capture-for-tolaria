@@ -39,7 +39,9 @@ done
 [ "$expected_arch" = "arm64" ] || [ "$expected_arch" = "x64" ] || die "unsupported expected architecture"
 printf '%s' "$expected_version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta)\.[0-9]+$' || die "invalid expected version"
 
-mount_root="$(mktemp -d "${TMPDIR:-/tmp}/capture-for-tolaria-dmg-content.XXXXXX")"
+temp_base="${TMPDIR:-/tmp}"
+temp_base="${temp_base%/}"
+mount_root="$(mktemp -d "$temp_base/capture-for-tolaria-dmg-content.XXXXXX")"
 attached="false"
 cleanup() {
   if [ "$attached" = "true" ]; then

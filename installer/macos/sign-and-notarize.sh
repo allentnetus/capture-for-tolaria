@@ -61,7 +61,9 @@ fi
 [ "$mode" = "dmg" ] || die "unknown signing mode"
 [ -n "$keychain_profile" ] || die "--keychain-profile is required for notarization"
 
-mount_root="$(mktemp -d "${TMPDIR:-/tmp}/capture-for-tolaria-dmg-verify.XXXXXX")"
+temp_base="${TMPDIR:-/tmp}"
+temp_base="${temp_base%/}"
+mount_root="$(mktemp -d "$temp_base/capture-for-tolaria-dmg-verify.XXXXXX")"
 attached="false"
 cleanup() {
   if [ "$attached" = "true" ]; then

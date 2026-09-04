@@ -1258,7 +1258,7 @@ v0.2.0
 
 公开发布未签名的 `helper.exe` 容易触发 SmartScreen 和 Unknown Publisher，必须纳入发布计划。
 
-Beta.7 的 macOS Release workflow 使用仓库 secrets `APPLE_DEVELOPER_ID_APPLICATION`、`APPLE_NOTARY_KEY_ID`、`APPLE_NOTARY_ISSUER_ID` 和 `APPLE_NOTARY_PRIVATE_KEY` 创建临时 notarization 凭据，签名并公证两个架构的 DMG。任一凭据缺失时工作流必须失败，不得上传未签名候选或把候选标记为正式用户包。
+Beta.7 的 macOS Release workflow 使用仓库 secrets `APPLE_DEVELOPER_ID_APPLICATION`、`APPLE_DEVELOPER_ID_CERTIFICATE_BASE64`、`APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD`、`APPLE_NOTARY_KEY_ID`、`APPLE_NOTARY_ISSUER_ID` 和 `APPLE_NOTARY_PRIVATE_KEY` 导入临时签名 keychain，创建临时 notarization 凭据，并为注入后的 SEA Helper 使用 `com.apple.security.cs.allow-jit` 与 `com.apple.security.cs.allow-unsigned-executable-memory` entitlements 执行 Hardened Runtime 签名；签名完成后必须重新启动 Helper 完成 `hello` smoke test，再组装、公证并 stapling 两个架构的 DMG。任一凭据缺失或签名后启动验证失败时工作流必须失败，不得上传未签名候选或把候选标记为正式用户包。
 
 ### 14.5 更新策略
 

@@ -43,7 +43,7 @@
 
 - 源码已提供 macOS 平台路径、用户级 Google Chrome Native Host、持久 Extension 安装目录、symlink/containment 检查、SEA Helper 构建和架构专用 DMG 组包脚本。
 - `.github/workflows/ci.yml` 的 macOS quality job 覆盖 arm64/x64 的 frozen install、workspace 门禁、SEA 启动、Installer 生命周期和 DMG 内容检查。
-- `.github/workflows/release.yml` 的 macOS 发布 job 要求 Developer ID、Hardened Runtime、Notarization 和 Gatekeeper 验证；凭据缺失时应失败，不得把未签名候选标成正式用户包。
+- `.github/workflows/release.yml` 的 macOS 发布 job 要求导入 Developer ID `.p12`、使用 Node/V8 所需 Hardened Runtime entitlements、完成签名后的 Helper `hello` 启动验证，以及 Notarization、stapling 和 Gatekeeper 验证；凭据缺失或签名后 Helper 启动失败时应失败，不得把未签名候选标成正式用户包。
 - 当前不能据此宣称真实 macOS Chrome → Helper → Vault → Tolaria 往返已通过；需要在实际 macOS 设备上加载 Extension、完成 Capture、确认文件监听、Repair、Upgrade、Uninstall 和 Vault 保留。
 
 ## Beta.1 历史开发验证

@@ -13,6 +13,7 @@ temp_base="${TMPDIR:-/tmp}"
 temp_base="${temp_base%/}"
 test_root="$(mktemp -d "$temp_base/capture-for-tolaria-macos-tests.XXXXXX")"
 test_root="$(cd "$test_root" && pwd -P)"
+trap 'printf "macOS installer lifecycle assertion failed at line %s\n" "$LINENO" >&2' ERR
 
 for required_script in build-helper.sh assemble-release.sh sign-and-notarize.sh; do
   [ -f "$macos_installer_dir/$required_script" ] || {

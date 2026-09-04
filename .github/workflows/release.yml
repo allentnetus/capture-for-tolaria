@@ -137,7 +137,7 @@ jobs:
           powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/generate-checksums.ps1
 
       - name: Upload installer package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: capture-for-tolaria-installer-${{ github.ref_name }}
           path: release/capture-for-tolaria-installer-${{ github.ref_name }}.zip

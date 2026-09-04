@@ -119,7 +119,7 @@ printf '%s\n' "macOS installer lifecycle tests"
 [ -f "$extension_target/manifest.json" ]
 [ -f "$extension_target/background.js" ]
 [ -f "$manifest_path" ]
-plutil -lint "$manifest_path" >/dev/null
+plutil -lint "$manifest_path"
 manifest_name="$(plutil -extract name raw -o - "$manifest_path")"
 [ "$manifest_name" = "com.capture_for_tolaria.helper" ] || {
   printf 'unexpected Native Host manifest name: <%s>\n' "$manifest_name" >&2

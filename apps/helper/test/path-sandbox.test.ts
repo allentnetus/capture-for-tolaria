@@ -92,6 +92,20 @@ it("macOS 路径检查只拒绝 symlink，不调用 Windows 专用检查", async
   }
 });
 
+it("macOS 路径检查允许规范化系统临时目录别名", async () => {
+  if (process.platform !== "darwin") {
+    return;
+  }
+  const vault = await temporaryVault();
+  try {
+    await expect(
+      assertNoReparsePoint(vault, undefined, { platform: "darwin" })
+    ).resolves.toBeUndefined();
+  } finally {
+    await rm(vault, { recursive: true, force: true });
+  }
+});
+
 it("macOS 路径检查拒绝包含 symlink 的父级目录", async () => {
   const vault = await temporaryVault();
   const outside = await temporaryVault();

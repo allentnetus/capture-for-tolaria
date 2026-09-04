@@ -31,7 +31,18 @@ function assertSupportedPlatform(platform: NodeJS.Platform): void {
 }
 
 async function assertNoMacSymlinkComponents(targetPath: string): Promise<void> {
-  const resolvedPath = resolve(targetPath);
+  let resolvedPath = resolve(targetPath);
+  for (const alias of ["/var", "/tmp", "/etc"] as const) {
+    if (resolvedPath !== alias && !resolvedPath.startsWith(`${alias}/`)) {
+      continue;
+    }
+    const aliasStats = await lstat(alias);
+    if (aliasStats.isSymbolicLink()) {
+      const canonicalAlias = await realpath(alias);
+      resolvedPath = `${canonicalAlias}${resolvedPath.slice(alias.length)}`;
+    }
+    break;
+  }
   const root = parse(resolvedPath).root;
   let current = root;
   const segments = resolvedPath.slice(root.length).split(sep).filter(Boolean);

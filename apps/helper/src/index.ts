@@ -47,6 +47,7 @@ export {
   prepareVaultAssetsDirectory,
   prepareVaultDirectory,
   relativePathFromVault,
+  type PathSandboxOptions,
   type PreparedVaultDirectory
 } from "./path-sandbox.js";
 export {
@@ -62,6 +63,11 @@ export {
   validateConfiguredVault,
   type VaultConfig
 } from "./vault-config.js";
+export {
+  getPlatformPaths,
+  type PlatformPathOptions,
+  type PlatformPaths
+} from "./platform-paths.js";
 export {
   resolveConfiguredVault,
   resolveConfiguredVaultConfig

@@ -72,3 +72,57 @@ it("对普通目录和 Windows reparse point 执行属性级检查", async () =>
     await rm(outside, { recursive: true, force: true });
   }
 });
+
+it("macOS 路径检查只拒绝 symlink，不调用 Windows 专用检查", async () => {
+  const vault = await temporaryVault();
+  const outside = await temporaryVault();
+  try {
+    await expect(
+      assertNoReparsePoint(vault, undefined, { platform: "darwin" })
+    ).resolves.toBeUndefined();
+
+    const symlinkPath = join(vault, "macos-link");
+    await symlink(outside, symlinkPath, "junction");
+    await expect(
+      assertNoReparsePoint(symlinkPath, undefined, { platform: "darwin" })
+    ).rejects.toThrow(FileChannelError);
+  } finally {
+    await rm(vault, { recursive: true, force: true });
+    await rm(outside, { recursive: true, force: true });
+  }
+});
+
+it("macOS 路径检查拒绝包含 symlink 的父级目录", async () => {
+  const vault = await temporaryVault();
+  const outside = await temporaryVault();
+  try {
+    const child = join(outside, "child");
+    await writeFile(child, "not a directory", "utf8");
+    const parentLink = join(vault, "parent-link");
+    await symlink(outside, parentLink, "junction");
+    await expect(
+      assertNoReparsePoint(
+        join(parentLink, "child"),
+        undefined,
+        { platform: "darwin" }
+      )
+    ).rejects.toThrow(FileChannelError);
+  } finally {
+    await rm(vault, { recursive: true, force: true });
+    await rm(outside, { recursive: true, force: true });
+  }
+});
+
+it("不支持的平台不会静默执行 Vault 路径操作", async () => {
+  const vault = await temporaryVault();
+  try {
+    await expect(
+      prepareVaultDirectory(vault, "Inbox/Web", { platform: "linux" })
+    ).rejects.toMatchObject({
+      code: "VAULT_ACCESS_DENIED",
+      userMessage: "当前平台不受支持"
+    });
+  } finally {
+    await rm(vault, { recursive: true, force: true });
+  }
+});

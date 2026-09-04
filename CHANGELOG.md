@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.7] - 2026-09-04
+
+- Beta.7：新增 Google Chrome + macOS + Direct File Channel 支持，提供 arm64 和 x64 架构专用自包含 Installer DMG。
+- Beta.7：macOS Installer 将 Extension 复制到当前用户应用数据范围内的持久目录，并提供用户级 Native Host 安装、Repair、Upgrade、Vault 配置和安全卸载；普通用户不需要安装 Node.js 或手动启动 Helper。
+- Beta.7：macOS 继续复用 Beta.6 的 Native Messaging 连接复用、断线恢复、FIFO 请求和不确定 `clip.article` 不自动重放语义，不改变 `protocolVersion=1`。
+- Beta.7：补充 macOS 平台路径、symlink/路径 containment 校验、临时路径和安装目标冲突保护、SEA Helper 构建、签名/公证和 DMG 内容门禁；真实 Chrome、Tolaria 和 Gatekeeper 验收仍以对应发布记录为准。
+
 ## [0.1.0-beta.6] - 2026-09-03
 
 - Beta.6：Extension 在同一运行上下文中复用 `connectNative()` 连接，连续剪藏不再为每次请求重复启动 Helper。

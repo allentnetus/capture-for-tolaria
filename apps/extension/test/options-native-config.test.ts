@@ -39,13 +39,13 @@ class VaultPort implements NativeMessagingPort {
       message.action === "hello"
         ? {
             protocolVersion: 1,
-            helperVersion: "0.1.0-beta.6",
+            helperVersion: "0.1.0-beta.7",
             capabilities: ["clip.article", "direct-file", "vault.config"]
           }
         : {
             protocolVersion: 1,
             requestId,
-            helperVersion: "0.1.0-beta.6",
+            helperVersion: "0.1.0-beta.7",
             ok: true,
             result: { vaultRoot: "C:\\Vault" }
           };

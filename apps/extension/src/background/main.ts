@@ -17,7 +17,7 @@ import {
 import { getDefaultRelativeFolder } from "../settings/storage.js";
 import { relativeFolderSchema } from "@capture-for-tolaria/protocol";
 
-export const EXTENSION_VERSION = "0.1.0-beta.6";
+export const EXTENSION_VERSION = "0.1.0-beta.7";
 
 export interface ActiveTab {
   id: number;

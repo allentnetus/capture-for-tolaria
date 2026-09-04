@@ -118,11 +118,24 @@ printf '%s\n' "macOS installer lifecycle tests"
 [ -f "$extension_target/manifest.json" ]
 [ -f "$extension_target/background.js" ]
 [ -f "$manifest_path" ]
-plutil -convert json -o - "$manifest_path" >/dev/null
-[ "$(plutil -extract name raw -o - "$manifest_path")" = "com.capture_for_tolaria.helper" ]
-[ "$(plutil -extract type raw -o - "$manifest_path")" = "stdio" ]
-[ "$(plutil -extract allowed_origins.0 raw -o - "$manifest_path")" = "chrome-extension://ncjeeembmcgkfjipkfhganbdnadbhdcl/" ]
-[ "$(plutil -extract path raw -o - "$manifest_path")" = "$helper_target" ]
+node -e '
+  const fs = require("node:fs");
+  const manifest = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  const expected = {
+    name: "com.capture_for_tolaria.helper",
+    type: "stdio",
+    allowed_origins: ["chrome-extension://ncjeeembmcgkfjipkfhganbdnadbhdcl/"],
+    path: process.argv[2]
+  };
+  if (
+    manifest.name !== expected.name ||
+    manifest.type !== expected.type ||
+    JSON.stringify(manifest.allowed_origins) !== JSON.stringify(expected.allowed_origins) ||
+    manifest.path !== expected.path
+  ) {
+    process.exit(1);
+  }
+' "$manifest_path" "$helper_target"
 
 extension_source_backup="$test_root/ejected-extension-source"
 mv "$extension_source" "$extension_source_backup"

@@ -13,7 +13,6 @@ temp_base="${TMPDIR:-/tmp}"
 temp_base="${temp_base%/}"
 test_root="$(mktemp -d "$temp_base/capture-for-tolaria-macos-tests.XXXXXX")"
 test_root="$(cd "$test_root" && pwd -P)"
-trap 'printf "macOS installer lifecycle assertion failed at line %s\n" "$LINENO" >&2' ERR
 
 for required_script in build-helper.sh assemble-release.sh sign-and-notarize.sh; do
   [ -f "$macos_installer_dir/$required_script" ] || {
@@ -119,12 +118,8 @@ printf '%s\n' "macOS installer lifecycle tests"
 [ -f "$extension_target/manifest.json" ]
 [ -f "$extension_target/background.js" ]
 [ -f "$manifest_path" ]
-plutil -lint "$manifest_path"
-manifest_name="$(plutil -extract name raw -o - "$manifest_path")"
-[ "$manifest_name" = "com.capture_for_tolaria.helper" ] || {
-  printf 'unexpected Native Host manifest name: <%s>\n' "$manifest_name" >&2
-  exit 1
-}
+plutil -convert json -o - "$manifest_path" >/dev/null
+[ "$(plutil -extract name raw -o - "$manifest_path")" = "com.capture_for_tolaria.helper" ]
 [ "$(plutil -extract type raw -o - "$manifest_path")" = "stdio" ]
 [ "$(plutil -extract allowed_origins.0 raw -o - "$manifest_path")" = "chrome-extension://ncjeeembmcgkfjipkfhganbdnadbhdcl/" ]
 [ "$(plutil -extract path raw -o - "$manifest_path")" = "$helper_target" ]

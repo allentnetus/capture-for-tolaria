@@ -14,8 +14,8 @@
     "dompurify": "^3.2.6"
   },
   "devDependencies": {
-    "@types/jsdom": "^21.1.7",
-    "jsdom": "^26.1.0"
+    "@types/jsdom": "^30.0.0",
+    "jsdom": "^30.0.1"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

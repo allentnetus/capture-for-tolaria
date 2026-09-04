@@ -5,9 +5,22 @@ import { expect, it } from "vitest";
 import {
   getConfiguredVaultConfig,
   getConfiguredVault,
+  getConfigPath,
   setConfiguredVault,
   validateConfiguredVault
 } from "../src/index.js";
+
+it("按 macOS 平台计算用户级默认配置路径", () => {
+  expect(
+    getConfigPath({
+      platform: "darwin",
+      homeDirectory: "/Users/tester",
+      environment: { HOME: "/Users/tester" }
+    })
+  ).toBe(
+    "/Users/tester/Library/Application Support/CaptureForTolaria/config.json"
+  );
+});
 
 it("保存并读取 per-user Vault 配置且不预创建 Inbox/Web", async () => {
   const workspace = await mkdtemp(join(tmpdir(), "capture-for-tolaria-config-"));

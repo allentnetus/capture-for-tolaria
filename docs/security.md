@@ -12,7 +12,7 @@
 Chrome Extension
               ↓ 版本化业务协议
 Native Messaging Helper
-              ↓ 路径沙箱、reparse 检查、atomic create-only
+              ↓ 路径沙箱、平台链接检查、atomic create-only
 用户明确授权的 Vault
 ```
 
@@ -48,11 +48,11 @@ Helper 只能处理业务级 `clip.article`，不能提供 `writeFile(anyPath)`�
 
 - 只接受相对 `relativeFolder`，拒绝盘符、UNC、绝对路径、空段和 `..`。
 - 使用配置中的 Vault 根目录，不接受请求传入的绝对 Vault 路径。
-- `relativeFolder` 逐级创建；每一级创建或发现后立即检查真实路径和 `FILE_ATTRIBUTE_REPARSE_POINT` 属性。
-- Windows 属性级查询失败时安全失败；canonical path containment 作为第二层防护。
+- `relativeFolder` 逐级创建；每一级创建或发现后立即检查真实路径和平台链接状态。
+- Windows 执行 `FILE_ATTRIBUTE_REPARSE_POINT` 属性检查；macOS 执行 symlink、`lstat`/`realpath` 和 containment 检查。
 - 最终目标目录和已有目标文件也执行 reparse point 检查。
 - canonical path 必须仍位于 Vault 根目录内。
-- 拒绝 symlink、junction 和其他 Windows reparse point 逃逸。
+- 拒绝 symlink、junction 和其他 Windows reparse point 逃逸，也拒绝 macOS symlink 或 containment 逃逸。
 - 文件名使用确定性 `YYYYMMDD - Title.md` 规则，并清理 Windows 非法字符、保留名称、尾部空格和尾部句点。
 - 使用同一卷临时文件和 create-only 提交语义；目标已存在时按确定性规则尝试 `(2)`、`(3)` 等冲突后缀，不覆盖原文件；达到后缀上限时返回 `NAME_EXHAUSTED`。底层明确报告目标冲突时仍可使用 `TARGET_EXISTS`，但它不是当前正常冲突分配路径。
 - atomic 提交依赖同一卷 hard link；文件系统不支持该能力时返回 `ATOMIC_COMMIT_UNAVAILABLE`，不得降级为覆盖写入。
@@ -83,7 +83,7 @@ V0.1 不包含：
 - 页面凭据采集
 - 后台网络抓取
 
-保存的 Markdown 和图片 Assets 仅写入用户授权的本地 Vault。来源 URL 是用户明确剪藏文章的元数据；它不会单独触发网络请求。当前 Beta.6 的图片请求只处理用户本次剪藏中识别到的公开图片，不携带 cookies、`Authorization` 或页面凭据；单张图片失败时正文仍保存并回退到安全远程引用。
+保存的 Markdown 和图片 Assets 仅写入用户授权的本地 Vault。来源 URL 是用户明确剪藏文章的元数据；它不会单独触发网络请求。当前 Beta.7 的图片请求只处理用户本次剪藏中识别到的公开图片，不携带 cookies、`Authorization` 或页面凭据；单张图片失败时正文仍保存并回退到安全远程引用。Windows 和 macOS 只增加平台安装与路径边界，不增加遥测或云端上传。
 
 ## 7. 发布前检查
 
@@ -91,7 +91,8 @@ V0.1 不包含：
 
 - 依赖与源码来源审计。
 - Native Messaging framing 测试。
-- Windows reparse point、路径穿越、跨卷和冲突写入测试。
+- Windows reparse point/macOS symlink、路径穿越、跨卷和冲突写入测试。
 - 恶意 HTML、危险 URL 和超大 payload 测试。
 - 无 Node.js、无管理员权限的干净用户流程。
 - 卸载后确认 Vault、Markdown 和 Assets 不被删除。
+- macOS arm64/x64 Installer DMG 的 Helper 签名、Hardened Runtime、Notarization、stapling、Gatekeeper 和用户级 Native Host manifest 内容检查。

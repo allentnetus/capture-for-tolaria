@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { lstat, mkdir, realpath } from "node:fs/promises";
 import type { Stats } from "node:fs";
 import { promisify } from "node:util";
-import { join, relative, resolve, sep } from "node:path";
+import { join, parse, relative, resolve, sep } from "node:path";
 import { FileChannelError } from "./errors.js";
 
 const execFileAsync = promisify(execFile);
@@ -13,6 +13,10 @@ export interface PreparedVaultDirectory {
   absolutePath: string;
 }
 
+export interface PathSandboxOptions {
+  platform?: NodeJS.Platform;
+}
+
 const WINDOWS_INVALID_SEGMENT = /[<>:"|?*]/u;
 const WINDOWS_RESERVED_NAME = /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?$/iu;
 
@@ -20,15 +24,48 @@ function throwInvalidPath(message: string): never {
   throw new FileChannelError("INVALID_PATH", message);
 }
 
-export async function assertNoReparsePoint(
-  targetPath: string,
-  knownStats?: Stats
-): Promise<void> {
-  const stats = knownStats ?? await lstat(targetPath);
-  if (process.platform !== "win32") {
+function assertSupportedPlatform(platform: NodeJS.Platform): void {
+  if (platform !== "win32" && platform !== "darwin") {
+    throw new FileChannelError("VAULT_ACCESS_DENIED", "当前平台不受支持");
+  }
+}
+
+async function assertNoMacSymlinkComponents(targetPath: string): Promise<void> {
+  let resolvedPath = resolve(targetPath);
+  for (const alias of ["/var", "/tmp", "/etc"] as const) {
+    if (resolvedPath !== alias && !resolvedPath.startsWith(`${alias}/`)) {
+      continue;
+    }
+    const aliasStats = await lstat(alias);
+    if (aliasStats.isSymbolicLink()) {
+      const canonicalAlias = await realpath(alias);
+      resolvedPath = `${canonicalAlias}${resolvedPath.slice(alias.length)}`;
+    }
+    break;
+  }
+  const root = parse(resolvedPath).root;
+  let current = root;
+  const segments = resolvedPath.slice(root.length).split(sep).filter(Boolean);
+
+  for (const segment of segments) {
+    current = join(current, segment);
+    const stats = await lstat(current);
     if (stats.isSymbolicLink()) {
       throwInvalidPath("路径包含 symlink");
     }
+  }
+}
+
+export async function assertNoReparsePoint(
+  targetPath: string,
+  knownStats?: Stats,
+  options: PathSandboxOptions = {}
+): Promise<void> {
+  const platform = options.platform ?? process.platform;
+  assertSupportedPlatform(platform);
+  const stats = knownStats ?? await lstat(targetPath);
+  if (platform !== "win32") {
+    await assertNoMacSymlinkComponents(targetPath);
     return;
   }
 
@@ -102,18 +139,19 @@ function isContained(root: string, candidate: string): boolean {
     (!relativePath.startsWith(`..${sep}`) && relativePath !== ".." && !relativePath.includes(`..${sep}`) && !relativePath.startsWith(sep));
 }
 
-async function canonicalVaultRoot(vaultRoot: string): Promise<string> {
+async function canonicalVaultRoot(
+  vaultRoot: string,
+  options: PathSandboxOptions
+): Promise<string> {
+  assertSupportedPlatform(options.platform ?? process.platform);
   const resolvedRoot = resolve(vaultRoot);
   try {
     const rootStats = await lstat(resolvedRoot);
     if (!rootStats.isDirectory() || rootStats.isSymbolicLink()) {
       throwInvalidPath("Vault 根目录必须是普通目录");
     }
-    await assertNoReparsePoint(resolvedRoot, rootStats);
+    await assertNoReparsePoint(resolvedRoot, rootStats, options);
     const canonicalRoot = await realpath(resolvedRoot);
-    if (!isContained(canonicalRoot, canonicalRoot)) {
-      throwInvalidPath("Vault 根目录路径无效");
-    }
     return canonicalRoot;
   } catch (error) {
     if (error instanceof FileChannelError) {
@@ -127,10 +165,12 @@ async function canonicalVaultRoot(vaultRoot: string): Promise<string> {
 
 export async function prepareVaultDirectory(
   vaultRoot: string,
-  relativeFolder: string
+  relativeFolder: string,
+  options: PathSandboxOptions = {}
 ): Promise<PreparedVaultDirectory> {
+  assertSupportedPlatform(options.platform ?? process.platform);
   const segments = pathSegments(relativeFolder);
-  const canonicalRoot = await canonicalVaultRoot(vaultRoot);
+  const canonicalRoot = await canonicalVaultRoot(vaultRoot, options);
   let current = canonicalRoot;
 
   for (const segment of segments) {
@@ -151,7 +191,7 @@ export async function prepareVaultDirectory(
       if (!stats.isDirectory() || stats.isSymbolicLink()) {
         throwInvalidPath("Vault 目录包含文件或 reparse point");
       }
-      await assertNoReparsePoint(next, stats);
+      await assertNoReparsePoint(next, stats, options);
       const canonicalNext = await realpath(next);
       if (!isContained(canonicalRoot, canonicalNext)) {
         throwInvalidPath("Vault 目录逃出授权根目录");
@@ -176,9 +216,10 @@ export async function prepareVaultDirectory(
 
 export async function prepareVaultAssetsDirectory(
   vaultRoot: string,
-  relativeFolder: string
+  relativeFolder: string,
+  options: PathSandboxOptions = {}
 ): Promise<PreparedVaultDirectory> {
-  return prepareVaultDirectory(vaultRoot, `${relativeFolder}/Assets`);
+  return prepareVaultDirectory(vaultRoot, `${relativeFolder}/Assets`, options);
 }
 
 export function assertSafeFilename(filename: string): void {

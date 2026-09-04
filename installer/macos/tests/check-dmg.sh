@@ -72,7 +72,7 @@ for forbidden_file in build-helper.sh assemble-release.sh sign-and-notarize.sh r
   [ ! -e "$mount_root/installer/macos/$forbidden_file" ] || die "DMG contains a development script"
 done
 
-plutil -lint "$mount_root/extension/manifest.json" >/dev/null
+node -e 'JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8"))' "$mount_root/extension/manifest.json"
 for forbidden_name in node_modules dist release; do
   if find "$mount_root" -name "$forbidden_name" -print -quit | grep -q .; then
     die "DMG contains forbidden directory"

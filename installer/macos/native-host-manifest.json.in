@@ -1,7 +1,0 @@
-{
-  "name": "__HOST_NAME__",
-  "description": "Capture for Tolaria Native Messaging Helper",
-  "path": "__HELPER_PATH__",
-  "type": "stdio",
-  "allowed_origins": ["chrome-extension://__EXTENSION_ID__/"]
-}

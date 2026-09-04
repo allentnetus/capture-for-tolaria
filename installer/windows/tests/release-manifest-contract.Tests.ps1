@@ -18,20 +18,15 @@ Describe "Release Extension manifest contract" {
         $workflow | Should -Match 'options_page -ne "options.html"'
     }
 
-    It "publishes only self-contained Installer packages as user assets" {
+    It "publishes only the self-contained Installer ZIP as a user asset" {
         $workflow | Should -Match '(?m)^          path: release/capture-for-tolaria-installer-\$\{\{ github\.ref_name \}\}\.zip\s*$'
+        $workflow | Should -Not -Match '(?m)^          path: release\s*$'
 
-        $releaseAssetBlock = ([regex]::Match(
+        $releaseAssetBlock = [regex]::Match(
             $workflow,
             '(?ms)^          files: \|\r?\n(?<assets>.*?)(?=^          generate_release_notes:)'
-        ).Groups['assets'].Value -replace '(?m)^\s+', '').Trim()
-        $releaseAssetBlock | Should -Be @'
-release/capture-for-tolaria-installer-${{ github.ref_name }}.zip
-release/capture-for-tolaria-installer-${{ github.ref_name }}-macos-arm64.dmg
-release/capture-for-tolaria-installer-${{ github.ref_name }}-macos-x64.dmg
-'@
-
-        $workflow | Should -Match '(?ms)uses: actions/download-artifact@v4.*?path: release\s+.*?merge-multiple: true'
+        ).Groups['assets'].Value.Trim()
+        $releaseAssetBlock | Should -Be 'release/capture-for-tolaria-installer-${{ github.ref_name }}.zip'
     }
 
     It "requires the runnable Extension files inside the self-contained Installer ZIP" {

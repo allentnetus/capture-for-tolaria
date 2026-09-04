@@ -16,7 +16,7 @@ import {
 } from "../settings/storage.js";
 import type { OptionsRuntime } from "./App.js";
 
-const EXTENSION_VERSION = "0.1.0-beta.7";
+const EXTENSION_VERSION = "0.1.0-beta.6";
 
 export class OptionsError extends Error {
   readonly code: string;

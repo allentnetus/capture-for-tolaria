@@ -29,7 +29,7 @@ function extensionIdFromPublicKey(publicKey: string): string {
 
 it("声明设置页所需的最小权限", () => {
   expect(manifest.version).toBe("0.1.0");
-  expect(manifest.version_name).toBe("0.1.0 Beta 7");
+  expect(manifest.version_name).toBe("0.1.0 Beta 6");
   expect(manifest.permissions).toEqual([
     "activeTab",
     "scripting",
@@ -47,24 +47,14 @@ it("使用固定公开 key 且与 Native Host allowed_origins 一致", () => {
   const extensionId = extensionIdFromPublicKey(manifest.key ?? "");
   expect(extensionId).toBe("ncjeeembmcgkfjipkfhganbdnadbhdcl");
 
-  const windowsHostTemplate = JSON.parse(
+  const hostTemplate = JSON.parse(
     readFileSync(
       join(extensionRoot, "../../installer/windows/native-host-manifest.json.in"),
       "utf8"
     )
   ) as { allowed_origins?: string[] };
-  expect(windowsHostTemplate.allowed_origins).toEqual([
+  expect(hostTemplate.allowed_origins).toEqual([
     `chrome-extension://${extensionId}/`
-  ]);
-
-  const macosHostTemplate = JSON.parse(
-    readFileSync(
-      join(extensionRoot, "../../installer/macos/native-host-manifest.json.in"),
-      "utf8"
-    )
-  ) as { allowed_origins?: string[] };
-  expect(macosHostTemplate.allowed_origins).toEqual([
-    "chrome-extension://__EXTENSION_ID__/"
   ]);
 });
 

@@ -185,6 +185,7 @@ expect_failure bash -c '
 ' _ "$package_installer_dir/configure-vault.sh" "$app_data" "$dangling_target" "$vault_dir"
 find "$app_data" -maxdepth 1 -type l -name '.config.json.tmp.*' -delete
 
+"$package_installer_dir/install.sh"
 first_hash="$(shasum -a 256 "$helper_target" | awk '{print $1}')"
 "$package_installer_dir/install.sh"
 second_hash="$(shasum -a 256 "$helper_target" | awk '{print $1}')"

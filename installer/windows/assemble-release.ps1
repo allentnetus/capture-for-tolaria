@@ -71,10 +71,21 @@ try {
         Copy-Item -LiteralPath $sourcePath -Destination $extensionStage -Recurse -Force
         Copy-Item -LiteralPath $sourcePath -Destination $installerExtensionStage -Recurse -Force
     }
-    Copy-Item -Path (Join-Path $scriptDirectory "*.ps1") -Destination (Join-Path $installerStage "installer\windows") -Force
-    Copy-Item -Path (Join-Path $scriptDirectory "*.json") -Destination (Join-Path $installerStage "installer\windows") -Force
-    Copy-Item -Path (Join-Path $scriptDirectory "*.in") -Destination (Join-Path $installerStage "installer\windows") -Force
-    Copy-Item -Path (Join-Path $scriptDirectory "*.md") -Destination (Join-Path $installerStage "installer\windows") -Force
+    $installerRuntimeFiles = @(
+        "configure-vault.ps1",
+        "install.ps1",
+        "install-extension.md",
+        "native-host-manifest.json.in",
+        "repair.ps1",
+        "uninstall.ps1"
+    )
+    foreach ($installerRuntimeFile in $installerRuntimeFiles) {
+        $sourcePath = Join-Path $scriptDirectory $installerRuntimeFile
+        if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+            throw "Installer runtime file is missing: $sourcePath"
+        }
+        Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $installerStage "installer\windows") -Force
+    }
     Copy-Item -LiteralPath @(
         (Join-Path $repoRoot "INSTALL-WINDOWS.md"),
         (Join-Path $repoRoot "README.md"),

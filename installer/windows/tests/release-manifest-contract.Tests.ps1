@@ -46,4 +46,23 @@ Describe "Release Extension manifest contract" {
         $assembler | Should -Match '\$extensionRuntimePaths\s*=\s*@\('
         $assembler | Should -Not -Match 'Copy-Item -Path \(Join-Path \$extensionDist "\*"\)'
     }
+
+    It "stages only user-facing Installer files" {
+        $assembler | Should -Match '\$installerRuntimeFiles\s*=\s*@\('
+        $assembler | Should -Not -Match 'Copy-Item -Path \(Join-Path \$scriptDirectory "\*\.ps1"\)'
+        $assembler | Should -Not -Match 'Copy-Item -Path \(Join-Path \$scriptDirectory "\*\.json"\)'
+        $assembler | Should -Not -Match 'Copy-Item -Path \(Join-Path \$scriptDirectory "\*\.in"\)'
+        $assembler | Should -Not -Match 'Copy-Item -Path \(Join-Path \$scriptDirectory "\*\.md"\)'
+        foreach ($file in @(
+            'install.ps1',
+            'repair.ps1',
+            'configure-vault.ps1',
+            'uninstall.ps1',
+            'native-host-manifest.json.in',
+            'install-extension.md'
+        )) {
+            $escapedFile = [regex]::Escape($file)
+            $assembler | Should -Match ('"{0}"' -f $escapedFile)
+        }
+    }
 }

@@ -14,4 +14,3 @@ release/
 .beta-extension-dist/
 installer/windows/*.blob
 /capture-for-tolaria-installer-v*.zip
-/capture-for-tolaria-installer-v*.dmg

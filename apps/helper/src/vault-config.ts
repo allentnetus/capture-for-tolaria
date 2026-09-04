@@ -1,21 +1,28 @@
 import { access, lstat, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
-import { dirname, isAbsolute, resolve } from "node:path";
+import { homedir } from "node:os";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { assertNoReparsePoint } from "./path-sandbox.js";
 import { FileChannelError } from "./errors.js";
-import { getPlatformPaths, type PlatformPathOptions } from "./platform-paths.js";
 
 export interface VaultConfig {
   vaultRoot: string;
   allowSyntheticDns?: boolean;
 }
 
-function configRoot(options?: PlatformPathOptions): string {
-  return getPlatformPaths(options).configPath;
+function configRoot(): string {
+  const override = process.env.CAPTURE_FOR_TOLARIA_CONFIG_PATH?.trim();
+  if (override) {
+    return resolve(override);
+  }
+
+  const localAppData =
+    process.env.LOCALAPPDATA?.trim() || join(homedir(), "AppData", "Local");
+  return join(localAppData, "CaptureForTolaria", "config.json");
 }
 
-export function getConfigPath(options?: PlatformPathOptions): string {
-  return configRoot(options);
+export function getConfigPath(): string {
+  return configRoot();
 }
 
 export async function validateConfiguredVault(

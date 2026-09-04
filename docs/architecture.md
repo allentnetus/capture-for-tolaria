@@ -1,12 +1,12 @@
 # Capture for Tolaria V0.1 架构
 
-> 状态：`v0.1.0-beta.7` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化、可配置 Vault 路径、Native Messaging 连接复用和 macOS 用户级交付路径
+> 状态：`v0.1.0-beta.6` 当前方案基线；继承 V0.1 Product Alpha 的 Direct File Channel，并增加公开 Article 图片本地化、可配置 Vault 路径和 Native Messaging 连接复用
 >
 > 本文与 `docs/final-solution.md` 配套，冻结第一条可验证的 Article Capture 主链路。
 
 ## 1. 目标与边界
 
-V0.1 当前支持 Windows/macOS、Google Chrome 和 Article Capture。用户在公开文章页面点击 Capture 后，Extension 提取文章并转换为 Markdown，Native Messaging Helper 将结果安全写入用户授权的 Tolaria Vault。
+V0.1 只支持 Windows、Chrome 和 Article Capture。用户在公开文章页面点击 Capture 后，Extension 提取文章并转换为 Markdown，Native Messaging Helper 将结果安全写入用户授权的 Tolaria Vault。
 
 ```text
 Chrome 页面
@@ -18,7 +18,7 @@ Helper
 Tolaria Vault / <defaultRelativeFolder>/*.md + Assets/<sha256>.<ext>
 ```
 
-V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.7 的图片本地化仍由用户触发并在 Helper 内完成，Vault root 和默认相对目录可由 Settings 配置；Native Messaging Helper 由 Chrome 按需启动并在同一运行上下文中复用连接。Beta.6 已发布的连接复用语义在 macOS 保持不变；MCP Channel、AI、多 Vault、Edge、Chromium 和 Linux 不属于本版本。
+V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境。Beta.6 的图片本地化仍由用户触发并在 Helper 内完成，Vault root 和默认相对目录可由 Settings 配置；Native Messaging Helper 由 Chrome 按需启动并在同一运行上下文中复用连接；MCP Channel、AI、多 Vault 和跨平台支持不属于本版本。
 
 ## 2. 组件职责
 
@@ -39,23 +39,10 @@ V0.1 Alpha 不依赖 Tolaria 进程、MCP 9710 Bridge 或 Node.js 用户环境�
 
 | 配置 | 唯一存储位置 | 读取/更新方 | 约束 |
 | --- | --- | --- | --- |
-| Vault root | 当前用户应用数据目录中的 `CaptureForTolaria` 配置文件 | Helper；Extension Settings 通过 `vault.config.get` / `vault.config.set` 间接访问 | 只接受 Windows/macOS 绝对路径；Helper 校验普通目录、读写权限和平台链接安全，并原子更新配置 |
+| Vault root | 当前用户应用数据目录中的 `CaptureForTolaria` 配置文件 | Helper；Extension Settings 通过 `vault.config.get` / `vault.config.set` 间接访问 | 只接受 Windows 绝对路径；Helper 校验普通目录、读写权限和 reparse point，并原子更新配置 |
 | 默认目录 | `chrome.storage.local` 的 `defaultRelativeFolder` | Extension Service Worker、Popup、Options Page | 只接受 Vault 内安全相对目录；缺失或异常时使用 `Inbox/Web` |
 
-Extension 不缓存 Vault root，也不把它放入普通 `clip.article` 请求。旧 Helper 如果没有 `vault.config` capability，Settings 显示兼容配置提示并继续保留 `clip.article` 路径；Windows 用户可使用 `configure-vault.ps1`，macOS 用户可使用 `configure-vault.sh` 配置 Vault root。
-
-### 2.2 平台交付差异
-
-| 项目 | Windows | macOS |
-| --- | --- | --- |
-| 用户包 | 自包含 Installer ZIP | 自包含架构专用 Installer DMG |
-| Native Host 注册 | 当前用户 Chrome 注册范围 | 当前用户 Google Chrome `NativeMessagingHosts` 目录 |
-| Extension 加载 | 从 Installer 包中的 `extension` 目录加载 | 安装脚本复制到当前用户应用数据范围内的持久 `CaptureForTolaria/extension` 目录后加载 |
-| Helper 安装 | 当前用户程序目录 | 当前用户应用数据目录下的独立 Helper 子目录 |
-| 目录安全 | reparse point、junction、symlink 和 containment 检查 | symlink、`lstat`/`realpath` 和 containment 检查 |
-| 后台生命周期 | Chrome 按需启动；连接空闲后释放 | Chrome 按需启动；连接空闲后释放，不增加 `launchd` 常驻服务 |
-
-macOS Beta.7 的 `native-host-manifest.json` 使用最终 Helper 的绝对 `path`，固定 `name` 和 Extension `allowed_origins`；Extension、Helper 与配置文件分开保存，Repair 和 Upgrade 更新前两者，默认 Uninstall 移除前两者但不删除 Vault 或配置。
+Extension 不缓存 Vault root，也不把它放入普通 `clip.article` 请求。旧 Helper 如果没有 `vault.config` capability，Settings 显示兼容配置提示并继续保留 `clip.article` 路径；用户可使用 `configure-vault.ps1` 配置 Vault root。
 
 ## 3. Article Capture 流程
 
@@ -71,7 +58,7 @@ macOS Beta.7 的 `native-host-manifest.json` 使用最终 Helper 的绝对 `path
 
 ### 3.1 Native Messaging 连接生命周期
 
-Beta.6/Beta.7 的 Service Worker 和 Options Page 各自在本运行上下文中持有一个惰性的 Native Messaging client。第一次业务请求才调用 `connectNative()` 并完成 `hello`；后续请求复用同一端口，并按 FIFO 顺序串行发送。成功响应后启动 30 秒空闲计时器；计时器到期主动断开端口，新的业务请求会取消计时器并继续复用连接。端口空闲断开或 Helper 崩溃时只清除连接状态，下一次业务请求自动重新建立连接和 capability negotiation，不在空闲时主动启动 Helper。
+Beta.6 的 Service Worker 和 Options Page 各自在本运行上下文中持有一个惰性的 Native Messaging client。第一次业务请求才调用 `connectNative()` 并完成 `hello`；后续请求复用同一端口，并按 FIFO 顺序串行发送。成功响应后启动 30 秒空闲计时器；计时器到期主动断开端口，新的业务请求会取消计时器并继续复用连接。端口空闲断开或 Helper 崩溃时只清除连接状态，下一次业务请求自动重新建立连接和 capability negotiation，不在空闲时主动启动 Helper。
 
 等待响应时发生断线的当前请求会安全失败，不自动重放 `clip.article`，因为 Helper 可能已经提交文件而响应尚未到达。普通文章请求仍只携带 Vault 内相对目录；Vault root、路径安全校验和 create-only 写入语义不因连接复用改变。
 
@@ -99,7 +86,7 @@ Extension 和 Helper 共用 `protocolVersion`、`requestId`、组件版本和 ca
 - Extension 不传入最终绝对输出路径。
 - Vault root 只存在于 Helper 的本机配置和设置页配置响应，不进入普通 `clip.article` 请求；Extension `chrome.storage.local` 只保存 `defaultRelativeFolder`。
 - `relativeFolder` 不能包含绝对路径、盘符、UNC 前缀或 `..`。
-- 目录每一级创建或发现后立即检查真实路径和平台链接状态；Windows 检查 reparse point，macOS 检查 symlink 和 containment。
+- 目录每一级创建或发现后立即检查真实路径和 Windows reparse 状态。
 - 目标文件已存在时使用确定性的 `(2)`、`(3)` 等冲突后缀，原文件内容不变；达到后缀上限时返回 `NAME_EXHAUSTED`。
 - atomic create-only 使用同一卷 hard link；目标文件系统不支持该语义时返回 `ATOMIC_COMMIT_UNAVAILABLE`。
 - Native Messaging 的 stdout 只输出协议帧；日志走 stderr。

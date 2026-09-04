@@ -1,6 +1,6 @@
 # Capture for Tolaria —— 最终产品与技术方案
 
-> 文档状态：`v0.1.0-beta.7` 当前方案基线（macOS 适配已纳入实现，真实 Chrome/Tolaria 验收待完成）
+> 文档状态：`v0.1.0-beta.6` 当前方案基线（实现已完成，真实 Chrome/Tolaria 验收待完成）
 >
 > 项目名称：Capture for Tolaria
 >
@@ -61,7 +61,7 @@ Tolaria Knowledge Base
 
 ## 2. 产品边界
 
-### 2.1 V0.1 已发布能力基线（Beta.6）
+### 2.1 V0.1 当前交付基线（Beta.6）
 
 当前 `V0.1.0-beta.6` 交付基线只解决一条可靠、可离线、可验证的主链路：
 
@@ -79,7 +79,7 @@ Tolaria Knowledge Base
 Tolaria 通过文件监听感知新文件
 ```
 
-这里的“已发布基线”限定为 Beta.6 的已实现范围；Beta.7 在不改变该协议和写入语义的前提下增加 macOS 交付。
+这里的“当前交付基线”限定为 Beta.6 的已实现范围；后续 `V0.1.0` Beta 版本可以继续增加平台或能力，但不改变 Beta.6 的支持边界。
 
 Beta.6 当前交付范围：
 
@@ -107,19 +107,9 @@ Beta.6 当前交付范围：
 
 Vault 配置采用单 Vault、per-user 配置。首次配置只记录并验证 Vault 根目录，不预创建 `Inbox/Web`；`Inbox/Web` 在第一次实际写入时按目录段逐级创建并校验。
 
-Beta.6 的 Article Capture 由用户点击触发，Extension 使用 `activeTab`、`scripting` 和 `nativeMessaging` 完成当前页面读取与 Helper 通信，不申请宽泛的站点访问权限。该段保留为 Windows 已发布基线；Beta.7 在相同协议和主链路上增加 macOS 交付。
+Beta.6 的 Article Capture 由用户点击触发，Extension 使用 `activeTab`、`scripting` 和 `nativeMessaging` 完成当前页面读取与 Helper 通信，不申请宽泛的站点访问权限。
 
-### 2.2 Beta.7 macOS 增量交付
-
-Beta.7 不回改已发布的 Beta.5/Beta.6，新增 Google Chrome + macOS + Direct File Channel 的自包含交付：
-
-- Apple Silicon 和 Intel 分别提供架构专用 Installer DMG；用户不需要安装 Node.js，也不需要手动启动 Helper。
-- macOS 使用当前用户级 Google Chrome Native Host manifest，Helper 使用最终绝对 `path`，并通过 symlink、`realpath` 和 containment 检查保护 Vault。
-- Installer 提供 `install.sh`、`repair.sh`、`configure-vault.sh` 和 `uninstall.sh`；macOS 安装会把 Extension 复制到当前用户应用数据范围内的持久目录，默认卸载移除 Extension、Helper 和 manifest，保留 Vault、Markdown、Assets 与配置。
-- macOS 不增加 `launchd` 常驻服务；首次 Capture 仍由 Chrome 按需启动 Helper，连续 Capture 复用连接，断线或空闲释放后下一次请求自动恢复。
-- macOS 真实 Chrome、Tolaria 文件监听、签名、公证和 Gatekeeper 结果必须分别记录，不能由 Windows 证据替代。
-
-### 2.3 当前 Beta.6 明确不包含
+### 2.2 当前 Beta.6 明确不包含
 
 以下能力不属于当前 Beta.6 交付，不作为已实现能力承诺；后续版本安排以第 17 节路线图为准：
 
@@ -589,7 +579,7 @@ Article (2).md
 Article (3).md
 ```
 
-Node 实现可以使用 `wx` 等 create-only flag 创建临时文件；最终发布仍必须使用 ADR-003 冻结的平台无关 no-replace 提交流程，不能把直接 `wx` 写最终路径当作 atomic write。Windows 使用对应的 no-replace 提交语义，macOS 使用同样的 create-only 约束。MCP 模式也采用创建失败后递增后缀并重试，不先用 `get_note()` 进行存在性判断。
+Node 实现可以使用 `wx` 等 create-only flag 创建临时文件；最终发布仍必须使用 ADR-003 冻结的 Windows no-replace 提交流程，不能把直接 `wx` 写最终路径当作 atomic write。MCP 模式也采用创建失败后递增后缀并重试，不先用 `get_note()` 进行存在性判断。
 
 ### 7.4 AtomicCreateWriter
 
@@ -617,7 +607,7 @@ flush / close
 在同一卷内使用 Node `fs.link` 的 create-only hard-link 提交（Windows 对应 `CreateHardLinkW`），将完整临时文件作为最终文件显现，成功后删除临时链接；禁止使用可能覆盖目标的普通 `rename`
 ```
 
-V0.1 在 Windows 和 macOS 上都遵守该语义。ADR-003 的 proof test 必须覆盖同卷提交、目标冲突、跨卷和提交失败：已有目标文件不会被覆盖，最终文件不会被 Tolaria watcher 读取到半写内容。如果当前文件系统无法同时满足 atomic 和 create-only，必须安全失败并阻断 Release，不得退化为覆盖写。
+V0.1 只实现并验证 Windows 语义。ADR-003 的 proof test 必须覆盖同卷提交、目标冲突、跨卷和提交失败：已有目标文件不会被覆盖，最终文件不会被 Tolaria watcher 读取到半写内容。如果当前文件系统无法同时满足 atomic 和 create-only，必须安全失败并阻断 Release，不得退化为覆盖写。
 
 ## 8. 路径、资源与文件系统安全
 
@@ -775,7 +765,7 @@ Extension ID 必须从开发阶段开始固定：将公开的 Extension public k
 
 开发阶段可以使用 TypeScript + Node.js；正式分发不要求用户安装 Node，应提供单文件可执行程序。
 
-V0.1 的正式分发必须完成单文件打包，并在没有 Node.js 的干净 Windows/macOS 用户配置中分别验证。推荐方向：
+V0.1 的正式分发必须完成单文件打包，并在没有 Node.js 的干净 Windows 用户配置中验证。推荐方向：
 
 ```text
 开发：TypeScript + Node.js
@@ -783,7 +773,7 @@ V0.1 的正式分发必须完成单文件打包，并在没有 Node.js 的干净
 长期：必要时评估 Rust Helper
 ```
 
-Native Messaging 本身负责按需启动 Helper。Beta5 的短事务连接作为历史实现保留；Beta6/Beta7 在每个 Extension 运行上下文中复用一个 `connectNative()` 端口：
+Native Messaging 本身负责按需启动 Helper。Beta5 的短事务连接作为历史实现保留；Beta6 在每个 Extension 运行上下文中复用一个 `connectNative()` 端口：
 
 ```text
 connectNative()
@@ -887,12 +877,12 @@ UTF-8 JSON
 - 调试日志统一写入 `stderr`
 - 禁止 `console.log("Helper started")` 等内容污染 `stdout`
 - Beta5 历史行为是短事务：connect → request → response → disconnect
-- Beta6/Beta7 当前行为是按需 connect、同一运行上下文复用端口，并以 FIFO 顺序串行发送请求
+- Beta6 当前行为是按需 connect、同一运行上下文复用端口，并以 FIFO 顺序串行发送请求
 - `hello` 和 capability negotiation 每条新连接只执行一次；端口断开后下一次请求自动重新连接
 - 每次成功响应后 30 秒无新请求主动释放端口；新的业务请求会取消空闲计时器并复用当前连接
 - 等待文章响应时发生断线，当前 `clip.article` 不自动重放，避免文件已经提交但响应丢失时产生重复文章
 - `hello` 握手等待 10 秒；完整 `clip.article` 响应等待 60 秒，以覆盖图片顺序处理和文件提交时间
-- Beta6/Beta7 不引入 Windows/macOS 常驻服务或 localhost IPC；Helper 仍由 Chrome Native Messaging 按需启动
+- Beta6 不引入 Windows 常驻服务或 localhost IPC；Helper 仍由 Chrome Native Messaging 按需启动
 
 ## 10. MCP Channel（V0.2+）
 
@@ -1194,7 +1184,7 @@ V0.1 优先使用当前用户范围，不写入系统级目录：
 
 Native Messaging 注册使用 `HKCU`，尽量避免管理员权限、UAC 和系统级安装。当前 V0.1 不会把 `uninstall.ps1` 安装成 `uninstall.exe`；卸载从 Installer ZIP 中的 `installer/windows/uninstall.ps1` 运行。
 
-`v0.1.0-beta.7` 的 Windows Extension 交付包含在自包含 Installer ZIP 的 `extension` 目录中，并通过 Chrome 开发者模式加载；安装说明明确 Extension ID 与 Native Host Manifest 的对应关系。macOS 使用对应架构的 Installer DMG，Chrome Web Store 发布仍放到后续版本。
+`v0.1.0-beta.6` 的 Extension 交付包含在自包含 Installer ZIP 的 `extension` 目录中，并通过 Chrome 开发者模式加载；安装说明明确 Extension ID 与 Native Host Manifest 的对应关系。Chrome Web Store 发布仍放到后续版本。
 
 安装器必须幂等地支持：
 
@@ -1207,28 +1197,15 @@ Uninstall
 
 卸载绝对不能删除用户的 Vault、Markdown 或 Assets。
 
-### 14.2 macOS 安装
+### 14.2 Release 产物
 
-Beta.7 的 macOS 交付使用架构专用 Installer DMG：
-
-```text
-capture-for-tolaria-installer-v0.1.0-beta.7-macos-arm64.dmg
-capture-for-tolaria-installer-v0.1.0-beta.7-macos-x64.dmg
-```
-
-DMG 自包含同一版本的 Extension、对应架构 SEA Helper、macOS Installer 脚本、中文安装说明、`VERSION` 和许可证文件。安装脚本将 Extension 复制到当前用户应用数据范围内的持久目录，并只写当前用户的应用数据与 Google Chrome Native Host 配置范围；不安装 `launchd` 常驻服务，不要求 Node.js，不删除用户 Vault。macOS 用户级 manifest 的 Helper `path` 必须是最终绝对路径，且 `allowed_origins` 继续绑定固定 Extension ID。
-
-### 14.3 Release 产物
-
-GitHub Release 面向普通用户只公开自包含的 Windows Installer ZIP 和 macOS 架构专用 Installer DMG：
+GitHub Release 面向普通用户只公开一个自包含 Installer ZIP：
 
 ```text
-capture-for-tolaria-installer-v0.1.0-beta.7.zip
-capture-for-tolaria-installer-v0.1.0-beta.7-macos-arm64.dmg
-capture-for-tolaria-installer-v0.1.0-beta.7-macos-x64.dmg
+    capture-for-tolaria-installer-v0.1.0-beta.6.zip
 ```
 
-这些用户包分别自包含对应平台的 Extension、Helper、Installer 脚本、安装说明、`VERSION` 和许可证文件。CI 可以生成 Extension ZIP、独立 Helper、SBOM 和校验文件作为内部验证中间产物，但这些文件不作为用户下载资产，也不是用户安装前置。
+该 ZIP 自包含当前版本的 Extension、Helper、Windows 安装脚本、安装说明、`VERSION` 和许可证文件。CI 可以生成 Extension ZIP、独立 Helper、SBOM 和校验文件作为内部验证中间产物，但这些文件不作为用户下载资产，也不是用户安装前置。
 
 使用 Git tag 和 SemVer：
 
@@ -1239,13 +1216,12 @@ v0.1.0-beta.2（历史 Beta）
 v0.1.0-beta.3（历史 Beta）
 v0.1.0-beta.4（历史 Beta）
 v0.1.0-beta.5（历史 Beta）
-v0.1.0-beta.6（历史发布版本）
-v0.1.0-beta.7（当前方案版本）
+v0.1.0-beta.6（当前发布版本）
 v0.1.1
 v0.2.0
 ```
 
-### 14.4 二进制签名
+### 14.3 二进制签名
 
 阶段建议：
 
@@ -1258,9 +1234,7 @@ v0.2.0
 
 公开发布未签名的 `helper.exe` 容易触发 SmartScreen 和 Unknown Publisher，必须纳入发布计划。
 
-Beta.7 的 macOS Release workflow 使用仓库 secrets `APPLE_DEVELOPER_ID_APPLICATION`、`APPLE_DEVELOPER_ID_CERTIFICATE_BASE64`、`APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD`、`APPLE_NOTARY_KEY_ID`、`APPLE_NOTARY_ISSUER_ID` 和 `APPLE_NOTARY_PRIVATE_KEY` 导入临时签名 keychain，创建临时 notarization 凭据，并为注入后的 SEA Helper 使用 `com.apple.security.cs.allow-jit` 与 `com.apple.security.cs.allow-unsigned-executable-memory` entitlements 执行 Hardened Runtime 签名；签名完成后必须重新启动 Helper 完成 `hello` smoke test，再组装、公证并 stapling 两个架构的 DMG。任一凭据缺失或签名后启动验证失败时工作流必须失败，不得上传未签名候选或把候选标记为正式用户包。
-
-### 14.5 更新策略
+### 14.4 更新策略
 
 Extension 和 Helper 独立升级，启动时通过 `hello` 检查协议兼容性：
 
@@ -1372,7 +1346,7 @@ docs/adr/
 
 | 版本 | 核心能力 |
 | --- | --- |
-| V0.1 已发布基线（Beta.6） | Windows + Chrome + Article + Direct File Capture |
+| V0.1 当前交付基线（Beta.6） | Windows + Chrome + Article + Direct File Capture |
 | V0.1.0-beta.1 | 公众号优先的 Article 图片本地化 MVP |
 | V0.1.0-beta.6 | Windows + Chrome + Article + Direct File；图片本地化、Vault 路径配置、连接复用与断线恢复 |
 | V0.1.0-beta.7 | macOS + Chrome + Article + Direct File；自包含 Installer、用户级 Native Host、签名/公证 |
@@ -1447,32 +1421,6 @@ Native Host、Helper 和注册信息清理干净
 ```text
 Capture for Tolaria v0.1.0-beta.6
 ```
-
-## 18.1 `v0.1.0-beta.7` macOS 验收标准
-
-Beta.7 的 macOS 验收对象是与设备架构匹配的陌生用户环境：
-
-```text
-从 GitHub 下载对应架构 DMG
-    ↓
-运行 Installer，将同包 Extension 复制到当前用户应用数据范围内的持久目录并加载
-    ↓
-配置并验证一个用户授权的 Vault
-    ↓
-无需 Node.js、无需管理员权限、无需手动启动 Helper
-    ↓
-首次 Capture 自动启动 Helper，连续 Capture 复用连接
-    ↓
-Markdown 和 Assets 正确写入 Vault
-    ↓
-Repair、Upgrade 不破坏 Vault 或配置
-    ↓
-默认 Uninstall 清理 Extension、Helper/manifest，保留 Vault；ClearConfig 只在用户明确选择时删除配置
-    ↓
-签名、公证、stapling 和 Gatekeeper 验证通过
-```
-
-macOS runner 的质量门禁、真实 Chrome/Tolaria 往返、文件监听和用户环境结果必须分别记录；未具备完整证据时，不把 Beta.7 标记为 macOS 全链路完成。
 
 ## 19. 最终方案定版
 

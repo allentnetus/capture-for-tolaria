@@ -6,7 +6,7 @@ Capture for Tolaria 将网页 DOM、标题、来源 URL、metadata 和 Markdown 
 
 | 版本 | 支持 |
 | --- | --- |
-| 当前 Beta.7 目标 `0.1.0-beta.7` | 是，Windows Installer ZIP 和 macOS 架构专用 Installer DMG 按平台发布；真实 Chrome/Tolaria 端到端 Capture、签名和公证仍需独立核验 |
+| 当前公开 `0.1.0-beta.6` | 是，GitHub Pre-release 已发布，唯一公开资产为自包含 Installer ZIP；真实 Chrome/Tolaria 端到端 Capture 仍需独立核验 |
 | 历史公开 `0.1.0-beta.5` | 是，GitHub Pre-release 已发布，连接仍采用短事务；该版本的 Release 资产和历史证据保持不变 |
 | 历史公开 `0.1.0-alpha.1` | 是，公开 Alpha；图片自动本地化尚未作为 Alpha 发布能力 |
 | 其他版本 | 未承诺 |
@@ -15,7 +15,7 @@ Capture for Tolaria 将网页 DOM、标题、来源 URL、metadata 和 Markdown 
 
 不要在公开 Issue 中发布可利用的路径穿越、Native Messaging 注入、Extension 权限绕过、reparse point 逃逸或 Vault 数据泄露细节。请通过仓库的私有 Security Advisory 渠道提交，并提供：
 
-- 受影响版本、OS/架构和 Chrome 版本
+- 受影响版本和 Windows/Chrome 版本
 - 最小复现步骤或测试样例
 - 预期行为与实际行为
 - 是否需要管理员权限、Node.js 或 Tolaria 运行

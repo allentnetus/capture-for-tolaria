@@ -10,10 +10,10 @@
 
 ## 同步与用户交付
 
-- 本地用户只领取当前 VERSION 对应的平台 Installer 包：Windows 使用 `capture-for-tolaria-installer-v<VERSION>.zip`，macOS 使用对应架构的 `capture-for-tolaria-installer-v<VERSION>-macos-<ARCH>.dmg`；每个包必须自包含 Extension、Helper 和安装脚本，不把 Extension ZIP、独立 Helper、源码或开发依赖作为用户安装前置。
-- 平台 Installer 包可在发布目录根部作为待上传或本地交付资产暂存，必须被 .gitignore 忽略，不进入源码 commit，也不得从发布目录反向复制到开发目录。
-- 同步顺序固定为：开发目录修改并验证 → 只同步审核后的源码和文档 → 发布目录重新安装依赖并验证 → 从发布目录组装 Installer ZIP/DMG → 上传 GitHub Release → 用干净临时目录验证安装；node_modules/、dist/、release/ 仅可作为临时构建产物，完成后清理。
-- GitHub Release 只公开面向用户的 Installer ZIP/DMG；其他组包中间文件即使在 CI 中生成，也不作为用户下载包。
+- 本地用户只领取当前 VERSION 对应的 capture-for-tolaria-installer-v<VERSION>.zip；Installer ZIP 必须自包含 Extension、Helper 和安装脚本，不把 Extension ZIP、独立 Helper、源码或开发依赖作为用户安装前置。
+- 该 Installer ZIP 可在发布目录根部作为待上传或本地交付资产暂存，必须被 .gitignore 忽略，不进入源码 commit，也不得从发布目录反向复制到开发目录。
+- 同步顺序固定为：开发目录修改并验证 → 只同步审核后的源码和文档 → 发布目录重新安装依赖并验证 → 从发布目录组装 Installer ZIP → 上传 GitHub Release → 用干净临时目录验证安装；node_modules/、dist/、release/ 仅可作为临时构建产物，完成后清理。
+- GitHub Release 只公开 Installer ZIP；其他组包中间文件即使在 CI 中生成，也不作为用户下载包。
 
 ## 验证要求
 
